@@ -1,0 +1,52 @@
+Perfetto, ho rimosso la sigla "Rd" (Round) e pulito i nomi dei Gran Premi per renderli pronti all'uso immediato nel database di Replit.
+
+Ecco il prompt aggiornato da incollare:
+
+🛠️ REPLIT UPDATE: Logic Integration (Blocks 1-6)
+Task: Update the current application by implementing the following 6 logical blocks. Ensure the database schema and UI reflect these changes.
+
+Logic 1: Global Race Calendar & Timing
+Update the Races table with the official 2026 schedule.
+
+Timezones: Store "Local Time", "UTC", and "ITA Time".
+
+Race Data (Reference ITA Time):
+
+1, Australia, 05:00 | 2, Cina, 08:00 | 3, Giappone, 07:00 | 4, Bahrein, 17:00 | 5, Arabia Saudita, 19:00 | 6, Miami, 22:00 | 7, Canada, 22:00 | 8, Monaco, 15:00 | 9, Spagna (Barcellona), 15:00 | 10, Austria, 15:00 | 11, Gran Bretagna, 16:00 | 12, Belgio, 15:00 | 13, Ungheria, 15:00 | 14, Paesi Bassi, 15:00 | 15, Italia, 15:00 | 16, Spagna (Madrid), 15:00 | 17, Azerbaijan, 13:00 | 18, Singapore, 14:00 | 19, Stati Uniti (Austin), 21:00 | 20, Messico, 21:00 | 21, Brasile, 18:00 | 22, Las Vegas, 05:00 | 23, Qatar, 17:00 | 24, Abu Dhabi, 14:00.
+
+Constraint: Lock all user picks 1 hour before the ITA Time of each race.
+
+Logic 2: Clean Authentication Flow
+Landing Page: Simplify to show only "Login" and "Register".
+
+Navigation: Add a global "Home" button in the navbar and a "Back" button on every sub-page.
+
+"Create League" and "Join League" options must only appear on the User Dashboard after a successful login.
+
+Logic 3: Multi-Role & Multi-Lobby Management
+Users can belong to multiple leagues with different roles.
+
+Dashboard View: Split the UI into two sections: "Leagues I Manage (Admin)" and "Leagues I Joined (Player)".
+
+Selecting a league enters that specific "Lobby context".
+
+Logic 4: Dual Independent Leaderboards
+Every league must track and display two separate standings:
+
+Driver Standings (Lobby): Based on the real-world performance of picked drivers.
+
+Constructor Standings (Lobby): Based on the real-world performance of picked teams.
+
+Users must be able to toggle between these two views in the Lobby.
+
+Logic 5: User Customization (Avatars)
+Add a "Profile Settings" section.
+
+Allow users to upload an Avatar Image (JPG, PNG, WEBP).
+
+Display this avatar next to the user's name in all leaderboards and during the Draft process.
+
+Logic 6: Case-Insensitive Unique Usernames
+Registration: Prevent duplicate usernames regardless of case (e.g., "Max" and "max" are considered the same).
+
+Login: Allow users to log in with any casing (normalize input to lowercase for database matching).
