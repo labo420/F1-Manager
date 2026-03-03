@@ -72,94 +72,38 @@ function CircuitInfo({ race }: { race: RaceEntry }) {
   const length = race.circuitLength ? parseFloat(race.circuitLength) : null;
   const totalDistance = length && race.laps ? (length * race.laps).toFixed(3) : null;
 
-  // Derive track SVG filename from country or name
-  const trackSvg = race.country ? `/${race.country.toLowerCase().replace(/\s+/g, "-")}.svg` : null;
-
-  // Determine status and color
-  // FINISHED: Red (invert(15%) sepia(95%) saturate(6932%) hue-rotate(358deg) brightness(95%) contrast(107%))
-  // UPCOMING: White (brightness(0) invert(1))
-  // IN PROGRESS: Green (invert(62%) sepia(88%) saturate(385%) hue-rotate(97deg) brightness(95%) contrast(92%))
-  
-  const isFinished = race.isCompleted;
-  const isLocked = race.isLocked;
-  const isUpcoming = !race.isCompleted && !race.isLocked;
-  const isInProgress = !race.isCompleted && race.isLocked;
-
-  let filterStyle = "brightness(0) invert(1)"; // Default White
-  let animationClass = "";
-
-  if (isFinished) {
-    filterStyle = "invert(15%) sepia(95%) saturate(6932%) hue-rotate(358deg) brightness(95%) contrast(107%)";
-  } else if (isInProgress) {
-    filterStyle = "invert(62%) sepia(88%) saturate(385%) hue-rotate(97deg) brightness(95%) contrast(92%)";
-    animationClass = "animate-pulse-green";
-  }
+  if (!race.circuitName && !length && !race.laps) return null;
 
   return (
-    <div className="mt-4" data-testid={`circuit-info-${race.id}`}>
-      <div className="flex items-center justify-between gap-6 glass-panel bg-zinc-950/40 p-6 rounded-2xl border-white/5">
-        <div className="flex-1 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Flag className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Grand Prix</div>
-              <div className="text-xl font-display font-black text-white italic uppercase tracking-tighter">{race.name}</div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <div className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Circuit</div>
-              <div className="text-white font-bold text-sm leading-tight flex items-center gap-1.5">
-                <MapPin className="w-3 h-3 text-primary" />
-                {race.circuitName || "TBD"}
-              </div>
-            </div>
-            {length && (
-              <div className="space-y-1">
-                <div className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Length</div>
-                <div className="text-white font-bold text-sm flex items-center gap-1.5">
-                  <Ruler className="w-3 h-3 text-blue-400" />
-                  {length} km
-                </div>
-              </div>
-            )}
-            {race.laps && (
-              <div className="space-y-1">
-                <div className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Laps</div>
-                <div className="text-white font-bold text-sm flex items-center gap-1.5">
-                  <RotateCcw className="w-3 h-3 text-green-400" />
-                  {race.laps}
-                </div>
-              </div>
-            )}
-            {totalDistance && (
-              <div className="space-y-1">
-                <div className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">Distance</div>
-                <div className="text-white font-bold text-sm flex items-center gap-1.5">
-                  <Zap className="w-3 h-3 text-yellow-400" />
-                  {totalDistance} km
-                </div>
-              </div>
-            )}
-          </div>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3" data-testid={`circuit-info-${race.id}`}>
+      {race.circuitName && (
+        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+          <MapPin className="w-4 h-4 text-primary mx-auto mb-1.5" />
+          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Circuit</div>
+          <div className="text-white font-bold text-xs leading-tight">{race.circuitName}</div>
         </div>
-
-        {trackSvg && (
-          <div className="relative w-32 h-32 md:w-40 md:h-40 flex items-center justify-center p-2 bg-zinc-900/50 rounded-xl border border-white/5">
-             <img 
-               src={trackSvg} 
-               alt={`${race.name} track layout`}
-               className={`w-full h-full object-contain transition-all duration-700 ${animationClass}`}
-               style={{ filter: filterStyle }}
-               onError={(e) => (e.currentTarget.style.display = 'none')}
-             />
-             <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-primary/5 to-transparent rounded-xl" />
-          </div>
-        )}
-      </div>
+      )}
+      {length && (
+        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+          <Ruler className="w-4 h-4 text-blue-400 mx-auto mb-1.5" />
+          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Length</div>
+          <div className="text-white font-bold text-sm">{length} km</div>
+        </div>
+      )}
+      {race.laps && (
+        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+          <RotateCcw className="w-4 h-4 text-green-400 mx-auto mb-1.5" />
+          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Laps</div>
+          <div className="text-white font-bold text-sm">{race.laps}</div>
+        </div>
+      )}
+      {totalDistance && (
+        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+          <Flag className="w-4 h-4 text-yellow-400 mx-auto mb-1.5" />
+          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Total Distance</div>
+          <div className="text-white font-bold text-sm">{totalDistance} km</div>
+        </div>
+      )}
     </div>
   );
 }
