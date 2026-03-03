@@ -418,7 +418,7 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
         <div className="space-y-2">
           <div className="text-xs font-bold text-muted-foreground uppercase">Circuit</div>
           <div className="text-white font-semibold">{race.circuitName || race.name}</div>
-          {race.circuitLength && <div className="text-xs text-muted-foreground">Length: {race.circuitLength} km</div>}
+          {race.circuitLength && <div className="text-xs text-muted-foreground">Length: {race.circuitLength.replace(',', '.')} km</div>}
           {race.laps && <div className="text-xs text-muted-foreground">Laps: {race.laps}</div>}
         </div>
         <div className="space-y-2">

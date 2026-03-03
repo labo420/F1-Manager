@@ -69,7 +69,7 @@ const TEAM_COLORS: Record<string, string> = {
 };
 
 function CircuitInfo({ race }: { race: RaceEntry }) {
-  const length = race.circuitLength ? parseFloat(race.circuitLength) : null;
+  const length = race.circuitLength ? parseFloat(race.circuitLength.replace(',', '.')) : null;
   const totalDistance = length && race.laps ? (length * race.laps).toFixed(3) : null;
 
   if (!race.circuitName && !length && !race.laps) return null;
@@ -83,11 +83,11 @@ function CircuitInfo({ race }: { race: RaceEntry }) {
           <div className="text-white font-bold text-xs leading-tight">{race.circuitName}</div>
         </div>
       )}
-      {length && (
+      {race.circuitLength && (
         <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
           <Ruler className="w-4 h-4 text-blue-400 mx-auto mb-1.5" />
           <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Length</div>
-          <div className="text-white font-bold text-sm">{length} km</div>
+          <div className="text-white font-bold text-sm">{race.circuitLength.replace(',', '.')} km</div>
         </div>
       )}
       {race.laps && (
