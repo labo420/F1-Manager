@@ -1,5 +1,4 @@
 import { db } from "./db";
-import { sqlite } from "./db";
 import {
   users, lobbies, lobbyMembers, drivers, constructors, races, selections, driverResults, constructorResults, draftState,
   type User, type Lobby, type LobbyMember, type InsertUser, type Driver, type Constructor, type Race, type Selection,
@@ -7,17 +6,16 @@ import {
 } from "@shared/schema";
 import { eq, sql, and, asc, inArray } from "drizzle-orm";
 import session from "express-session";
-// @ts-ignore
-import SqliteStoreFactory from "better-sqlite3-session-store";
+import connectPg from "connect-pg-simple";
 
-const SqliteStore = SqliteStoreFactory(session);
+const PostgresStore = connectPg(session);
 
 export function setupSession(app: any) {
   app.use(
     session({
-      store: new SqliteStore({
-        client: sqlite,
-        expired: { clear: true, intervalMs: 900000 },
+      store: new PostgresStore({
+        conString: process.env.DATABASE_URL,
+        createTableIfMissing: true,
       }),
       secret: process.env.SESSION_SECRET || "f1-fantasy-secret",
       resave: false,

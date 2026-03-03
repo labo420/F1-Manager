@@ -1,25 +1,25 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const lobbies = sqliteTable("lobbies", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const lobbies = pgTable("lobbies", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   name: text("name").notNull(),
   code: text("code").notNull().unique(),
   adminId: integer("admin_id").notNull(),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const users = pgTable("users", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   avatarUrl: text("avatar_url"),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const lobbyMembers = sqliteTable("lobby_members", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const lobbyMembers = pgTable("lobby_members", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: integer("user_id").references(() => users.id).notNull(),
   lobbyId: integer("lobby_id").references(() => lobbies.id).notNull(),
   teamName: text("team_name").notNull().default("TBD"),
@@ -27,24 +27,24 @@ export const lobbyMembers = sqliteTable("lobby_members", {
   driverJokers: integer("driver_jokers").default(4).notNull(),
   constructorJokers: integer("constructor_jokers").default(4).notNull(),
   role: text("role").notNull().default("player"),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const drivers = sqliteTable("drivers", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const drivers = pgTable("drivers", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   name: text("name").notNull(),
   team: text("team").notNull(),
   number: integer("number"),
 });
 
-export const constructors = sqliteTable("constructors", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const constructors = pgTable("constructors", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   name: text("name").notNull(),
   color: text("color"),
 });
 
-export const races = sqliteTable("races", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const races = pgTable("races", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   name: text("name").notNull(),
   round: integer("round"),
   country: text("country"),
@@ -53,12 +53,12 @@ export const races = sqliteTable("races", {
   laps: integer("laps"),
   date: text("date").notNull(),
   itaTime: text("ita_time"),
-  isLocked: integer("is_locked", { mode: "boolean" }).default(false).notNull(),
-  isCompleted: integer("is_completed", { mode: "boolean" }).default(false).notNull(),
+  isLocked: boolean("is_locked").default(false).notNull(),
+  isCompleted: boolean("is_completed").default(false).notNull(),
 });
 
-export const selections = sqliteTable("selections", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const selections = pgTable("selections", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   userId: integer("user_id").references(() => users.id).notNull(),
   raceId: integer("race_id").references(() => races.id).notNull(),
   driverId: integer("driver_id").references(() => drivers.id).notNull(),
@@ -66,30 +66,30 @@ export const selections = sqliteTable("selections", {
   lobbyId: integer("lobby_id").references(() => lobbies.id),
 });
 
-export const driverResults = sqliteTable("driver_results", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const driverResults = pgTable("driver_results", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   raceId: integer("race_id").references(() => races.id).notNull(),
   driverId: integer("driver_id").references(() => drivers.id).notNull(),
   position: integer("position"),
   points: integer("points").default(0).notNull(),
   overtakes: integer("overtakes").default(0).notNull(),
-  fastestLap: integer("fastest_lap", { mode: "boolean" }).default(false).notNull(),
+  fastestLap: boolean("fastest_lap").default(false).notNull(),
 });
 
-export const constructorResults = sqliteTable("constructor_results", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const constructorResults = pgTable("constructor_results", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   raceId: integer("race_id").references(() => races.id).notNull(),
   constructorId: integer("constructor_id").references(() => constructors.id).notNull(),
   points: integer("points").default(0).notNull(),
 });
 
-export const draftState = sqliteTable("draft_state", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const draftState = pgTable("draft_state", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   lobbyId: integer("lobby_id").references(() => lobbies.id).notNull(),
   raceId: integer("race_id").references(() => races.id).notNull(),
   draftOrder: text("draft_order").notNull(),
   currentDrafterIndex: integer("current_drafter_index").default(0).notNull(),
-  isComplete: integer("is_complete", { mode: "boolean" }).default(false).notNull(),
+  isComplete: boolean("is_complete").default(false).notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, avatarUrl: true, createdAt: true });
