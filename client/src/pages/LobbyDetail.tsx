@@ -34,6 +34,20 @@ export default function LobbyDetail({ id }: { id: number }) {
   const currentMember = members?.find(m => m.userId === user?.id);
   const nextRace = races?.find(r => !r.isCompleted) || races?.[races.length - 1];
 
+  const useJollyMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", `/api/lobby/${id}/use-jolly`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/lobby/${id}/members`] });
+      toast({ title: "Jolly Used!", description: "One jolly has been consumed." });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
   if (loadingLobby || loadingRaces || loadingMembers) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -52,6 +66,16 @@ export default function LobbyDetail({ id }: { id: number }) {
           <p className="text-muted-foreground">League Code: <span className="font-mono font-bold text-foreground">{lobby.code}</span></p>
         </div>
         <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => useJollyMutation.mutate()}
+            disabled={useJollyMutation.isPending || (currentMember?.jolliesRemaining ?? 0) <= 0}
+            className="flex items-center gap-2"
+          >
+            <Star className="w-4 h-4 text-yellow-500" />
+            Use Jolly
+          </Button>
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="py-2 px-4 flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />

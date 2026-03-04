@@ -133,7 +133,7 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getLobbyMember(userId, lobbyId);
     if (existing) return existing;
     const [member] = await db.insert(lobbyMembers).values({
-      userId, lobbyId, role, teamName: teamName || "TBD"
+      userId, lobbyId, role, teamName: teamName || "TBD", jolliesRemaining: 3
     }).returning();
     return member;
   }

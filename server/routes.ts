@@ -439,6 +439,24 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json(picks);
   });
 
+  app.post("/api/lobby/:lobbyId/use-jolly", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const lobbyId = Number(req.params.lobbyId);
+      const member = await storage.getLobbyMember(req.session.userId, lobbyId);
+      if (!member) return res.status(404).json({ message: "Member not found" });
+      if (member.jolliesRemaining <= 0) return res.status(400).json({ message: "No jollies remaining" });
+      
+      const [updated] = await db.update(lobbyMembers)
+        .set({ jolliesRemaining: member.jolliesRemaining - 1 })
+        .where(and(eq(lobbyMembers.userId, req.session.userId), eq(lobbyMembers.lobbyId, lobbyId)))
+        .returning();
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   seedDatabase().catch(console.error);
 
   return httpServer;
