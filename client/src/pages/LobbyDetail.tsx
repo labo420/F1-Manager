@@ -33,6 +33,13 @@ export default function LobbyDetail({ id }: { id: number }) {
 
   const { data: usage, isLoading: loadingUsage } = useQuery<any>({
     queryKey: [`/api/usage/${id}`],
+    initialData: {
+      driverUsage: {},
+      constructorUsage: {},
+      driverJokersRemaining: 4,
+      constructorJokersRemaining: 4,
+      jokersRemaining: 8
+    }
   });
 
   const currentMember = members?.find(m => m.userId === user?.id);
