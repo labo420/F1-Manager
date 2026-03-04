@@ -16,6 +16,8 @@ export function setupSession(app: any) {
       store: new PostgresStore({
         conString: process.env.DATABASE_URL,
         createTableIfMissing: true,
+        schemaName: 'public',
+        tableName: 'session'
       }),
       secret: process.env.SESSION_SECRET || "f1-fantasy-secret",
       resave: false,
