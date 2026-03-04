@@ -344,8 +344,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           fastestLap: z.boolean(),
         }))
       });
-      const { results } = schema.parse(req.body);
-      await storage.bulkSubmitRaceResults(raceId, results);
+      const { results, lobbyId } = schema.extend({ lobbyId: z.number().optional() }).parse(req.body);
+      await storage.bulkSubmitRaceResults(raceId, results, lobbyId);
       res.status(200).json({ success: true, message: "Official results saved." });
     } catch (err) {
       if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });

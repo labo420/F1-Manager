@@ -23,9 +23,12 @@ export default function AdminPanel() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { activeLobbyId, activeMembership } = useActiveLobby();
-  const { data: lobby } = useLobbyInfo(activeLobbyId);
-  const { data: members } = useLobbyMembers(activeLobbyId);
+  
+  const adminLobbies = user?.memberships?.filter(m => m.role === "admin") || [];
+  const [selectedLobbyId, setSelectedLobbyId] = useState<number | "">(adminLobbies.length > 0 ? adminLobbies[0].lobbyId : "");
+
+  const { data: lobby } = useLobbyInfo(Number(selectedLobbyId));
+  const { data: members } = useLobbyMembers(Number(selectedLobbyId));
   const { data: races } = useRaces();
   const { data: drivers } = useDrivers();
   const { mutate: updateStatus, isPending: updatingStatus } = useUpdateRaceStatus();
@@ -33,14 +36,14 @@ export default function AdminPanel() {
   const [selectedRaceId, setSelectedRaceId] = useState<number | "">("");
   const [driverEntries, setDriverEntries] = useState<DriverEntry[]>([]);
 
-  const isAdmin = activeMembership?.role === "admin";
+  const isAdmin = adminLobbies.length > 0;
 
   const bulkSaveMutation = useMutation({
-    mutationFn: async ({ raceId, results }: { raceId: number; results: DriverEntry[] }) => {
+    mutationFn: async ({ raceId, results, lobbyId }: { raceId: number; results: DriverEntry[]; lobbyId: number }) => {
       const res = await fetch(`/api/admin/race/${raceId}/bulk-results`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ results }),
+        body: JSON.stringify({ results, lobbyId }),
         credentials: "include",
       });
       if (!res.ok) {
@@ -51,8 +54,8 @@ export default function AdminPanel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/races"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/leaderboard", activeLobbyId, "drivers"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/leaderboard", activeLobbyId, "constructors"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/leaderboard", selectedLobbyId, "drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/leaderboard", selectedLobbyId, "constructors"] });
       queryClient.invalidateQueries({ queryKey: ["/api/f1/driver-standings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/f1/constructor-standings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/results/race"] });
@@ -143,7 +146,18 @@ export default function AdminPanel() {
             <h1 className="text-3xl font-display font-black text-white italic uppercase tracking-tighter" data-testid="text-admin-title">
               Race Control
             </h1>
-            <p className="text-muted-foreground">{lobby?.name || activeMembership?.lobbyName || "League Management"}</p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-muted-foreground">Managing:</p>
+              <select 
+                value={selectedLobbyId} 
+                onChange={(e) => setSelectedLobbyId(Number(e.target.value))}
+                className="bg-transparent border-none text-primary font-bold focus:ring-0 cursor-pointer p-0 h-auto"
+              >
+                {adminLobbies.map(m => (
+                  <option key={m.lobbyId} value={m.lobbyId}>{m.lobbyName}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -292,7 +306,7 @@ export default function AdminPanel() {
               <div className="p-5 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                 <div className="text-xs text-muted-foreground">Points auto-fill based on position. Constructor points calculated automatically.</div>
                 <button
-                  onClick={() => { if (selectedRaceId) bulkSaveMutation.mutate({ raceId: Number(selectedRaceId), results: driverEntries }); }}
+                  onClick={() => { if (selectedRaceId && selectedLobbyId) bulkSaveMutation.mutate({ raceId: Number(selectedRaceId), results: driverEntries, lobbyId: Number(selectedLobbyId) }); }}
                   disabled={bulkSaveMutation.isPending || !selectedRaceId}
                   data-testid="button-save-bulk-results"
                   className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-xl transition-all flex items-center justify-center gap-2 uppercase text-sm tracking-wider disabled:opacity-50 hover:red-glow whitespace-nowrap"

@@ -91,6 +91,16 @@ export const draftState = pgTable("draft_state", {
   isComplete: boolean("is_complete").default(false).notNull(),
 });
 
+export const userScores = pgTable("user_scores", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  lobbyId: integer("lobby_id").references(() => lobbies.id).notNull(),
+  raceId: integer("race_id").references(() => races.id).notNull(),
+  driverPoints: integer("driver_points").default(0).notNull(),
+  constructorPoints: integer("constructor_points").default(0).notNull(),
+  totalPoints: integer("total_points").default(0).notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, avatarUrl: true, createdAt: true });
 export const insertDriverSchema = createInsertSchema(drivers).omit({ id: true });
 export const insertConstructorSchema = createInsertSchema(constructors).omit({ id: true });

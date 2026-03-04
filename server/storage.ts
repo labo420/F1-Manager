@@ -1,6 +1,6 @@
 import { db } from "./db";
 import {
-  users, lobbies, lobbyMembers, drivers, constructors, races, selections, driverResults, constructorResults, draftState,
+  users, lobbies, lobbyMembers, drivers, constructors, races, selections, driverResults, constructorResults, draftState, userScores,
   type User, type Lobby, type LobbyMember, type InsertUser, type Driver, type Constructor, type Race, type Selection,
   type DriverResult, type ConstructorResult, type LeaderboardEntry, type DraftState, type DraftStatus, type UsageInfo, type Membership, type RaceFantasyWinners
 } from "@shared/schema";
@@ -61,7 +61,8 @@ export interface IStorage {
   getDriverResultsForRace(raceId: number): Promise<DriverResult[]>;
   getConstructorResultsForRace(raceId: number): Promise<ConstructorResult[]>;
 
-  bulkSubmitRaceResults(raceId: number, results: Array<{ driverId: number; position: number; points: number; overtakes: number; fastestLap: boolean }>): Promise<void>;
+  bulkSubmitRaceResults(raceId: number, results: Array<{ driverId: number; position: number; points: number; overtakes: number; fastestLap: boolean }>, lobbyId?: number): Promise<void>;
+  updateLobbyScores(lobbyId: number, raceId: number): Promise<void>;
 
   getDriverStandings(): Promise<Array<{ driverId: number; name: string; team: string; number: number | null; totalPoints: number; wins: number; podiums: number }>>;
   getConstructorStandings(): Promise<Array<{ constructorId: number; name: string; color: string | null; totalPoints: number }>>;
@@ -283,7 +284,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async bulkSubmitRaceResults(raceId: number, results: Array<{ driverId: number; position: number; points: number; overtakes: number; fastestLap: boolean }>): Promise<void> {
+  async bulkSubmitRaceResults(raceId: number, results: Array<{ driverId: number; position: number; points: number; overtakes: number; fastestLap: boolean }>, lobbyId?: number): Promise<void> {
     for (const r of results) {
       await this.submitDriverResult(raceId, r.driverId, r.points, r.overtakes, r.fastestLap, r.position);
     }
@@ -303,6 +304,46 @@ export class DatabaseStorage implements IStorage {
       }
     }
     await this.updateRaceStatus(raceId, true, true);
+
+    if (lobbyId) {
+      await this.updateLobbyScores(lobbyId, raceId);
+    } else {
+      // If no specific lobby, update all lobbies that have selections for this race
+      const allLobbies = await db.select().from(lobbies);
+      for (const lobby of allLobbies) {
+        await this.updateLobbyScores(lobby.id, raceId);
+      }
+    }
+  }
+
+  async updateLobbyScores(lobbyId: number, raceId: number): Promise<void> {
+    const selectionsForRace = await db.select().from(selections).where(and(eq(selections.lobbyId, lobbyId), eq(selections.raceId, raceId)));
+    const dResults = await this.getDriverResultsForRace(raceId);
+    const cResults = await this.getConstructorResultsForRace(raceId);
+
+    for (const sel of selectionsForRace) {
+      const dRes = dResults.find(r => r.driverId === sel.driverId);
+      const cRes = cResults.find(r => r.constructorId === sel.constructorId);
+
+      let dPts = 0;
+      if (dRes) {
+        dPts = dRes.points + dRes.overtakes + (dRes.fastestLap ? 2 : 0);
+      }
+      const cPts = cRes?.points || 0;
+
+      const [existing] = await db.select().from(userScores).where(
+        and(eq(userScores.userId, sel.userId), eq(userScores.lobbyId, lobbyId), eq(userScores.raceId, raceId))
+      );
+
+      if (existing) {
+        await db.update(userScores)
+          .set({ driverPoints: dPts, constructorPoints: cPts, totalPoints: dPts + cPts })
+          .where(eq(userScores.id, existing.id));
+      } else {
+        await db.insert(userScores)
+          .values({ userId: sel.userId, lobbyId, raceId, driverPoints: dPts, constructorPoints: cPts, totalPoints: dPts + cPts });
+      }
+    }
   }
 
   async getDriverResultsForRace(raceId: number): Promise<DriverResult[]> {
@@ -365,61 +406,47 @@ export class DatabaseStorage implements IStorage {
 
   async getDriverLeaderboard(lobbyId: number): Promise<LeaderboardEntry[]> {
     const members = await this.getLobbyMembers(lobbyId);
-    const memberIds = members.map(m => m.userId);
-    if (memberIds.length === 0) return [];
+    if (members.length === 0) return [];
 
-    const allSelections = await db.select().from(selections).where(
-      and(eq(selections.lobbyId, lobbyId), inArray(selections.userId, memberIds))
-    );
-    const allDriverResults = await db.select().from(driverResults);
+    const scores = await db.select().from(userScores).where(eq(userScores.lobbyId, lobbyId));
 
-    const leaderboard: LeaderboardEntry[] = members.map(m => ({
-      userId: m.userId,
-      username: m.username,
-      teamName: m.teamName,
-      avatarUrl: m.avatarUrl,
-      totalPoints: 0,
-    }));
+    const leaderboard: LeaderboardEntry[] = members.map(m => {
+      const userTotal = scores
+        .filter(s => s.userId === m.userId)
+        .reduce((sum, s) => sum + s.driverPoints, 0);
+      
+      return {
+        userId: m.userId,
+        username: m.username,
+        teamName: m.teamName,
+        avatarUrl: m.avatarUrl,
+        totalPoints: userTotal,
+      };
+    });
 
-    for (const sel of allSelections) {
-      const dResult = allDriverResults.find(r => r.raceId === sel.raceId && r.driverId === sel.driverId);
-      let points = 0;
-      if (dResult) {
-        points += dResult.points;
-        points += dResult.overtakes;
-        if (dResult.fastestLap) points += 2;
-      }
-      const entry = leaderboard.find(l => l.userId === sel.userId);
-      if (entry) entry.totalPoints += points;
-    }
     return leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
   }
 
   async getConstructorLeaderboard(lobbyId: number): Promise<LeaderboardEntry[]> {
     const members = await this.getLobbyMembers(lobbyId);
-    const memberIds = members.map(m => m.userId);
-    if (memberIds.length === 0) return [];
+    if (members.length === 0) return [];
 
-    const allSelections = await db.select().from(selections).where(
-      and(eq(selections.lobbyId, lobbyId), inArray(selections.userId, memberIds))
-    );
-    const allConstructorResults = await db.select().from(constructorResults);
+    const scores = await db.select().from(userScores).where(eq(userScores.lobbyId, lobbyId));
 
-    const leaderboard: LeaderboardEntry[] = members.map(m => ({
-      userId: m.userId,
-      username: m.username,
-      teamName: m.teamName,
-      avatarUrl: m.avatarUrl,
-      totalPoints: 0,
-    }));
+    const leaderboard: LeaderboardEntry[] = members.map(m => {
+      const userTotal = scores
+        .filter(s => s.userId === m.userId)
+        .reduce((sum, s) => sum + s.constructorPoints, 0);
+      
+      return {
+        userId: m.userId,
+        username: m.username,
+        teamName: m.teamName,
+        avatarUrl: m.avatarUrl,
+        totalPoints: userTotal,
+      };
+    });
 
-    for (const sel of allSelections) {
-      const cResult = allConstructorResults.find(r => r.raceId === sel.raceId && r.constructorId === sel.constructorId);
-      if (cResult) {
-        const entry = leaderboard.find(l => l.userId === sel.userId);
-        if (entry) entry.totalPoints += cResult.points;
-      }
-    }
     return leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
   }
 
