@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage, setupSession } from "./storage";
 import { z } from "zod";
 import { db } from "./db";
-import { lobbies, users, drivers, constructors, races, driverResults, constructorResults, selections, lobbyMembers, draftState } from "@shared/schema";
+import { lobbies, users, drivers, constructors, races, driverResults, constructorResults, selections, lobbyMembers, draftState, userScores } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
@@ -528,12 +528,13 @@ async function seedDatabase() {
     ]);
   }
 
-  const needsRaceReseed = existingRaces.length < 24 || existingRaces.some(r => !r.circuitName) || !racesHaveItaTime;
+  const needsRaceReseed = existingRaces.length < 24 || existingRaces.some(r => !r.circuitName) || !racesHaveItaTime || existingRaces.some(r => r.name === "Australian Grand Prix" && r.circuitLength !== "5,278");
   if (needsRaceReseed) {
     if (existingRaces.length > 0) {
       await db.delete(driverResults);
       await db.delete(constructorResults);
       await db.delete(selections);
+      await db.delete(userScores);
       await db.delete(draftState);
       await db.delete(races);
     }
@@ -599,7 +600,7 @@ const GP_NAMES: Record<string, { name: string; country: string }> = {
 };
 
 function parseCalendarCSV() {
-  const csvPath = path.resolve("attached_assets", "Nuovo_Foglio_di_lavoro_di_Microsoft_Excel_1772464371219.csv");
+  const csvPath = path.resolve("attached_assets", "Nuovo_Foglio_di_lavoro_di_Microsoft_Excel_1772619582302.csv");
   const raw = fs.readFileSync(csvPath, "utf-8");
   const lines = raw.split("\n").filter(l => l.trim().length > 0);
   const dataLines = lines.slice(1);
