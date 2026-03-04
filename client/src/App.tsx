@@ -14,6 +14,7 @@ import AdminPanel from "@/pages/Admin";
 import F1Season from "@/pages/F1Season";
 import Profile from "@/pages/Profile";
 import Paddock from "@/pages/Paddock";
+import LobbyDetail from "@/pages/LobbyDetail";
 import { Navigation } from "@/components/Navigation";
 
 function ProtectedRoute({ component: Component, requireAuth = true }: { component: React.ComponentType; requireAuth?: boolean }) {
@@ -57,6 +58,9 @@ function Router() {
       </Route>
       <Route path="/paddock">
         {() => <ProtectedRoute component={Paddock} />}
+      </Route>
+      <Route path="/lobby/:id">
+        {(params) => <ProtectedRoute component={() => <LobbyDetail id={Number(params.id)} />} />}
       </Route>
       <Route path="/leaderboard">
         {() => <ProtectedRoute component={Leaderboard} />}

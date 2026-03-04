@@ -26,6 +26,7 @@ export const lobbyMembers = pgTable("lobby_members", {
   jokerCount: integer("joker_count").default(4).notNull(),
   driverJokers: integer("driver_jokers").default(4).notNull(),
   constructorJokers: integer("constructor_jokers").default(4).notNull(),
+  jolliesRemaining: integer("jollies_remaining").default(3).notNull(),
   role: text("role").notNull().default("player"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -126,6 +127,7 @@ export type Membership = {
   jokerCount: number;
   driverJokers: number;
   constructorJokers: number;
+  jolliesRemaining: number;
   role: string;
 };
 

@@ -160,6 +160,7 @@ export class DatabaseStorage implements IStorage {
         jokerCount: m.jokerCount,
         driverJokers: m.driverJokers,
         constructorJokers: m.constructorJokers,
+        jolliesRemaining: m.jolliesRemaining,
         role: m.role,
       };
     });
