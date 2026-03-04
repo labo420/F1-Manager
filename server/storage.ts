@@ -133,7 +133,9 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getLobbyMember(userId, lobbyId);
     if (existing) return existing;
     const [member] = await db.insert(lobbyMembers).values({
-      userId, lobbyId, role, teamName: teamName || "TBD", jolliesRemaining: 3
+      userId, lobbyId, role, teamName: teamName || "TBD",
+      driverJokers: 4,
+      constructorJokers: 4
     }).returning();
     return member;
   }
@@ -570,8 +572,10 @@ export class DatabaseStorage implements IStorage {
   async consumeJokerInLobby(userId: number, lobbyId: number, count: number): Promise<LobbyMember> {
     const member = await this.getLobbyMember(userId, lobbyId);
     if (!member) throw new Error("Member not found");
+    // This method is now legacy as we split into driver/constructor jokers
+    // But keeping for compatibility if other parts use it
     const [updated] = await db.update(lobbyMembers)
-      .set({ jokerCount: member.jokerCount - count })
+      .set({ driverJokers: member.driverJokers - count })
       .where(and(eq(lobbyMembers.userId, userId), eq(lobbyMembers.lobbyId, lobbyId)))
       .returning();
     return updated;

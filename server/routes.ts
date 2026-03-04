@@ -240,45 +240,30 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const usageInfo = await storage.getUserUsageInfoInLobby(req.session.userId, input.lobbyId);
 
-      let effectiveDriverUsage = usageInfo.driverUsage[input.driverId] || 0;
-      let effectiveConstructorUsage = usageInfo.constructorUsage[input.constructorId] || 0;
-      if (existingForRace) {
-        if (existingForRace.driverId === input.driverId) effectiveDriverUsage--;
-        if (existingForRace.constructorId === input.constructorId) effectiveConstructorUsage--;
+      const driverUsageCount = usageInfo.driverUsage[input.driverId] || 0;
+      const constructorUsageCount = usageInfo.constructorUsage[input.constructorId] || 0;
+
+      // Rule: Max 3 times. 3rd time costs a Joker.
+      if (driverUsageCount >= 3) return res.status(400).json({ message: "You have already used this driver 3 times in this lobby." });
+      if (constructorUsageCount >= 3) return res.status(400).json({ message: "You have already used this constructor 3 times in this lobby." });
+
+      const needsDriverJoker = driverUsageCount === 2;
+      const needsConstructorJoker = constructorUsageCount === 2;
+
+      if (needsDriverJoker && usageInfo.driverJokersRemaining <= 0) {
+        return res.status(400).json({ message: "No Driver Jollies remaining for the 3rd selection." });
       }
-
-      if (effectiveDriverUsage >= 3) return res.status(400).json({ message: "Maximum limit reached (3/3) for this driver." });
-      if (effectiveConstructorUsage >= 3) return res.status(400).json({ message: "Maximum limit reached (3/3) for this constructor." });
-
-      let driverJokerNeeded = effectiveDriverUsage >= 2 ? 1 : 0;
-      let constructorJokerNeeded = effectiveConstructorUsage >= 2 ? 1 : 0;
-
-      let driverJokerRefund = 0;
-      let constructorJokerRefund = 0;
-      if (existingForRace) {
-        const oldDriverUsage = (usageInfo.driverUsage[existingForRace.driverId] || 0) - 1;
-        const oldConstructorUsage = (usageInfo.constructorUsage[existingForRace.constructorId] || 0) - 1;
-        if (oldDriverUsage >= 2) driverJokerRefund++;
-        if (oldConstructorUsage >= 2) constructorJokerRefund++;
-      }
-
-      const netDriverJokers = driverJokerNeeded - driverJokerRefund;
-      const netConstructorJokers = constructorJokerNeeded - constructorJokerRefund;
-
-      if (netDriverJokers > 0 && usageInfo.driverJokersRemaining < netDriverJokers) {
-        return res.status(400).json({ message: "No Driver Stars remaining. Pick a different driver." });
-      }
-      if (netConstructorJokers > 0 && usageInfo.constructorJokersRemaining < netConstructorJokers) {
-        return res.status(400).json({ message: "No Constructor Stars remaining. Pick a different constructor." });
+      if (needsConstructorJoker && usageInfo.constructorJokersRemaining <= 0) {
+        return res.status(400).json({ message: "No Team Jollies remaining for the 3rd selection." });
       }
 
       const selection = await storage.upsertSelection(req.session.userId, input.raceId, input.driverId, input.constructorId, input.lobbyId);
 
-      if (netDriverJokers !== 0) {
-        await storage.consumeDriverJoker(req.session.userId, input.lobbyId, netDriverJokers);
+      if (needsDriverJoker) {
+        await storage.consumeDriverJoker(req.session.userId, input.lobbyId, 1);
       }
-      if (netConstructorJokers !== 0) {
-        await storage.consumeConstructorJoker(req.session.userId, input.lobbyId, netConstructorJokers);
+      if (needsConstructorJoker) {
+        await storage.consumeConstructorJoker(req.session.userId, input.lobbyId, 1);
       }
 
       await storage.advanceDraft(input.lobbyId, input.raceId);

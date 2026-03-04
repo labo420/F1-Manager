@@ -31,24 +31,14 @@ export default function LobbyDetail({ id }: { id: number }) {
     queryKey: [`/api/lobby/${id}/members`],
   });
 
+  const { data: usage, isLoading: loadingUsage } = useQuery<any>({
+    queryKey: [`/api/usage/${id}`],
+  });
+
   const currentMember = members?.find(m => m.userId === user?.id);
   const nextRace = races?.find(r => !r.isCompleted) || races?.[races.length - 1];
 
-  const useJollyMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", `/api/lobby/${id}/use-jolly`);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/lobby/${id}/members`] });
-      toast({ title: "Jolly Used!", description: "One jolly has been consumed." });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    }
-  });
-
-  if (loadingLobby || loadingRaces || loadingMembers) {
+  if (loadingLobby || loadingRaces || loadingMembers || loadingUsage) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -66,25 +56,26 @@ export default function LobbyDetail({ id }: { id: number }) {
           <p className="text-muted-foreground">League Code: <span className="font-mono font-bold text-foreground">{lobby.code}</span></p>
         </div>
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => useJollyMutation.mutate()}
-            disabled={useJollyMutation.isPending || (currentMember?.jolliesRemaining ?? 0) <= 0}
-            className="flex items-center gap-2"
-          >
-            <Star className="w-4 h-4 text-yellow-500" />
-            Use Jolly
-          </Button>
-          <Card className="bg-primary/5 border-primary/20">
-            <CardContent className="py-2 px-4 flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-              <div>
-                <p className="text-[10px] uppercase text-muted-foreground leading-none">Jollies Left</p>
-                <p className="text-xl font-bold leading-tight">{currentMember?.jolliesRemaining ?? 0}</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex gap-2">
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="py-2 px-4 flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                <div>
+                  <p className="text-[10px] uppercase text-muted-foreground leading-none">Driver Jollies</p>
+                  <p className="text-xl font-bold leading-tight">{usage?.driverJokersRemaining ?? 0}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="py-2 px-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-500" />
+                <div>
+                  <p className="text-[10px] uppercase text-muted-foreground leading-none">Team Jollies</p>
+                  <p className="text-xl font-bold leading-tight">{usage?.constructorJokersRemaining ?? 0}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
@@ -227,10 +218,6 @@ export default function LobbyDetail({ id }: { id: number }) {
                       {member.role === "admin" && (
                         <Badge variant="outline" className="text-[10px] uppercase">Admin</Badge>
                       )}
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground uppercase leading-none mb-1">Jollies</p>
-                        <p className="font-bold">{member.jolliesRemaining}</p>
-                      </div>
                     </div>
                   </div>
                 ))}
