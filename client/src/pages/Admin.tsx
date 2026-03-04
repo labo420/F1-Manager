@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useActiveLobby, useLobbyInfo, useLobbyMembers } from "@/hooks/use-lobby";
 import { useRaces, useUpdateRaceStatus } from "@/hooks/use-races";
 import { useDrivers, useConstructors } from "@/hooks/use-competitors";
-import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle } from "lucide-react";
+import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -25,7 +25,7 @@ export default function AdminPanel() {
   const queryClient = useQueryClient();
   
   const adminLobbies = user?.memberships?.filter(m => m.role === "admin") || [];
-  const [selectedLobbyId, setSelectedLobbyId] = useState<number | "">(adminLobbies.length > 0 ? adminLobbies[0].lobbyId : "");
+  const [selectedLobbyId, setSelectedLobbyId] = useState<number | "">("");
 
   const { data: lobby } = useLobbyInfo(Number(selectedLobbyId));
   const { data: members } = useLobbyMembers(Number(selectedLobbyId));
@@ -118,6 +118,51 @@ export default function AdminPanel() {
     );
   }
 
+  if (!selectedLobbyId) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="p-3 bg-secondary rounded-xl text-white">
+            <Settings className="w-8 h-8" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-display font-black text-white italic uppercase tracking-tighter">
+              Race Control
+            </h1>
+            <p className="text-muted-foreground">Select a league to manage</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {adminLobbies.map((m) => (
+            <button
+              key={m.lobbyId}
+              onClick={() => setSelectedLobbyId(m.lobbyId)}
+              className="glass-panel p-6 rounded-2xl text-left hover:border-primary transition-all group"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-xl font-bold text-white group-hover:text-primary transition-colors">
+                  {m.lobbyName}
+                </h2>
+                <Users className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <div className="space-y-2">
+                <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                  Code: <span className="text-white font-mono">{m.lobbyCode}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase">
+                    Admin
+                  </span>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   const selectedRace = races?.find(r => r.id === Number(selectedRaceId));
 
   const updateEntry = (driverId: number, field: keyof DriverEntry, value: any) => {
@@ -139,6 +184,13 @@ export default function AdminPanel() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setSelectedLobbyId("")}
+            className="p-2 hover:bg-white/10 rounded-lg text-muted-foreground hover:text-white transition-colors"
+            title="Back to League List"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
           <div className="p-3 bg-secondary rounded-xl text-white">
             <Settings className="w-8 h-8" />
           </div>
@@ -146,18 +198,7 @@ export default function AdminPanel() {
             <h1 className="text-3xl font-display font-black text-white italic uppercase tracking-tighter" data-testid="text-admin-title">
               Race Control
             </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-muted-foreground">Managing:</p>
-              <select 
-                value={selectedLobbyId} 
-                onChange={(e) => setSelectedLobbyId(Number(e.target.value))}
-                className="bg-transparent border-none text-primary font-bold focus:ring-0 cursor-pointer p-0 h-auto"
-              >
-                {adminLobbies.map(m => (
-                  <option key={m.lobbyId} value={m.lobbyId}>{m.lobbyName}</option>
-                ))}
-              </select>
-            </div>
+            <p className="text-primary font-bold">{lobby?.name}</p>
           </div>
         </div>
 
