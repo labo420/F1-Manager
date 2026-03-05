@@ -22,9 +22,11 @@ export function setupSession(app: any) {
       secret: process.env.SESSION_SECRET || "f1-fantasy-secret",
       resave: false,
       saveUninitialized: false,
+      proxy: process.env.NODE_ENV === "production",
       cookie: {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       },
     }),
   );
@@ -489,7 +491,11 @@ export class DatabaseStorage implements IStorage {
     if (!state) throw new Error("Draft not initialized");
     let order: number[];
     try {
-      order = typeof state.draftOrder === "string" ? JSON.parse(state.draftOrder) : state.draftOrder;
+      if (!state.draftOrder) {
+        order = [];
+      } else {
+        order = typeof state.draftOrder === "string" ? JSON.parse(state.draftOrder) : state.draftOrder;
+      }
     } catch (e) {
       console.error("Error parsing draftOrder:", state.draftOrder);
       order = [];

@@ -13,7 +13,7 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (user) {
-      setLocation("/");
+      setLocation("/paddock");
     }
   }, [user, setLocation]);
 
