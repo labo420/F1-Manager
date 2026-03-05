@@ -64,8 +64,9 @@ const TEAM_COLORS: Record<string, string> = {
   "Alpine": "#FF87BC",
   "RB": "#6692FF",
   "Williams": "#64C4FF",
-  "Sauber": "#52E252",
+  "Audi": "#ff3300",
   "Haas": "#B6BABD",
+  "Cadillac": "#d1d1d1",
 };
 
 function CircuitInfo({ race }: { race: RaceEntry }) {

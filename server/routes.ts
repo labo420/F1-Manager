@@ -514,8 +514,9 @@ async function seedDatabase() {
       { name: "Alpine", color: "#FF87BC" },
       { name: "RB", color: "#6692FF" },
       { name: "Williams", color: "#64C4FF" },
-      { name: "Sauber", color: "#52E252" },
+      { name: "Audi", color: "#ff3300" },
       { name: "Haas", color: "#B6BABD" },
+      { name: "Cadillac", color: "#d1d1d1" },
     ]);
 
     await db.insert(drivers).values([
@@ -535,8 +536,8 @@ async function seedDatabase() {
       { name: "Isack Hadjar", team: "RB", number: 6 },
       { name: "Carlos Sainz", team: "Williams", number: 55 },
       { name: "Alex Albon", team: "Williams", number: 23 },
-      { name: "Nico Hulkenberg", team: "Sauber", number: 27 },
-      { name: "Gabriel Bortoleto", team: "Sauber", number: 5 },
+      { name: "Nico Hulkenberg", team: "Audi", number: 27 },
+      { name: "Gabriel Bortoleto", team: "Audi", number: 5 },
       { name: "Oliver Bearman", team: "Haas", number: 87 },
       { name: "Esteban Ocon", team: "Haas", number: 31 },
     ]);
