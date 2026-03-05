@@ -6,7 +6,7 @@ import { type Lobby } from "@shared/schema";
 
 const ACTIVE_LOBBY_KEY = "f1-active-lobby-id";
 
-export function useActiveLobby() {
+export function useActiveLobby(autoSelect = true) {
   const { user } = useAuth();
   const [activeLobbyId, setActiveLobbyIdState] = useState<number | null>(() => {
     const stored = localStorage.getItem(ACTIVE_LOBBY_KEY);
@@ -20,14 +20,14 @@ export function useActiveLobby() {
   }, []);
 
   useEffect(() => {
-    if (!user || !user.memberships || user.memberships.length === 0) {
+    if (!autoSelect || !user || !user.memberships || user.memberships.length === 0) {
       return;
     }
     if (activeLobbyId && user.memberships.some(m => m.lobbyId === activeLobbyId)) {
       return;
     }
     setActiveLobbyId(user.memberships[0].lobbyId);
-  }, [user, activeLobbyId, setActiveLobbyId]);
+  }, [user, activeLobbyId, setActiveLobbyId, autoSelect]);
 
   const activeMembership = user?.memberships?.find(m => m.lobbyId === activeLobbyId) || null;
 

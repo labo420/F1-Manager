@@ -7,7 +7,7 @@ import { Trophy, Medal, Car, Shield, ChevronRight, Users } from "lucide-react";
 
 export default function Leaderboard() {
   const { user } = useAuth();
-  const { activeLobbyId, setActiveLobbyId, activeMembership } = useActiveLobby();
+  const { activeLobbyId, setActiveLobbyId, activeMembership } = useActiveLobby(false);
   const { data: lobby } = useLobbyInfo(activeLobbyId);
   const [tab, setTab] = useState<"drivers" | "constructors">("drivers");
 
