@@ -22,7 +22,8 @@ const TEAM_LOGOS: Record<string, string> = {
 };
 
 function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
-  const logo = TEAM_LOGOS[name];
+  const logoKey = Object.keys(TEAM_LOGOS).find(k => k.toLowerCase() === name.toLowerCase()) || name;
+  const logo = TEAM_LOGOS[logoKey];
   if (logo) {
     return <img src={logo} alt={name} className={`${className} object-contain`} />;
   }

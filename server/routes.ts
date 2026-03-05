@@ -104,7 +104,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }).parse(req.body);
       const code = `F1-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
       const lobby = await storage.createLobby(name, code, req.session.userId, teamName);
-      res.status(201).json({ code: lobby.code, lobbyId: lobby.id });
+      res.status(201).json({ 
+        success: true,
+        code: lobby.code, 
+        lobbyId: lobby.id,
+        name: lobby.name,
+        adminId: lobby.adminId
+      });
     } catch (err) {
       console.error("Create lobby error:", err);
       if (err instanceof z.ZodError) {
