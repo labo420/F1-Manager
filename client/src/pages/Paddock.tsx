@@ -120,10 +120,6 @@ export default function Paddock() {
                   <span className="text-muted-foreground">Role:</span>
                   <span className="capitalize font-medium">{membership.role}</span>
                 </div>
-                <div className="flex justify-between items-center text-sm mt-1">
-                  <span className="text-muted-foreground">Jollies:</span>
-                  <span className="font-medium">{membership.jolliesRemaining}</span>
-                </div>
               </CardContent>
             </Card>
           </Link>
