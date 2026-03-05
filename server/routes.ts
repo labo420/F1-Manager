@@ -106,7 +106,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const lobby = await storage.createLobby(name, code, req.session.userId, teamName);
       res.status(201).json({ code: lobby.code, lobbyId: lobby.id });
     } catch (err) {
-      res.status(400).json({ message: "Invalid input" });
+      console.error("Create lobby error:", err);
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -127,7 +131,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await storage.addLobbyMember(req.session.userId, lobby.id, "player", teamName);
       res.status(200).json({ success: true, lobbyId: lobby.id });
     } catch (err) {
-      res.status(400).json({ message: "Invalid lobby code or team name" });
+      console.error("Join lobby error:", err);
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: err.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
