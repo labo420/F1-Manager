@@ -51,7 +51,7 @@ export default function Paddock() {
       {mode === "create" && (
         <div className="max-w-md mx-auto mb-12 glass-panel rounded-2xl p-8 border-2 border-primary/20">
           <h2 className="text-xl font-bold text-white uppercase mb-6">Create a New League</h2>
-          <form onSubmit={(e) => { e.preventDefault(); if (leagueName.trim()) createLobby.mutate(leagueName.trim(), { onSuccess: () => { setMode("list"); setLeagueName(""); } }); }} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); if (leagueName.trim()) createLobby.mutate({ name: leagueName.trim(), teamName: "ferrari" }, { onSuccess: () => { setMode("list"); setLeagueName(""); } }); }} className="space-y-4">
             <input
               placeholder="League Name"
               value={leagueName}
@@ -77,7 +77,7 @@ export default function Paddock() {
       {mode === "join" && (
         <div className="max-w-md mx-auto mb-12 glass-panel rounded-2xl p-8 border-2 border-primary/20">
           <h2 className="text-xl font-bold text-white uppercase mb-6">Join a League</h2>
-          <form onSubmit={(e) => { e.preventDefault(); if (code.length >= 4) joinLobby.mutate(code.toUpperCase(), { onSuccess: () => { setMode("list"); setCode(""); } }); }} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); if (code.length >= 4) joinLobby.mutate({ code: code.toUpperCase(), teamName: "mercedes" }, { onSuccess: () => { setMode("list"); setCode(""); } }); }} className="space-y-4">
             <input
               placeholder="F1-XXXX"
               value={code}
