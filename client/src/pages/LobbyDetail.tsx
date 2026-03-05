@@ -58,16 +58,14 @@ export default function LobbyDetail({ id }: { id: number }) {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-6">
-        <Button 
-          variant="ghost" 
-          size="sm" 
+      <div className="mb-6 flex items-center gap-4">
+        <button 
           onClick={() => setLocation("/paddock")}
-          className="text-muted-foreground hover:text-white gap-2 px-0"
+          className="p-2 hover:bg-white/10 rounded-lg text-muted-foreground hover:text-white transition-colors"
+          title="Back to League List"
         >
-          <ChevronLeft className="w-4 h-4" />
-          Back to Paddock
-        </Button>
+          <ChevronLeft className="w-6 h-6" />
+        </button>
       </div>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
