@@ -279,9 +279,6 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                 Switch
               </button>
             )}
-            <h1 className="text-3xl font-display font-black text-white italic uppercase tracking-tighter" data-testid="text-lobby-name">
-              {lobby?.name || membership.lobbyName}
-            </h1>
           </div>
           <p className="text-muted-foreground mt-1">
             Welcome back, <span className="text-primary font-bold">{membership.teamName}</span>
