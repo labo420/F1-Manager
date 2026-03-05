@@ -6,28 +6,27 @@ import { motion } from "framer-motion";
 import { Trophy, Medal, Car, Shield, ChevronRight, Users } from "lucide-react";
 
 const TEAM_LOGOS: Record<string, string> = {
-  "Red Bull Racing": "/logos/redbull.png",
-  "Ferrari": "/logos/ferrari.png",
-  "McLaren": "/logos/mclaren.png",
-  "Mercedes": "/logos/mercedes.png",
-  "Aston Martin": "/logos/astonmartin.png",
-  "Alpine": "/logos/alpine.png",
-  "RB": "/logos/racingbulls.png",
-  "Williams": "/logos/williams.png",
-  "Audi": "/logos/audi.png",
-  "Haas": "/logos/haas.png",
-  "Cadillac": "/logos/cadillac.png",
+  "red bull racing": "/logos/redbull.png",
+  "ferrari": "/logos/ferrari.png",
+  "mclaren": "/logos/mclaren.png",
+  "mercedes": "/logos/mercedes.png",
+  "aston martin": "/logos/astonmartin.png",
+  "alpine": "/logos/alpine.png",
+  "rb": "/logos/racingbulls.png",
+  "williams": "/logos/williams.png",
+  "audi": "/logos/audi.png",
+  "haas": "/logos/haas.png",
+  "cadillac": "/logos/cadillac.png",
 };
 
 function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
-  const logoKey = Object.keys(TEAM_LOGOS).find(k => k.toLowerCase() === name.toLowerCase()) || name;
-  const logo = TEAM_LOGOS[logoKey];
+  const logo = TEAM_LOGOS[name.toLowerCase()];
   if (logo) {
     return <img src={logo} alt={name} className={`${className} object-contain`} />;
   }
   return (
-    <div className={`${className} bg-zinc-800 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-white/10 uppercase`}>
-      {name.charAt(0)}
+    <div className={`${className} bg-zinc-800 rounded-full flex items-center justify-center text-muted-foreground border border-white/10`}>
+      <Shield className="w-1/2 h-1/2" />
     </div>
   );
 }
