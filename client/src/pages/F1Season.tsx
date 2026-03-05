@@ -70,17 +70,17 @@ const TEAM_COLORS: Record<string, string> = {
 };
 
 const TEAM_LOGOS: Record<string, string> = {
-  "Red Bull Racing": "/logos/redbull.avif",
-  "Ferrari": "/logos/ferrari.avif",
-  "McLaren": "/logos/mclaren.avif",
-  "Mercedes": "/logos/mercedes.avif",
-  "Aston Martin": "/logos/astonmartin.avif",
-  "Alpine": "/logos/alpine.avif",
-  "RB": "/logos/racingbulls.avif",
-  "Williams": "/logos/williams.avif",
-  "Audi": "/logos/audi.avif",
-  "Haas": "/logos/haas.avif",
-  "Cadillac": "/logos/cadillac.avif",
+  "Red Bull Racing": "/logos/redbull.png",
+  "Ferrari": "/logos/ferrari.png",
+  "McLaren": "/logos/mclaren.png",
+  "Mercedes": "/logos/mercedes.png",
+  "Aston Martin": "/logos/astonmartin.png",
+  "Alpine": "/logos/alpine.png",
+  "RB": "/logos/racingbulls.png",
+  "Williams": "/logos/williams.png",
+  "Audi": "/logos/audi.png",
+  "Haas": "/logos/haas.png",
+  "Cadillac": "/logos/cadillac.png",
 };
 
 function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {

@@ -115,7 +115,14 @@ export class DatabaseStorage implements IStorage {
 
   async createLobby(name: string, code: string, adminId: number, teamName?: string): Promise<Lobby> {
     const [lobby] = await db.insert(lobbies).values({ name, code, adminId }).returning();
-    await this.addLobbyMember(adminId, lobby.id, "admin", teamName);
+    const [member] = await db.insert(lobbyMembers).values({
+      userId: adminId,
+      lobbyId: lobby.id,
+      role: "admin",
+      teamName: teamName || "TBD",
+      driverJokers: 4,
+      constructorJokers: 4
+    }).returning();
     return lobby;
   }
 
@@ -480,7 +487,13 @@ export class DatabaseStorage implements IStorage {
   async advanceDraft(lobbyId: number, raceId: number): Promise<DraftState> {
     const state = await this.getDraftState(lobbyId, raceId);
     if (!state) throw new Error("Draft not initialized");
-    const order: number[] = JSON.parse(state.draftOrder);
+    let order: number[];
+    try {
+      order = typeof state.draftOrder === "string" ? JSON.parse(state.draftOrder) : state.draftOrder;
+    } catch (e) {
+      console.error("Error parsing draftOrder:", state.draftOrder);
+      order = [];
+    }
     const nextIndex = state.currentDrafterIndex + 1;
     const isComplete = nextIndex >= order.length;
     const [updated] = await db.update(draftState)
@@ -524,7 +537,13 @@ export class DatabaseStorage implements IStorage {
       state = await this.initializeDraft(lobbyId, raceId, orderUserIds);
     }
 
-    const order: number[] = JSON.parse(state.draftOrder);
+    let order: number[];
+    try {
+      order = typeof state.draftOrder === "string" ? JSON.parse(state.draftOrder) : state.draftOrder;
+    } catch (e) {
+      console.error("Error parsing draftOrder in getDraftStatus:", state.draftOrder);
+      order = [];
+    }
     const lobbySelections = await this.getSelectionsForLobbyRace(lobbyId, raceId);
 
     const takenDriverIds = lobbySelections.map(s => s.driverId);
