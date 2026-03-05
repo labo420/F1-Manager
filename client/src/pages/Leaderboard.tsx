@@ -3,23 +3,74 @@ import { useAuth } from "@/hooks/use-auth";
 import { useActiveLobby, useLobbyInfo } from "@/hooks/use-lobby";
 import { useDriverLeaderboard, useConstructorLeaderboard } from "@/hooks/use-leaderboard";
 import { motion } from "framer-motion";
-import { Trophy, Medal, Car, Shield } from "lucide-react";
+import { Trophy, Medal, Car, Shield, ChevronRight, Users } from "lucide-react";
 
 export default function Leaderboard() {
   const { user } = useAuth();
-  const { activeLobbyId, activeMembership } = useActiveLobby();
+  const { activeLobbyId, setActiveLobbyId, activeMembership } = useActiveLobby();
   const { data: lobby } = useLobbyInfo(activeLobbyId);
   const [tab, setTab] = useState<"drivers" | "constructors">("drivers");
 
   const { data: driverLeaderboard, isLoading: dLoading } = useDriverLeaderboard(activeLobbyId);
   const { data: constructorLeaderboard, isLoading: cLoading } = useConstructorLeaderboard(activeLobbyId);
 
+  const adminLobbies = user?.memberships?.filter((m: any) => m.role === "admin") || [];
+  const playerLobbies = user?.memberships?.filter((m: any) => m.role === "player") || [];
+
   if (!activeLobbyId || !activeMembership) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12 text-center">
-        <Trophy className="w-12 h-12 text-primary mx-auto mb-4 opacity-50" />
-        <h2 className="text-xl font-bold text-white">Select a league first</h2>
-        <p className="text-muted-foreground mt-2">Go to the dashboard and enter a league to see standings.</p>
+      <div className="max-w-3xl mx-auto px-4 py-12">
+        <div className="text-center mb-10">
+          <Trophy className="w-12 h-12 text-primary mx-auto mb-4 opacity-50" />
+          <h2 className="text-xl font-bold text-white uppercase">Select a League Standings</h2>
+          <p className="text-muted-foreground mt-2 uppercase text-xs tracking-widest font-bold">Pick a league to view the championship</p>
+        </div>
+
+        {adminLobbies.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
+              <Trophy className="w-4 h-4" /> Leagues I Manage
+            </h3>
+            <div className="space-y-3">
+              {adminLobbies.map((m: any) => (
+                <button
+                  key={m.lobbyId}
+                  onClick={() => setActiveLobbyId(m.lobbyId)}
+                  className="w-full glass-panel rounded-xl p-5 flex items-center justify-between hover:border-primary/50 transition-all group text-left border-2 border-transparent"
+                >
+                  <div className="text-white font-bold text-lg">{m.lobbyName}</div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {playerLobbies.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
+              <Users className="w-4 h-4" /> Leagues I Joined
+            </h3>
+            <div className="space-y-3">
+              {playerLobbies.map((m: any) => (
+                <button
+                  key={m.lobbyId}
+                  onClick={() => setActiveLobbyId(m.lobbyId)}
+                  className="w-full glass-panel rounded-xl p-5 flex items-center justify-between hover:border-primary/50 transition-all group text-left border-2 border-transparent"
+                >
+                  <div className="text-white font-bold text-lg">{m.lobbyName}</div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {adminLobbies.length === 0 && playerLobbies.length === 0 && (
+          <div className="text-center py-12 glass-panel rounded-2xl border-2 border-dashed border-white/10">
+            <p className="text-muted-foreground">You are not a member of any leagues yet.</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -27,16 +78,16 @@ export default function Leaderboard() {
   const leaderboard = tab === "drivers" ? driverLeaderboard : constructorLeaderboard;
   const isLoading = tab === "drivers" ? dLoading : cLoading;
 
-  if (isLoading || !leaderboard) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
+      <div className="mb-8 flex items-center justify-between">
+        <button 
+          onClick={() => setActiveLobbyId(null as any)}
+          className="text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-white transition-colors"
+        >
+          ← Back to Leagues
+        </button>
+      </div>
       <div className="text-center mb-8">
         <div className="inline-flex w-16 h-16 bg-primary rounded-tr-2xl rounded-bl-2xl f1-slant items-center justify-center mb-4 red-glow">
           <Trophy className="w-8 h-8 text-white f1-slant-reverse" />
