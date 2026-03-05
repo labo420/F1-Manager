@@ -11,6 +11,7 @@ export default function Paddock() {
   const { user } = useAuth();
   const [mode, setMode] = useState<"list" | "create" | "join">("list");
   const [leagueName, setLeagueName] = useState("");
+  const [teamName, setTeamName] = useState("");
   const [code, setCode] = useState("");
   const createLobby = useCreateLobby();
   const joinLobby = useJoinLobby();
@@ -51,20 +52,26 @@ export default function Paddock() {
       {mode === "create" && (
         <div className="max-w-md mx-auto mb-12 glass-panel rounded-2xl p-8 border-2 border-primary/20">
           <h2 className="text-xl font-bold text-white uppercase mb-6">Create a New League</h2>
-          <form onSubmit={(e) => { e.preventDefault(); if (leagueName.trim()) createLobby.mutate({ name: leagueName.trim(), teamName: "ferrari" }, { onSuccess: () => { setMode("list"); setLeagueName(""); } }); }} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); if (leagueName.trim() && teamName.trim()) createLobby.mutate({ name: leagueName.trim(), teamName: teamName.trim() }, { onSuccess: () => { setMode("list"); setLeagueName(""); setTeamName(""); } }); }} className="space-y-4">
             <input
               placeholder="League Name"
               value={leagueName}
               onChange={(e) => setLeagueName(e.target.value)}
               className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-bold uppercase focus:border-primary outline-none"
             />
+            <input
+              placeholder="Your Team Name"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-bold uppercase focus:border-primary outline-none"
+            />
             <div className="flex gap-3">
-              <button type="button" onClick={() => setMode("list")} className="flex-1 py-3 rounded-xl font-bold uppercase text-sm text-muted-foreground hover:text-white transition-colors">
+              <button type="button" onClick={() => { setMode("list"); setTeamName(""); }} className="flex-1 py-3 rounded-xl font-bold uppercase text-sm text-muted-foreground hover:text-white transition-colors">
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={!leagueName.trim() || createLobby.isPending}
+                disabled={!leagueName.trim() || !teamName.trim() || createLobby.isPending}
                 className="flex-[2] bg-primary text-white rounded-xl py-3 font-bold uppercase disabled:opacity-50 hover:bg-primary/90 transition-all"
               >
                 {createLobby.isPending ? "Creating..." : "Confirm"}
@@ -77,20 +84,26 @@ export default function Paddock() {
       {mode === "join" && (
         <div className="max-w-md mx-auto mb-12 glass-panel rounded-2xl p-8 border-2 border-primary/20">
           <h2 className="text-xl font-bold text-white uppercase mb-6">Join a League</h2>
-          <form onSubmit={(e) => { e.preventDefault(); if (code.length >= 4) joinLobby.mutate({ code: code.toUpperCase(), teamName: "mercedes" }, { onSuccess: () => { setMode("list"); setCode(""); } }); }} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); if (code.length >= 4 && teamName.trim()) joinLobby.mutate({ code: code.toUpperCase(), teamName: teamName.trim() }, { onSuccess: () => { setMode("list"); setCode(""); setTeamName(""); } }); }} className="space-y-4">
             <input
               placeholder="F1-XXXX"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-mono text-2xl text-center tracking-[0.3em] uppercase focus:border-primary outline-none"
             />
+            <input
+              placeholder="Your Team Name"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-bold uppercase focus:border-primary outline-none"
+            />
             <div className="flex gap-3">
-              <button type="button" onClick={() => setMode("list")} className="flex-1 py-3 rounded-xl font-bold uppercase text-sm text-muted-foreground hover:text-white transition-colors">
+              <button type="button" onClick={() => { setMode("list"); setTeamName(""); }} className="flex-1 py-3 rounded-xl font-bold uppercase text-sm text-muted-foreground hover:text-white transition-colors">
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={code.length < 4 || joinLobby.isPending}
+                disabled={code.length < 4 || !teamName.trim() || joinLobby.isPending}
                 className="flex-[2] bg-primary text-white rounded-xl py-3 font-bold uppercase disabled:opacity-50 hover:bg-primary/90 transition-all"
               >
                 {joinLobby.isPending ? "Joining..." : "Confirm"}
