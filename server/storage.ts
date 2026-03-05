@@ -415,18 +415,18 @@ export class DatabaseStorage implements IStorage {
     const leaderboard: LeaderboardEntry[] = members.map(m => {
       const userTotal = scores
         .filter(s => s.userId === m.userId)
-        .reduce((sum, s) => sum + s.driverPoints, 0);
+        .reduce((sum, s) => sum + (s.driverPoints || 0), 0);
       
       return {
         userId: m.userId,
         username: m.username,
-        teamName: m.teamName,
+        teamName: m.teamName || "Unknown Team",
         avatarUrl: m.avatarUrl,
         totalPoints: userTotal,
       };
     });
 
-    return leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
+    return leaderboard.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
   }
 
   async getConstructorLeaderboard(lobbyId: number): Promise<LeaderboardEntry[]> {
@@ -438,18 +438,18 @@ export class DatabaseStorage implements IStorage {
     const leaderboard: LeaderboardEntry[] = members.map(m => {
       const userTotal = scores
         .filter(s => s.userId === m.userId)
-        .reduce((sum, s) => sum + s.constructorPoints, 0);
+        .reduce((sum, s) => sum + (s.constructorPoints || 0), 0);
       
       return {
         userId: m.userId,
         username: m.username,
-        teamName: m.teamName,
+        teamName: m.teamName || "Unknown Team",
         avatarUrl: m.avatarUrl,
         totalPoints: userTotal,
       };
     });
 
-    return leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
+    return leaderboard.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
   }
 
   async getSelectionsForLobbyRace(lobbyId: number, raceId: number): Promise<Selection[]> {

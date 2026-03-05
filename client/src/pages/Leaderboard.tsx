@@ -75,8 +75,16 @@ export default function Leaderboard() {
     );
   }
 
-  const leaderboard = tab === "drivers" ? driverLeaderboard : constructorLeaderboard;
+  const leaderboard = tab === "drivers" ? (driverLeaderboard || []) : (constructorLeaderboard || []);
   const isLoading = tab === "drivers" ? dLoading : cLoading;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
