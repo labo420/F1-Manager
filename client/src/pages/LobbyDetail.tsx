@@ -209,18 +209,18 @@ export default function LobbyDetail({ id }: { id: number }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="divide-y">
-                {members?.map((member) => (
-                  <div key={member.userId} className="py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
-                        {member.username.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-medium">{member.username}</p>
-                        <p className="text-xs text-muted-foreground">{member.teamName}</p>
-                      </div>
-                    </div>
+                  <div className="divide-y">
+                    {members?.map((member) => (
+                      <div key={member.userId} className="py-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                            {member.username.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-medium">{member.teamName}</p>
+                            <p className="text-xs text-muted-foreground">Manager: @{member.username}</p>
+                          </div>
+                        </div>
                     <div className="flex items-center gap-4">
                       {member.role === "admin" && (
                         <Badge variant="outline" className="text-[10px] uppercase">Admin</Badge>

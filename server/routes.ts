@@ -98,9 +98,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.post("/api/lobby", async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     try {
-      const { name } = z.object({ name: z.string().min(1) }).parse(req.body);
+      const { name, teamName } = z.object({ 
+        name: z.string().min(1),
+        teamName: z.string().min(1)
+      }).parse(req.body);
       const code = `F1-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-      const lobby = await storage.createLobby(name, code, req.session.userId);
+      const lobby = await storage.createLobby(name, code, req.session.userId, teamName);
       res.status(201).json({ code: lobby.code, lobbyId: lobby.id });
     } catch (err) {
       res.status(400).json({ message: "Invalid input" });
@@ -110,7 +113,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.post("/api/lobby/join", async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     try {
-      const { code } = z.object({ code: z.string().min(4).max(10) }).parse(req.body);
+      const { code, teamName } = z.object({ 
+        code: z.string().min(4).max(10),
+        teamName: z.string().min(1)
+      }).parse(req.body);
       const cleanCode = code.trim().toUpperCase();
       const lobby = await storage.getLobbyByCode(cleanCode);
       if (!lobby) return res.status(404).json({ message: "Lobby not found" });
@@ -118,10 +124,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       if (already) return res.status(409).json({ message: "You are already in this league" });
       const playerCount = await storage.getLobbyPlayerCount(lobby.id);
       if (playerCount >= 10) return res.status(409).json({ message: "Lobby is full (max 10 players)" });
-      await storage.addLobbyMember(req.session.userId, lobby.id, "player");
+      await storage.addLobbyMember(req.session.userId, lobby.id, "player", teamName);
       res.status(200).json({ success: true, lobbyId: lobby.id });
     } catch (err) {
-      res.status(400).json({ message: "Invalid lobby code" });
+      res.status(400).json({ message: "Invalid lobby code or team name" });
     }
   });
 

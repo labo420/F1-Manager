@@ -113,9 +113,9 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createLobby(name: string, code: string, adminId: number): Promise<Lobby> {
+  async createLobby(name: string, code: string, adminId: number, teamName?: string): Promise<Lobby> {
     const [lobby] = await db.insert(lobbies).values({ name, code, adminId }).returning();
-    await this.addLobbyMember(adminId, lobby.id, "admin");
+    await this.addLobbyMember(adminId, lobby.id, "admin", teamName);
     return lobby;
   }
 

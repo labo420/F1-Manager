@@ -108,7 +108,9 @@ export const insertRaceSchema = createInsertSchema(races).omit({ id: true });
 export const insertSelectionSchema = createInsertSchema(selections).omit({ id: true });
 export const insertDriverResultSchema = createInsertSchema(driverResults).omit({ id: true });
 export const insertConstructorResultSchema = createInsertSchema(constructorResults).omit({ id: true });
-export const insertLobbyMemberSchema = createInsertSchema(lobbyMembers).omit({ id: true, createdAt: true });
+export const insertLobbyMemberSchema = createInsertSchema(lobbyMembers).omit({ id: true, createdAt: true }).extend({
+  teamName: z.string().min(1, "Scuderia Name is required"),
+});
 
 export type User = typeof users.$inferSelect;
 export type Lobby = typeof lobbies.$inferSelect;

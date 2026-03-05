@@ -63,11 +63,11 @@ export function useCreateLobby() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (name: string) => {
+    mutationFn: async (data: { name: string; teamName: string }) => {
       const res = await fetch("/api/lobby", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify(data),
         credentials: "include",
       });
       if (!res.ok) {
@@ -91,11 +91,11 @@ export function useJoinLobby() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (code: string) => {
+    mutationFn: async (data: { code: string; teamName: string }) => {
       const res = await fetch("/api/lobby/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify(data),
         credentials: "include",
       });
       if (!res.ok) {

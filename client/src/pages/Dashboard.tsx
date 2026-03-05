@@ -69,6 +69,7 @@ export default function Dashboard() {
 function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLobbyId: (id: number) => void }) {
   const [mode, setMode] = useState<"list" | "create" | "join">("list");
   const [leagueName, setLeagueName] = useState("");
+  const [teamName, setTeamName] = useState("");
   const [code, setCode] = useState("");
   const createLobby = useCreateLobby();
   const joinLobby = useJoinLobby();
@@ -159,12 +160,24 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
       {mode === "create" && (
         <div className="glass-panel rounded-2xl p-8">
           <h2 className="text-xl font-bold text-white uppercase mb-6">Create a New League</h2>
-          <form onSubmit={(e) => { e.preventDefault(); if (leagueName.trim()) createLobby.mutate(leagueName.trim()); }} className="space-y-4">
+          <form onSubmit={(e) => { 
+            e.preventDefault(); 
+            if (leagueName.trim() && teamName.trim()) {
+              createLobby.mutate({ name: leagueName.trim(), teamName: teamName.trim() }); 
+            }
+          }} className="space-y-4">
             <input
               placeholder="League Name"
               value={leagueName}
               onChange={(e) => setLeagueName(e.target.value)}
               data-testid="input-league-name"
+              className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-bold uppercase focus:border-primary outline-none"
+            />
+            <input
+              placeholder="Your Scuderia Name"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              data-testid="input-team-name-create"
               className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-bold uppercase focus:border-primary outline-none"
             />
             <div className="flex gap-3">
@@ -173,7 +186,7 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
               </button>
               <button
                 type="submit"
-                disabled={!leagueName.trim() || createLobby.isPending}
+                disabled={!leagueName.trim() || !teamName.trim() || createLobby.isPending}
                 data-testid="button-confirm-create"
                 className="flex-[2] bg-primary text-white rounded-xl py-3 font-bold uppercase disabled:opacity-50 hover:bg-primary/90 transition-all"
               >
@@ -187,7 +200,12 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
       {mode === "join" && (
         <div className="glass-panel rounded-2xl p-8">
           <h2 className="text-xl font-bold text-white uppercase mb-6">Join a League</h2>
-          <form onSubmit={(e) => { e.preventDefault(); if (code.length >= 4) joinLobby.mutate(code.toUpperCase()); }} className="space-y-4">
+          <form onSubmit={(e) => { 
+            e.preventDefault(); 
+            if (code.length >= 4 && teamName.trim()) {
+              joinLobby.mutate({ code: code.toUpperCase(), teamName: teamName.trim() }); 
+            }
+          }} className="space-y-4">
             <input
               placeholder="F1-XXXX"
               value={code}
@@ -195,13 +213,20 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
               data-testid="input-lobby-code"
               className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-mono text-2xl text-center tracking-[0.3em] uppercase focus:border-primary outline-none"
             />
+            <input
+              placeholder="Your Scuderia Name"
+              value={teamName}
+              onChange={(e) => setTeamName(e.target.value)}
+              data-testid="input-team-name-join"
+              className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-bold uppercase focus:border-primary outline-none"
+            />
             <div className="flex gap-3">
               <button type="button" onClick={() => setMode("list")} className="flex-1 py-3 rounded-xl font-bold uppercase text-sm text-muted-foreground hover:text-white transition-colors" data-testid="button-back-to-list-join">
                 Back
               </button>
               <button
                 type="submit"
-                disabled={code.length < 4 || joinLobby.isPending}
+                disabled={code.length < 4 || !teamName.trim() || joinLobby.isPending}
                 data-testid="button-confirm-join"
                 className="flex-[2] bg-primary text-white rounded-xl py-3 font-bold uppercase disabled:opacity-50 hover:bg-primary/90 transition-all"
               >
