@@ -1,11 +1,11 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Users, Star, Lock, Calendar } from "lucide-react";
+import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Lobby, Race, Driver, Constructor, Selection, LobbyMember } from "@shared/schema";
@@ -14,6 +14,7 @@ import { format } from "date-fns";
 export default function LobbyDetail({ id }: { id: number }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   
   const { data: lobby, isLoading: loadingLobby } = useQuery<Lobby>({
     queryKey: [`/api/lobby/${id}`],
@@ -57,6 +58,17 @@ export default function LobbyDetail({ id }: { id: number }) {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      <div className="mb-6">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => setLocation("/paddock")}
+          className="text-muted-foreground hover:text-white gap-2 px-0"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          Back to Paddock
+        </Button>
+      </div>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold">{lobby.name}</h1>
