@@ -7,6 +7,32 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
+const TEAM_LOGOS: Record<string, string> = {
+  "Red Bull Racing": "/logos/redbull.avif",
+  "Ferrari": "/logos/ferrari.avif",
+  "McLaren": "/logos/mclaren.avif",
+  "Mercedes": "/logos/mercedes.avif",
+  "Aston Martin": "/logos/astonmartin.avif",
+  "Alpine": "/logos/alpine.avif",
+  "RB": "/logos/racingbulls.avif",
+  "Williams": "/logos/williams.avif",
+  "Audi": "/logos/audi.avif",
+  "Haas": "/logos/haas.avif",
+  "Cadillac": "/logos/cadillac.avif",
+};
+
+function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
+  const logo = TEAM_LOGOS[name];
+  if (logo) {
+    return <img src={logo} alt={name} className={`${className} object-contain`} />;
+  }
+  return (
+    <div className={`${className} bg-zinc-800 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-white/10 uppercase`}>
+      {name.charAt(0)}
+    </div>
+  );
+}
+
 const FIA_POINTS: Record<number, number> = {
   1: 25, 2: 18, 3: 15, 4: 12, 5: 10, 6: 8, 7: 6, 8: 4, 9: 2, 10: 1,
 };
@@ -326,7 +352,10 @@ export default function AdminPanel() {
                           <td className="px-4 py-2">
                             <input type="number" min="1" max="20" value={entry.position} onChange={(e) => updateEntry(entry.driverId, "position", Number(e.target.value))} className="w-14 bg-background border border-border rounded-lg px-2 py-1.5 text-white text-center text-sm font-bold focus:border-primary outline-none" />
                           </td>
-                          <td className="px-4 py-2"><span className="text-white font-bold text-sm">{driver.name}</span></td>
+                          <td className="px-4 py-2 flex items-center gap-2">
+                            <TeamIcon name={driver.team} className="w-5 h-5" />
+                            <span className="text-white font-bold text-sm">{driver.name}</span>
+                          </td>
                           <td className="px-4 py-2 text-muted-foreground text-xs hidden md:table-cell">{driver.team}</td>
                           <td className="px-4 py-2">
                             <input type="number" min="0" value={entry.points} onChange={(e) => updateEntry(entry.driverId, "points", Number(e.target.value))} className="w-16 bg-background border border-border rounded-lg px-2 py-1.5 text-white text-center text-sm font-bold focus:border-primary outline-none" />

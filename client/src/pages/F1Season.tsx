@@ -69,6 +69,32 @@ const TEAM_COLORS: Record<string, string> = {
   "Cadillac": "#d1d1d1",
 };
 
+const TEAM_LOGOS: Record<string, string> = {
+  "Red Bull Racing": "/logos/redbull.avif",
+  "Ferrari": "/logos/ferrari.avif",
+  "McLaren": "/logos/mclaren.avif",
+  "Mercedes": "/logos/mercedes.avif",
+  "Aston Martin": "/logos/astonmartin.avif",
+  "Alpine": "/logos/alpine.avif",
+  "RB": "/logos/racingbulls.avif",
+  "Williams": "/logos/williams.avif",
+  "Audi": "/logos/audi.avif",
+  "Haas": "/logos/haas.avif",
+  "Cadillac": "/logos/cadillac.avif",
+};
+
+function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
+  const logo = TEAM_LOGOS[name];
+  if (logo) {
+    return <img src={logo} alt={name} className={`${className} object-contain`} />;
+  }
+  return (
+    <div className={`${className} bg-zinc-800 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-white/10 uppercase`}>
+      {name.charAt(0)}
+    </div>
+  );
+}
+
 function CircuitInfo({ race }: { race: RaceEntry }) {
   const length = race.circuitLength ? parseFloat(race.circuitLength.replace(',', '.')) : null;
   const totalDistance = length && race.laps ? (length * race.laps).toFixed(3) : null;
@@ -223,6 +249,7 @@ export default function F1Season() {
                           </td>
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-3">
+                              <TeamIcon name={d.team} className="w-5 h-5" />
                               <div className="w-1 h-8 rounded-full" style={{ backgroundColor: TEAM_COLORS[d.team] || "#666" }}></div>
                               <div>
                                 <div className="font-bold text-white">{d.name}</div>
@@ -275,8 +302,9 @@ export default function F1Season() {
                              <span className="text-muted-foreground">{i + 1}</span>}
                           </td>
                           <td className="px-6 py-5">
-                            <div className="flex items-center gap-3">
-                              <div className="w-2 h-10 rounded-full" style={{ backgroundColor: c.color || "#666" }}></div>
+                            <div className="flex items-center gap-4">
+                              <div className="w-1.5 h-10 rounded-full" style={{ backgroundColor: c.color || "#666" }}></div>
+                              <TeamIcon name={c.name} className="w-8 h-8" />
                               <span className="font-bold text-white text-lg">{c.name}</span>
                             </div>
                           </td>
@@ -368,6 +396,7 @@ export default function F1Season() {
                                         }`}>
                                           P{dr.position ?? "-"}
                                         </span>
+                                        <TeamIcon name={dr.driverTeam} className="w-5 h-5" />
                                         <div className="w-1 h-6 rounded-full" style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#666" }}></div>
                                         <div>
                                           <span className="text-white font-bold text-sm">{dr.driverName}</span>

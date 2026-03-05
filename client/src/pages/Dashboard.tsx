@@ -17,6 +17,32 @@ function getRaceStatus(race: any): "coming-soon" | "in-corso" | "risultati" {
   return "coming-soon";
 }
 
+const TEAM_LOGOS: Record<string, string> = {
+  "Red Bull Racing": "/logos/redbull.avif",
+  "Ferrari": "/logos/ferrari.avif",
+  "McLaren": "/logos/mclaren.avif",
+  "Mercedes": "/logos/mercedes.avif",
+  "Aston Martin": "/logos/astonmartin.avif",
+  "Alpine": "/logos/alpine.avif",
+  "RB": "/logos/racingbulls.avif",
+  "Williams": "/logos/williams.avif",
+  "Audi": "/logos/audi.avif",
+  "Haas": "/logos/haas.avif",
+  "Cadillac": "/logos/cadillac.avif",
+};
+
+function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
+  const logo = TEAM_LOGOS[name];
+  if (logo) {
+    return <img src={logo} alt={name} className={`${className} object-contain`} />;
+  }
+  return (
+    <div className={`${className} bg-zinc-800 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-white/10 uppercase`}>
+      {name.charAt(0)}
+    </div>
+  );
+}
+
 function getStatusLabel(status: string) {
   switch (status) {
     case "coming-soon": return "Coming Soon";
@@ -446,12 +472,9 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
                     "bg-amber-600/10 border-amber-600/30"
                   }`}>
                     <div className="text-xs text-muted-foreground mb-1">P{result.position}</div>
-                    <div className="text-white font-black text-lg" data-testid={`podium-${result.position}`}>
-                      {getDriverInitials(result.driverName)} {result.driverName && (() => {
-                        const allDrivers = raceDetails?.driverResults || [];
-                        const d = allDrivers.find((dr: any) => dr.driverName === result.driverName);
-                        return "";
-                      })()}
+                    <div className="text-white font-black text-lg flex items-center justify-center gap-2" data-testid={`podium-${result.position}`}>
+                      <TeamIcon name={result.driverTeam} className="w-5 h-5" />
+                      {getDriverInitials(result.driverName)}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">{result.driverName}</div>
                     <div className="text-primary font-bold text-sm mt-1">{result.points} pts</div>
@@ -473,7 +496,10 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
                       <Car className="w-3 h-3 text-primary" />
                       <span className="text-xs font-bold text-primary uppercase">Best Driver Pick</span>
                     </div>
-                    <div className="text-white font-bold">{fantasyWinners.driverWinner.teamName}</div>
+                    <div className="text-white font-bold flex items-center gap-2">
+                      <TeamIcon name={fantasyWinners.driverWinner.teamName} className="w-4 h-4" />
+                      {fantasyWinners.driverWinner.teamName}
+                    </div>
                     <div className="text-xs text-muted-foreground">Picked: {fantasyWinners.driverWinner.driverName} ({fantasyWinners.driverWinner.points} pts)</div>
                   </div>
                 )}
@@ -483,7 +509,10 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
                       <Shield className="w-3 h-3 text-primary" />
                       <span className="text-xs font-bold text-primary uppercase">Best Constructor Pick</span>
                     </div>
-                    <div className="text-white font-bold">{fantasyWinners.constructorWinner.teamName}</div>
+                    <div className="text-white font-bold flex items-center gap-2">
+                      <TeamIcon name={fantasyWinners.constructorWinner.teamName} className="w-4 h-4" />
+                      {fantasyWinners.constructorWinner.teamName}
+                    </div>
                     <div className="text-xs text-muted-foreground">Picked: {fantasyWinners.constructorWinner.constructorName} ({fantasyWinners.constructorWinner.points} pts)</div>
                   </div>
                 )}

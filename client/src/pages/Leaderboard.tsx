@@ -5,6 +5,32 @@ import { useDriverLeaderboard, useConstructorLeaderboard } from "@/hooks/use-lea
 import { motion } from "framer-motion";
 import { Trophy, Medal, Car, Shield, ChevronRight, Users } from "lucide-react";
 
+const TEAM_LOGOS: Record<string, string> = {
+  "Red Bull Racing": "/logos/redbull.avif",
+  "Ferrari": "/logos/ferrari.avif",
+  "McLaren": "/logos/mclaren.avif",
+  "Mercedes": "/logos/mercedes.avif",
+  "Aston Martin": "/logos/astonmartin.avif",
+  "Alpine": "/logos/alpine.avif",
+  "RB": "/logos/racingbulls.avif",
+  "Williams": "/logos/williams.avif",
+  "Audi": "/logos/audi.avif",
+  "Haas": "/logos/haas.avif",
+  "Cadillac": "/logos/cadillac.avif",
+};
+
+function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
+  const logo = TEAM_LOGOS[name];
+  if (logo) {
+    return <img src={logo} alt={name} className={`${className} object-contain`} />;
+  }
+  return (
+    <div className={`${className} bg-zinc-800 rounded-full flex items-center justify-center text-[10px] font-bold text-white border border-white/10 uppercase`}>
+      {name.charAt(0)}
+    </div>
+  );
+}
+
 export default function Leaderboard() {
   const { user } = useAuth();
   const { activeLobbyId, setActiveLobbyId, activeMembership } = useActiveLobby(false);
@@ -166,13 +192,7 @@ export default function Leaderboard() {
                     </td>
                     <td className="px-6 py-6">
                       <div className="flex items-center gap-3">
-                        {entry.avatarUrl ? (
-                          <img src={entry.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-muted-foreground">
-                            {entry.teamName.charAt(0)}
-                          </div>
-                        )}
+                        <TeamIcon name={entry.teamName} className="w-8 h-8" />
                         <span className={`font-bold text-lg ${index === 0 ? "text-primary" : "text-white"}`}>{entry.teamName}</span>
                       </div>
                     </td>
