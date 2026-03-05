@@ -289,40 +289,6 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="glass-panel px-4 py-2 rounded-xl flex items-center gap-3 border-white/10 shadow-lg" data-testid="badge-jokers">
-            <div className="text-right">
-              <div className="text-[10px] font-black text-muted-foreground uppercase leading-none tracking-widest opacity-70">Driver Stars</div>
-              <div className="flex items-center gap-0.5 mt-1" data-testid="stars-driver">
-                {[...Array(4)].map((_, i) => (
-                  <Star key={i} className={`w-3.5 h-3.5 ${i < driverStars ? "text-yellow-400 fill-yellow-400" : "text-zinc-600"}`} />
-                ))}
-              </div>
-            </div>
-            <div className="w-[1px] h-8 bg-white/10 mx-1" />
-            <div className="text-right">
-              <div className="text-[10px] font-black text-muted-foreground uppercase leading-none tracking-widest opacity-70">Constructor Stars</div>
-              <div className="flex items-center gap-0.5 mt-1" data-testid="stars-constructor">
-                {[...Array(4)].map((_, i) => (
-                  <Star key={i} className={`w-3.5 h-3.5 ${i < constructorStars ? "text-yellow-400 fill-yellow-400" : "text-zinc-600"}`} />
-                ))}
-              </div>
-            </div>
-            {lobby && (
-              <>
-                <div className="w-[1px] h-8 bg-white/10 hidden sm:block mx-1" />
-                <div className="text-right hidden sm:block">
-                  <div className="text-[10px] font-black text-muted-foreground uppercase leading-none tracking-widest opacity-70">Invite Code</div>
-                  <div className="text-sm font-mono font-black text-primary tracking-[0.2em]">{lobby.code}</div>
-                </div>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(lobby.code); toast({ title: "Copied!", description: "Invite code copied." }); }}
-                  className="p-2 hover:bg-white/5 rounded-lg transition-all group border border-transparent hover:border-white/10 hidden sm:block"
-                >
-                  <Copy className="w-4 h-4 text-zinc-400 group-hover:text-primary transition-colors" />
-                </button>
-              </>
-            )}
-          </div>
         </div>
       </div>
 
