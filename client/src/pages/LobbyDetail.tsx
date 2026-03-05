@@ -122,7 +122,7 @@ export default function LobbyDetail({ id }: { id: number }) {
                       {!nextRace.isLocked ? (
                         <div className="text-center py-8 border-2 border-dashed rounded-lg">
                           <p className="text-muted-foreground mb-4">Click below to make your choices for this race.</p>
-                          <Link href="/">
+                          <Link href={`/draft/${id}/${nextRace.id}`}>
                             <Button>Go to Draft Room</Button>
                           </Link>
                         </div>

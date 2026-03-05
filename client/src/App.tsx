@@ -15,6 +15,7 @@ import F1Season from "@/pages/F1Season";
 import Profile from "@/pages/Profile";
 import Paddock from "@/pages/Paddock";
 import LobbyDetail from "@/pages/LobbyDetail";
+import DraftRoom from "@/pages/DraftRoom";
 import { Navigation } from "@/components/Navigation";
 
 function ProtectedRoute({ component: Component, requireAuth = true }: { component: React.ComponentType; requireAuth?: boolean }) {
@@ -61,6 +62,9 @@ function Router() {
       </Route>
       <Route path="/lobby/:id">
         {(params) => <ProtectedRoute component={() => <LobbyDetail id={Number(params.id)} />} />}
+      </Route>
+      <Route path="/draft/:lobbyId/:raceId">
+        {(params) => <ProtectedRoute component={() => <DraftRoom lobbyId={Number(params.lobbyId)} raceId={Number(params.raceId)} />} />}
       </Route>
       <Route path="/leaderboard">
         {() => <ProtectedRoute component={Leaderboard} />}
