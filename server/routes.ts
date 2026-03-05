@@ -127,21 +127,29 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         code: z.string().min(4).max(10),
         teamName: z.string().min(1)
       }).parse(req.body);
-      const cleanCode = code.trim().toUpperCase();
-      const lobby = await storage.getLobbyByCode(cleanCode);
-      if (!lobby) return res.status(404).json({ message: "Lobby not found" });
+      
+      const lobby = await storage.getLobbyByCode(code);
+      if (!lobby) return res.status(404).json({ message: "Lobby not found. Please check the invite code." });
+      
       const already = await storage.isUserInLobby(req.session.userId, lobby.id);
       if (already) return res.status(409).json({ message: "You are already in this league" });
+      
       const playerCount = await storage.getLobbyPlayerCount(lobby.id);
       if (playerCount >= 10) return res.status(409).json({ message: "Lobby is full (max 10 players)" });
-      await storage.addLobbyMember(req.session.userId, lobby.id, "player", teamName);
-      res.status(200).json({ success: true, lobbyId: lobby.id });
+      
+      try {
+        await storage.addLobbyMember(req.session.userId, lobby.id, "player", teamName);
+        res.status(200).json({ success: true, lobbyId: lobby.id });
+      } catch (dbErr) {
+        console.error("Database error joining lobby:", dbErr);
+        res.status(500).json({ message: "Failed to join the league. Please try again later." });
+      }
     } catch (err) {
       console.error("Join lobby error:", err);
       if (err instanceof z.ZodError) {
         return res.status(400).json({ message: err.errors[0].message });
       }
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ message: "An unexpected error occurred. Please try again." });
     }
   });
 

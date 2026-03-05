@@ -129,11 +129,9 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getLobbyByCode(code: string): Promise<Lobby | undefined> {
-    const uppercaseCode = code.trim().toUpperCase();
-    const [lobby] = await db.select().from(lobbies).where(eq(lobbies.code, uppercaseCode));
-    if (lobby) return lobby;
-    const allLobbies = await db.select().from(lobbies);
-    return allLobbies.find(l => l.code.trim().toUpperCase() === uppercaseCode);
+    const cleanCode = code.trim().toUpperCase();
+    const [lobby] = await db.select().from(lobbies).where(sql`upper(${lobbies.code}) = ${cleanCode}`);
+    return lobby;
   }
 
   async getLobbyPlayerCount(lobbyId: number): Promise<number> {
