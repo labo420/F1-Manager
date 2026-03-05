@@ -32,10 +32,19 @@ const TEAM_LOGOS: Record<string, string> = {
 };
 
 function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
-  const logo = TEAM_LOGOS[name.toLowerCase()];
-  if (logo) {
-    return <img src={logo} alt={name} className={`${className} object-contain`} />;
+  const officialTeams = [
+    "red bull racing", "ferrari", "mclaren", "mercedes", "aston martin",
+    "alpine", "racing bulls", "rb", "williams", "audi", "haas", "cadillac"
+  ];
+
+  const lowerName = name.toLowerCase();
+  const isOfficial = officialTeams.includes(lowerName);
+
+  if (isOfficial) {
+    const fileName = lowerName === "racing bulls" || lowerName === "rb" ? "racingbulls" : lowerName.replace(/\s+/g, "");
+    return <img src={`/logos/${fileName}.png`} alt={name} className={`${className} object-contain`} />;
   }
+
   return (
     <div className={`${className} bg-zinc-800 rounded-full flex items-center justify-center text-muted-foreground border border-white/10`}>
       <Shield className="w-1/2 h-1/2" />
