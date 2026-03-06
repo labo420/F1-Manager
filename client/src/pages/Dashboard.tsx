@@ -55,7 +55,7 @@ function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: s
 function getStatusLabel(status: string) {
   switch (status) {
     case "coming-soon": return "Coming Soon";
-    case "in-corso": return "In Corso";
+    case "in-corso": return "LIVE";
     case "risultati": return "Risultati";
     default: return "";
   }
@@ -64,7 +64,7 @@ function getStatusLabel(status: string) {
 function getStatusColor(status: string) {
   switch (status) {
     case "coming-soon": return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-    case "in-corso": return "bg-green-500/20 text-green-400 border-green-500/30";
+    case "in-corso": return "bg-red-600 text-white border-red-500 animate-pulse font-black shadow-[0_0_15px_rgba(220,38,38,0.5)]";
     case "risultati": return "bg-white/10 text-white border-white/20";
     default: return "";
   }
