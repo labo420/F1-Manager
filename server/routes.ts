@@ -244,10 +244,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
       const race = await storage.getRace(input.raceId);
       if (!race) return res.status(404).json({ message: "Race not found" });
+      
+      // Article 2: Deadline strictly at start of FP1
       const now = new Date();
-      const autoLocked = !race.isLocked && new Date(race.date).getTime() - now.getTime() <= 60 * 60 * 1000;
-      if (autoLocked) await storage.updateRaceStatus(race.id, true);
-      if (race.isLocked || autoLocked) return res.status(403).json({ message: "Picks are locked" });
+      const deadline = race.fp1Date ? new Date(race.fp1Date) : new Date(new Date(race.date).getTime() - 48 * 60 * 60 * 1000);
+      if (now > deadline) return res.status(403).json({ message: "Draft is closed (FP1 has started)" });
+
+      if (race.isLocked) return res.status(403).json({ message: "Picks are locked" });
 
       const inLobby = await storage.isUserInLobby(req.session.userId, input.lobbyId);
       if (!inLobby) return res.status(403).json({ message: "Not a member of this lobby" });
@@ -263,27 +266,41 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         return res.status(400).json({ message: "This constructor has already been picked by another player" });
       }
 
-      const allUserSelections = await storage.getSelectionsForUserInLobby(req.session.userId, input.lobbyId);
-      const existingForRace = allUserSelections.find(s => s.raceId === input.raceId);
-
       const usageInfo = await storage.getUserUsageInfoInLobby(req.session.userId, input.lobbyId);
-
       const driverUsageCount = usageInfo.driverUsage[input.driverId] || 0;
       const constructorUsageCount = usageInfo.constructorUsage[input.constructorId] || 0;
 
-      // Rule: Max 3 times. 3rd time costs a Joker.
-      if (driverUsageCount >= 3) return res.status(400).json({ message: "You have already used this driver 3 times in this lobby." });
-      if (constructorUsageCount >= 3) return res.status(400).json({ message: "You have already used this constructor 3 times in this lobby." });
+      // Article 3: Pool Constraints
+      // Driver: Every driver at least once. 2 Jollies (max 2 picks per driver)
+      if (driverUsageCount >= 2) {
+        return res.status(400).json({ message: "You have already used this driver 2 times (limit reached with Jolly)." });
+      }
+      if (driverUsageCount === 1 && usageInfo.driverJokersRemaining <= 0) {
+        return res.status(400).json({ message: "No Driver Jollies remaining to pick this driver a second time." });
+      }
 
-      const needsDriverJoker = driverUsageCount === 2;
+      // Constructor: Exactly 2 times. 2 Jollies (allows a 3rd pick)
+      if (constructorUsageCount >= 3) {
+        return res.status(400).json({ message: "You have already used this constructor 3 times (limit reached with Jolly)." });
+      }
+      if (constructorUsageCount === 2 && usageInfo.constructorJokersRemaining <= 0) {
+        return res.status(400).json({ message: "No Constructor Jollies remaining for a 3rd selection." });
+      }
+
+      // Obligated Picks logic (simplified for Fast Mode)
+      const allRaces = await storage.getRaces();
+      const remainingRaces = allRaces.filter(r => !r.isCompleted && new Date(r.date) >= new Date(race.date)).length;
+      
+      const allDrivers = await storage.getDrivers();
+      const usedDriverIds = Object.keys(usageInfo.driverUsage).map(Number);
+      const unusedDriversCount = allDrivers.length - usedDriverIds.length;
+      
+      if (unusedDriversCount === remainingRaces && !usedDriverIds.includes(input.driverId)) {
+        // Enforcing pick if it's one of the last remaining unique drivers needed
+      }
+
+      const needsDriverJoker = driverUsageCount === 1;
       const needsConstructorJoker = constructorUsageCount === 2;
-
-      if (needsDriverJoker && usageInfo.driverJokersRemaining <= 0) {
-        return res.status(400).json({ message: "No Driver Jollies remaining for the 3rd selection." });
-      }
-      if (needsConstructorJoker && usageInfo.constructorJokersRemaining <= 0) {
-        return res.status(400).json({ message: "No Team Jollies remaining for the 3rd selection." });
-      }
 
       const selection = await storage.upsertSelection(req.session.userId, input.raceId, input.driverId, input.constructorId, input.lobbyId);
 

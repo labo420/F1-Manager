@@ -122,8 +122,8 @@ export class DatabaseStorage implements IStorage {
       lobbyId: lobby.id,
       role: "admin",
       teamName: teamName || "TBD",
-      driverJokers: 4,
-      constructorJokers: 4
+      driverJokers: 2,
+      constructorJokers: 2
     }).returning();
     return lobby;
   }
@@ -144,8 +144,8 @@ export class DatabaseStorage implements IStorage {
     if (existing) return existing;
     const [member] = await db.insert(lobbyMembers).values({
       userId, lobbyId, role, teamName: teamName || "TBD",
-      driverJokers: 4,
-      constructorJokers: 4
+      driverJokers: 2,
+      constructorJokers: 2
     }).returning();
     return member;
   }
@@ -328,17 +328,62 @@ export class DatabaseStorage implements IStorage {
   async updateLobbyScores(lobbyId: number, raceId: number): Promise<void> {
     const selectionsForRace = await db.select().from(selections).where(and(eq(selections.lobbyId, lobbyId), eq(selections.raceId, raceId)));
     const dResults = await this.getDriverResultsForRace(raceId);
-    const cResults = await this.getConstructorResultsForRace(raceId);
+    
+    // Scoring Logic Article 4
+    const getRacePoints = (pos: number) => {
+      const points = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+      return points[pos - 1] || 0;
+    };
+    const getSprintPoints = (pos: number) => {
+      const points = [8, 7, 6, 5, 4, 3, 2, 1];
+      return points[pos - 1] || 0;
+    };
+    const getQualyPoints = (pos: number) => {
+      if (pos === 1) return 10;
+      if (pos === 2) return 8;
+      if (pos === 3) return 7;
+      if (pos === 4) return 6;
+      if (pos === 5) return 5;
+      if (pos >= 6 && pos <= 10) return 4;
+      if (pos >= 11 && pos <= 16) return 2;
+      return 0;
+    };
 
     for (const sel of selectionsForRace) {
       const dRes = dResults.find(r => r.driverId === sel.driverId);
-      const cRes = cResults.find(r => r.constructorId === sel.constructorId);
-
+      
       let dPts = 0;
       if (dRes) {
-        dPts = dRes.points + dRes.overtakes + (dRes.fastestLap ? 2 : 0);
+        // Race points
+        if (dRes.position) {
+          dPts += dRes.isSprint ? getSprintPoints(dRes.position) : getRacePoints(dRes.position);
+        }
+        // Qualy points
+        if (dRes.qualifyingPosition) {
+          dPts += getQualyPoints(dRes.qualifyingPosition);
+          // Sprint shootout pole
+          if (dRes.isSprint && dRes.qualifyingPosition === 1) dPts += 2;
+        }
+        // Specials
+        if (dRes.fastestLap) dPts += 2;
+        dPts += (dRes.overtakes || 0) * 2;
+        dPts -= (dRes.overtakesConceded || 0);
       }
-      const cPts = cRes?.points || 0;
+
+      // Constructor points (Sum of drivers)
+      const allDrivers = await this.getDrivers();
+      const allConstructors = await this.getConstructors();
+      const constructorDrivers = allDrivers.filter(d => d.team === allConstructors.find(c => c.id === sel.constructorId)?.name);
+      let cPts = 0;
+      for (const cd of constructorDrivers) {
+        const cdRes = dResults.find(r => r.driverId === cd.id);
+        if (cdRes) {
+          if (cdRes.position) cPts += cdRes.isSprint ? getSprintPoints(cdRes.position) : getRacePoints(cdRes.position);
+          if (cdRes.fastestLap) cPts += 2;
+          cPts += (cdRes.overtakes || 0) * 2;
+          cPts -= (cdRes.overtakesConceded || 0);
+        }
+      }
 
       const [existing] = await db.select().from(userScores).where(
         and(eq(userScores.userId, sel.userId), eq(userScores.lobbyId, lobbyId), eq(userScores.raceId, raceId))
@@ -420,9 +465,8 @@ export class DatabaseStorage implements IStorage {
     const scores = await db.select().from(userScores).where(eq(userScores.lobbyId, lobbyId));
 
     const leaderboard: LeaderboardEntry[] = members.map(m => {
-      const userTotal = scores
-        .filter(s => s.userId === m.userId)
-        .reduce((sum, s) => sum + (s.driverPoints || 0), 0);
+      const userScoresList = scores.filter(s => s.userId === m.userId);
+      const userTotal = userScoresList.reduce((sum, s) => sum + (s.driverPoints || 0), 0);
       
       return {
         userId: m.userId,
@@ -430,10 +474,21 @@ export class DatabaseStorage implements IStorage {
         teamName: m.teamName || "Unknown Team",
         avatarUrl: m.avatarUrl,
         totalPoints: userTotal,
+        // Tie-breaker: Highest single GP score
+        bestScores: userScoresList.map(s => s.driverPoints).sort((a, b) => b - a)
       };
     });
 
-    return leaderboard.sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+    return leaderboard.sort((a, b) => {
+      if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+      // Tie-breaker Article 5 & 6
+      const aScores = (a as any).bestScores || [];
+      const bScores = (b as any).bestScores || [];
+      for (let i = 0; i < Math.max(aScores.length, bScores.length); i++) {
+        if ((bScores[i] || 0) !== (aScores[i] || 0)) return (bScores[i] || 0) - (aScores[i] || 0);
+      }
+      return 0;
+    });
   }
 
   async getConstructorLeaderboard(lobbyId: number): Promise<LeaderboardEntry[]> {
@@ -518,26 +573,20 @@ export class DatabaseStorage implements IStorage {
 
       const allRaces = await this.getRaces();
       const sortedRaces = allRaces.sort((a, b) => (a.round ?? 0) - (b.round ?? 0));
-      const anyCompletedRace = sortedRaces.some(r => r.isCompleted && (r.round ?? 0) < (race.round ?? 0));
+      const previousRaces = sortedRaces.filter(r => r.isCompleted && (r.round ?? 0) < (race.round ?? 0));
 
       let orderUserIds: number[];
 
-      if (anyCompletedRace) {
+      if (previousRaces.length > 0) {
+        // Article 2: Reverse standings order
         const leaderboard = await this.getDriverLeaderboard(lobbyId);
         orderUserIds = [...leaderboard].reverse().map(l => l.userId);
         const missingMembers = members.filter(m => !orderUserIds.includes(m.userId));
-        orderUserIds = [...missingMembers.map(m => m.userId), ...orderUserIds];
+        orderUserIds = [...orderUserIds, ...missingMembers.map(m => m.userId)];
       } else {
-        orderUserIds = members
-          .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-          .map(m => m.userId)
-          .reverse();
+        // Article 2: Random draw for GP 1
+        orderUserIds = members.map(m => m.userId).sort(() => Math.random() - 0.5);
       }
-
-      if (orderUserIds.length === 0) {
-        orderUserIds = members.map(m => m.userId);
-      }
-
       state = await this.initializeDraft(lobbyId, raceId, orderUserIds);
     }
 

@@ -23,8 +23,8 @@ export const lobbyMembers = pgTable("lobby_members", {
   userId: integer("user_id").references(() => users.id).notNull(),
   lobbyId: integer("lobby_id").references(() => lobbies.id).notNull(),
   teamName: text("team_name").notNull().default("TBD"),
-  driverJokers: integer("driver_jokers").default(4).notNull(),
-  constructorJokers: integer("constructor_jokers").default(4).notNull(),
+  driverJokers: integer("driver_jokers").default(2).notNull(),
+  constructorJokers: integer("constructor_jokers").default(2).notNull(),
   role: text("role").notNull().default("player"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -34,6 +34,8 @@ export const drivers = pgTable("drivers", {
   name: text("name").notNull(),
   team: text("team").notNull(),
   number: integer("number"),
+  isReserve: boolean("is_reserve").default(false).notNull(),
+  originalDriverId: integer("original_driver_id"), // For reserve drivers inheriting history
 });
 
 export const constructors = pgTable("constructors", {
@@ -51,6 +53,7 @@ export const races = pgTable("races", {
   circuitLength: text("circuit_length"),
   laps: integer("laps"),
   date: text("date").notNull(),
+  fp1Date: text("fp1_date"), // Article 2 Deadline
   itaTime: text("ita_time"),
   isLocked: boolean("is_locked").default(false).notNull(),
   isCompleted: boolean("is_completed").default(false).notNull(),
@@ -72,7 +75,10 @@ export const driverResults = pgTable("driver_results", {
   position: integer("position"),
   points: integer("points").default(0).notNull(),
   overtakes: integer("overtakes").default(0).notNull(),
+  overtakesConceded: integer("overtakes_conceded").default(0).notNull(),
   fastestLap: boolean("fastest_lap").default(false).notNull(),
+  isSprint: boolean("is_sprint").default(false).notNull(),
+  qualifyingPosition: integer("qualifying_position"),
 });
 
 export const constructorResults = pgTable("constructor_results", {
