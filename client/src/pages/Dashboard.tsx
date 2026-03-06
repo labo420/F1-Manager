@@ -81,7 +81,7 @@ function getCircuitFlag(name: string) {
     <img 
       src={`https://flagcdn.com/w40/${code}.png`} 
       alt="" 
-      className="inline-block h-[12px] w-auto mr-1.5 align-middle mb-0.5 shadow-sm rounded-sm"
+      className="inline-block h-[14px] w-auto mr-2 align-middle mb-0.5 shadow-md rounded-sm border border-white/10"
     />
   );
 }
@@ -103,8 +103,14 @@ const TEAM_COLORS: Record<string, string> = {
 function getRaceStatus(race: any): "coming-soon" | "in-corso" | "risultati" {
   if (race.isCompleted) return "risultati";
   const now = new Date();
-  const raceTime = new Date(race.date).getTime();
-  if (now.getTime() >= raceTime) return "in-corso";
+  const raceDate = new Date(race.date);
+  
+  // LIVE logic: Active if today is the race date
+  const isSameDay = now.getUTCFullYear() === raceDate.getUTCFullYear() &&
+                    now.getUTCMonth() === raceDate.getUTCMonth() &&
+                    now.getUTCDate() === raceDate.getUTCDate();
+                    
+  if (isSameDay || now.getTime() >= raceDate.getTime()) return "in-corso";
   return "coming-soon";
 }
 
