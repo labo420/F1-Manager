@@ -1,0 +1,71 @@
+Implement the FULL official regulation for the 2026 FantaFormula1 season. This update requires changes to the database schema, the scoring engine, and the draft logic.
+
+ARTICLE 1 & 2: Structure and Draft Order
+Two Championships: Maintain two independent standings: Drivers' Championship and Constructors' Championship.
+
+Participants: Fixed at 10 players over 24 Grands Prix.
+
+Draft Uniqueness: In a single GP, no two participants can pick the same driver or the same constructor.
+
+Draft Order:
+
+GP 1: Random draw.
+
+GP 2 onwards: Reverse standings order (the last player in general standings picks first).
+
+Deadline: The draft must close strictly at the start of FP1 (Free Practice 1).
+
+ARTICLE 3: Pool Constraints & Jollies
+Driver Pool (22 total):
+
+Each participant must pick every driver on the grid at least once during the season.
+
+Driver Jolly: 2 Jollies per season. A Jolly allows picking a driver already used before (Max 2 total picks per driver).
+
+Constructor Pool (11 total):
+
+Each participant must pick every constructor exactly 2 times during the season.
+
+Constructor Jolly: 2 Jollies per season. A Jolly allows a 3rd pick on a constructor.
+
+Obligated Picks: If a user has only specific drivers/teams left to fulfill the 'at least once/twice' rule, the system must enforce these as mandatory picks to prevent draft blocking.
+
+ARTICLE 4: Scoring System (FIA Official Data)
+Qualifying Points:
+
+Pole Position (Sunday Race): 10 pts.
+
+P2: 8 pts, P3: 7 pts, P4: 6 pts, P5: 5 pts.
+
+P6 to P10: 4 pts.
+
+P11 to P16 (Q2/Q1): 2 pts.
+
+P17 to P22: 0 pts.
+
+Sprint Shootout: 2 pts ONLY to the Poleman.
+
+Race & Sprint Points:
+
+Standard Race: 25, 18, 15, 12, 10, 8, 6, 4, 2, 1.
+
+Sprint Race: 8, 7, 6, 5, 4, 3, 2, 1.
+
+Constructors: Sum of points from both drivers of the chosen team.
+
+2026 Specials (Bonus/Malus):
+
+Fastest Lap: +2 pts (regardless of Top 10 finish).
+
+Overtakes Made: +2 pts each.
+
+Overtakes Conceded: -1 pt each.
+
+These apply to both Driver and Constructor standings.
+
+ARTICLE 5 & 6: Special Cases & Tie-Breakers
+Post-Race: Update scores based on official FIA DSQ or penalties.
+
+Substitutions: If a driver is replaced by an external reserve, the reserve inherits the original driver's history and picks.
+
+Tie-Breaker: If total points are equal, the player with the highest single GP score wins. If still tied, compare the second-highest GP score, and so on.
