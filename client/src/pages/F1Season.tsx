@@ -443,7 +443,10 @@ export default function F1Season() {
                             R{race.round}
                           </div>
                           <div className="text-left">
-                            <div className="font-bold text-white">{getCircuitFlag(race.name)} {race.name}</div>
+                            <div className="font-bold text-white flex items-center gap-2">
+                              {getCircuitFlag(race.name)}
+                              <span>{race.name}</span>
+                            </div>
                             <div className="text-xs text-muted-foreground">
                               {race.country} · {race.circuitName || ""} · {format(new Date(race.date), "MMM do, yyyy")}
                             </div>
