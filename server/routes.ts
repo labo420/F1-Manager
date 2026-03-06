@@ -275,6 +275,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       if (driverUsageCount >= 2) {
         return res.status(400).json({ message: "You have already used this driver 2 times (limit reached with Jolly)." });
       }
+      
+      const isManualJolly = req.body.useJolly === true;
+
+      if (driverUsageCount === 1 && !isManualJolly) {
+        return res.status(400).json({ message: "This is your 2nd pick for this driver. You must click 'Use Jolly' to confirm." });
+      }
+
       if (driverUsageCount === 1 && usageInfo.driverJokersRemaining <= 0) {
         return res.status(400).json({ message: "No Driver Jollies remaining to pick this driver a second time." });
       }
@@ -283,6 +290,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       if (constructorUsageCount >= 3) {
         return res.status(400).json({ message: "You have already used this constructor 3 times (limit reached with Jolly)." });
       }
+
+      if (constructorUsageCount === 2 && !isManualJolly) {
+        return res.status(400).json({ message: "This is your 3rd pick for this constructor. You must click 'Use Jolly' to confirm." });
+      }
+
       if (constructorUsageCount === 2 && usageInfo.constructorJokersRemaining <= 0) {
         return res.status(400).json({ message: "No Constructor Jollies remaining for a 3rd selection." });
       }

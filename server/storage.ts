@@ -373,12 +373,14 @@ export class DatabaseStorage implements IStorage {
       // Constructor points (Sum of drivers)
       const allDrivers = await this.getDrivers();
       const allConstructors = await this.getConstructors();
-      const constructorDrivers = allDrivers.filter(d => d.team === allConstructors.find(c => c.id === sel.constructorId)?.name);
+      const currentConstructor = allConstructors.find(c => c.id === sel.constructorId);
+      const constructorDrivers = allDrivers.filter(d => d.team === currentConstructor?.name);
       let cPts = 0;
       for (const cd of constructorDrivers) {
         const cdRes = dResults.find(r => r.driverId === cd.id);
         if (cdRes) {
           if (cdRes.position) cPts += cdRes.isSprint ? getSprintPoints(cdRes.position) : getRacePoints(cdRes.position);
+          // Article 4: Specials apply to BOTH driver and constructor
           if (cdRes.fastestLap) cPts += 2;
           cPts += (cdRes.overtakes || 0) * 2;
           cPts -= (cdRes.overtakesConceded || 0);

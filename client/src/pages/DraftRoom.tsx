@@ -35,9 +35,10 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
 
   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null);
   const [selectedConstructorId, setSelectedConstructorId] = useState<number | null>(null);
+  const [useJolly, setUseJolly] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: async (vars: { driverId: number; constructorId: number }) => {
+    mutationFn: async (vars: { driverId: number; constructorId: number; useJolly: boolean }) => {
       const res = await apiRequest("POST", "/api/selections", {
         ...vars,
         lobbyId,
@@ -51,6 +52,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
       queryClient.invalidateQueries({ queryKey: [`/api/usage/${lobbyId}`] });
       setSelectedDriverId(null);
       setSelectedConstructorId(null);
+      setUseJolly(false);
       toast({ title: "Selection saved", description: "Your picks for this race have been recorded." });
     },
     onError: (error: Error) => {
@@ -75,8 +77,30 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
 
   const handlePick = () => {
     if (selectedDriverId && selectedConstructorId) {
-      mutation.mutate({ driverId: selectedDriverId, constructorId: selectedConstructorId });
+      mutation.mutate({ 
+        driverId: selectedDriverId, 
+        constructorId: selectedConstructorId,
+        useJolly 
+      });
     }
+  };
+
+  const needsJolly = (dId: number | null, cId: number | null) => {
+    if (!usage) return false;
+    const dUsage = dId ? usage.driverUsage[dId] || 0 : 0;
+    const cUsage = cId ? usage.constructorUsage[cId] || 0 : 0;
+    return dUsage === 1 || cUsage === 2;
+  };
+
+  const isMandatoryDriver = (dId: number) => {
+    if (!usage || !drivers) return false;
+    const usedDriverIds = Object.keys(usage.driverUsage).map(Number);
+    const isUnused = !usedDriverIds.includes(dId);
+    if (!isUnused) return false;
+    
+    // Simple heuristic: if unused drivers <= remaining races (mocked as 5 for now)
+    const unusedCount = drivers.length - usedDriverIds.length;
+    return unusedCount <= 3; // Highlight as mandatory if few unique drivers left
   };
 
   return (
@@ -86,16 +110,27 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
           <h1 className="text-3xl font-bold">Draft Room</h1>
           <p className="text-muted-foreground">Select your Driver and Constructor for this race</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           {isMyTurn && !isComplete && (
-            <Button 
-              onClick={handlePick} 
-              disabled={!selectedDriverId || !selectedConstructorId || mutation.isPending}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Confirm Selection
-            </Button>
+            <div className="flex items-center gap-4">
+              {needsJolly(selectedDriverId, selectedConstructorId) && (
+                <Button
+                  variant={useJolly ? "default" : "outline"}
+                  className={cn(useJolly ? "bg-yellow-600 hover:bg-yellow-700" : "border-yellow-600 text-yellow-600")}
+                  onClick={() => setUseJolly(!useJolly)}
+                >
+                  {useJolly ? "Jolly Active" : "Use Jolly"}
+                </Button>
+              )}
+              <Button 
+                onClick={handlePick} 
+                disabled={!selectedDriverId || !selectedConstructorId || mutation.isPending || (needsJolly(selectedDriverId, selectedConstructorId) && !useJolly)}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Confirm Selection
+              </Button>
+            </div>
           )}
           <Button variant="outline" onClick={() => setLocation(`/lobby/${lobbyId}`)}>
             Back to Lobby
@@ -191,6 +226,8 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                         const isSelected = selectedDriverId === driver.id;
                         const isDisabled = !isMyTurn || isTaken || usedCount >= 3;
                         
+                        const isMandatory = isMandatoryDriver(driver.id);
+                        
                         return (
                           <button
                             key={driver.id}
@@ -198,21 +235,25 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                             className={cn(
                               "flex items-center justify-between p-3 rounded-lg border text-left transition-all",
                               isTaken ? "bg-muted/50 opacity-50 cursor-not-allowed" : 
-                              usedCount >= 3 ? "bg-red-500/10 border-red-500/20 cursor-not-allowed" :
+                              usedCount >= 2 ? "bg-red-500/10 border-red-500/20 cursor-not-allowed" :
                               isSelected ? "border-primary bg-primary/10 ring-2 ring-primary/20" :
+                              isMandatory ? "border-orange-500 bg-orange-500/5 animate-pulse" :
                               "hover:border-primary hover:bg-primary/5 active:scale-[0.98]",
                               "disabled:cursor-not-allowed"
                             )}
                             onClick={() => setSelectedDriverId(driver.id)}
                           >
                             <div>
-                              <p className="font-bold">{driver.name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-bold">{driver.name}</p>
+                                {isMandatory && <Badge variant="outline" className="text-[8px] border-orange-500 text-orange-500">Mandatory</Badge>}
+                              </div>
                               <p className="text-xs text-muted-foreground">{driver.team}</p>
                             </div>
                             <div className="text-right">
                               <p className="text-[10px] uppercase text-muted-foreground">Used</p>
-                              <p className={cn("font-bold", usedCount >= 3 ? "text-red-500" : "text-primary")}>
-                                {usedCount}/3
+                              <p className={cn("font-bold", usedCount >= 2 ? "text-red-500" : "text-primary")}>
+                                {usedCount}/2
                               </p>
                             </div>
                           </button>
