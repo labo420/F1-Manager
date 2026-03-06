@@ -314,8 +314,8 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
 
   const hasMultipleLobbies = user.memberships.length > 1;
 
-  const driverStars = membership.driverJollies ?? 2;
-  const constructorStars = membership.constructorJollies ?? 2;
+  const driverJollies = membership.driverJollies ?? 2;
+  const constructorJollies = membership.constructorJollies ?? 2;
 
   if (racesLoading || !races) {
     return (
@@ -487,10 +487,10 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
       )}
 
       {status === "in-corso" && (
-        <div className="mt-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20 text-center">
+        <div className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-center">
           <div className="flex items-center justify-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <p className="text-green-400 text-sm font-bold uppercase">Race In Progress</p>
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <p className="text-red-500 text-sm font-bold uppercase">LIVE</p>
           </div>
         </div>
       )}
