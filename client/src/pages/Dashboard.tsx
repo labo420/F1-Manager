@@ -10,65 +10,80 @@ import { useQuery } from "@tanstack/react-query";
 import type { RaceFantasyWinners } from "@shared/schema";
 
 const CIRCUIT_FLAGS: Record<string, string> = {
-  "Bahrain": "🇧🇭",
-  "Jeddah": "🇸🇦",
-  "Albert Park": "🇦🇺",
-  "Shanghai": "🇨🇳",
-  "Miami": "🇺🇸",
-  "Imola": "🇮🇹",
-  "Monaco": "🇲🇨",
-  "Montreal": "🇨🇦",
-  "Barcelona": "🇪🇸",
-  "Spielberg": "🇦🇹",
-  "Silverstone": "🇬🇧",
-  "Hungaroring": "🇭🇺",
-  "Spa-Francorchamps": "🇧🇪",
-  "Zandvoort": "🇳🇱",
-  "Monza": "🇮🇹",
-  "Baku": "🇦🇿",
-  "Marina Bay": "🇸🇬",
-  "Austin": "🇺🇸",
-  "Hermanos Rodriguez": "🇲🇽",
-  "Interlagos": "🇧🇷",
-  "Las Vegas": "🇺🇸",
-  "Lusail": "🇶🇦",
-  "Yas Marina": "🇦🇪",
-  "Suzuka": "🇯🇵",
+  "Bahrain": "bh",
+  "Jeddah": "sa",
+  "Albert Park": "au",
+  "Shanghai": "cn",
+  "Miami": "us",
+  "Imola": "it",
+  "Monaco": "mc",
+  "Montreal": "ca",
+  "Barcelona": "es",
+  "Spielberg": "at",
+  "Silverstone": "gb",
+  "Hungaroring": "hu",
+  "Spa-Francorchamps": "be",
+  "Zandvoort": "nl",
+  "Monza": "it",
+  "Baku": "az",
+  "Marina Bay": "sg",
+  "Austin": "us",
+  "Hermanos Rodriguez": "mx",
+  "Interlagos": "br",
+  "Las Vegas": "us",
+  "Lusail": "qa",
+  "Yas Marina": "ae",
+  "Suzuka": "jp",
 };
 
 function getCircuitFlag(name: string) {
-  if (!name) return "";
-  for (const [key, flag] of Object.entries(CIRCUIT_FLAGS)) {
-    if (name.toLowerCase().includes(key.toLowerCase())) return flag;
+  if (!name) return null;
+  let code = "";
+  for (const [key, c] of Object.entries(CIRCUIT_FLAGS)) {
+    if (name.toLowerCase().includes(key.toLowerCase())) {
+      code = c;
+      break;
+    }
   }
-  // Try mapping by full name if partial match failed
-  const nameMap: Record<string, string> = {
-    "Australian Grand Prix": "🇦🇺",
-    "Chinese Grand Prix": "🇨🇳",
-    "Japanese Grand Prix": "🇯🇵",
-    "Miami Grand Prix": "🇺🇸",
-    "Emilia Romagna Grand Prix": "🇮🇹",
-    "Monaco Grand Prix": "🇲🇨",
-    "Canadian Grand Prix": "🇨🇦",
-    "Spanish Grand Prix": "🇪🇸",
-    "Austrian Grand Prix": "🇦🇹",
-    "British Grand Prix": "🇬🇧",
-    "Hungarian Grand Prix": "🇭🇺",
-    "Belgian Grand Prix": "🇧🇪",
-    "Dutch Grand Prix": "🇳🇱",
-    "Italian Grand Prix": "🇮🇹",
-    "Azerbaijan Grand Prix": "🇦🇿",
-    "Singapore Grand Prix": "🇸🇬",
-    "United States Grand Prix": "🇺🇸",
-    "Mexico City Grand Prix": "🇲🇽",
-    "Sao Paulo Grand Prix": "🇧🇷",
-    "Las Vegas Grand Prix": "🇺🇸",
-    "Qatar Grand Prix": "🇶🇦",
-    "Abu Dhabi Grand Prix": "🇦🇪",
-    "Saudi Arabian Grand Prix": "🇸🇦",
-    "Bahrain Grand Prix": "🇧🇭",
-  };
-  return nameMap[name] || "";
+  
+  if (!code) {
+    const nameMap: Record<string, string> = {
+      "Australian Grand Prix": "au",
+      "Chinese Grand Prix": "cn",
+      "Japanese Grand Prix": "jp",
+      "Miami Grand Prix": "us",
+      "Emilia Romagna Grand Prix": "it",
+      "Monaco Grand Prix": "mc",
+      "Canadian Grand Prix": "ca",
+      "Spanish Grand Prix": "es",
+      "Austrian Grand Prix": "at",
+      "British Grand Prix": "gb",
+      "Hungarian Grand Prix": "hu",
+      "Belgian Grand Prix": "be",
+      "Dutch Grand Prix": "nl",
+      "Italian Grand Prix": "it",
+      "Azerbaijan Grand Prix": "az",
+      "Singapore Grand Prix": "sg",
+      "United States Grand Prix": "us",
+      "Mexico City Grand Prix": "mx",
+      "Sao Paulo Grand Prix": "br",
+      "Las Vegas Grand Prix": "us",
+      "Qatar Grand Prix": "qa",
+      "Abu Dhabi Grand Prix": "ae",
+      "Saudi Arabian Grand Prix": "sa",
+      "Bahrain Grand Prix": "bh",
+    };
+    code = nameMap[name] || "";
+  }
+
+  if (!code) return null;
+  return (
+    <img 
+      src={`https://flagcdn.com/w40/${code}.png`} 
+      alt="" 
+      className="inline-block h-[12px] w-auto mr-1.5 align-middle mb-0.5 shadow-sm rounded-sm"
+    />
+  );
 }
 
 const TEAM_COLORS: Record<string, string> = {
