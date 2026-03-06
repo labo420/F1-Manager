@@ -444,6 +444,23 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const raceId = Number(req.params.id);
       const details = await storage.getRaceDetails(raceId);
       if (!details.race) return res.status(404).json({ message: "Race not found" });
+
+      // If results are empty and race is in-corso, try to fetch from OpenF1
+      if ((!details.driverResults || details.driverResults.length === 0) && !details.race.isCompleted) {
+         try {
+            const openF1Res = await fetch(`https://api.openf1.org/v1/sessions?circuit_key=latest`, { mode: 'cors' });
+            if (openF1Res.ok) {
+               const sessions = await openF1Res.json();
+               if (sessions && sessions.length > 0) {
+                  // This is a stub for live mapping
+                  // In a real app we'd fetch positions/laps here
+               }
+            }
+         } catch (e) {
+            console.error("OpenF1 fetch error:", e);
+         }
+      }
+
       res.json(details);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch race details" });

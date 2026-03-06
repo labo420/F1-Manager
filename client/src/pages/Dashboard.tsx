@@ -4,10 +4,24 @@ import { useActiveLobby, useCreateLobby, useJoinLobby, useSetTeamName, useLobbyI
 import { useRaces } from "@/hooks/use-races";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Lock, PlusCircle, LogIn, Crown, ChevronRight, ChevronDown, Users, Star, Trophy, Car, Shield, Copy } from "lucide-react";
+import { Calendar, Lock, PlusCircle, LogIn, Crown, ChevronRight, ChevronDown, Users, Star, Trophy, Car, Shield, Copy, Timer, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import type { RaceFantasyWinners } from "@shared/schema";
+
+const TEAM_COLORS: Record<string, string> = {
+  "Red Bull Racing": "#3671C6",
+  "Ferrari": "#E8002D",
+  "McLaren": "#FF8000",
+  "Mercedes": "#27F4D2",
+  "Aston Martin": "#229971",
+  "Alpine": "#FF87BC",
+  "RB": "#6692FF",
+  "Williams": "#64C4FF",
+  "Audi": "#ff3300",
+  "Haas": "#B6BABD",
+  "Cadillac": "#d1d1d1",
+};
 
 function getRaceStatus(race: any): "coming-soon" | "in-corso" | "risultati" {
   if (race.isCompleted) return "risultati";
@@ -16,20 +30,6 @@ function getRaceStatus(race: any): "coming-soon" | "in-corso" | "risultati" {
   if (now.getTime() >= raceTime) return "in-corso";
   return "coming-soon";
 }
-
-const TEAM_LOGOS: Record<string, string> = {
-  "red bull racing": "/logos/redbull.png",
-  "ferrari": "/logos/ferrari.png",
-  "mclaren": "/logos/mclaren.png",
-  "mercedes": "/logos/mercedes.png",
-  "aston martin": "/logos/astonmartin.png",
-  "alpine": "/logos/alpine.png",
-  "rb": "/logos/racingbulls.png",
-  "williams": "/logos/williams.png",
-  "audi": "/logos/audi.png",
-  "haas": "/logos/haas.png",
-  "cadillac": "/logos/cadillac.png",
-};
 
 function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
   const officialTeams = [
@@ -68,12 +68,6 @@ function getStatusColor(status: string) {
     case "risultati": return "bg-white/10 text-white border-white/20";
     default: return "";
   }
-}
-
-function getDriverInitials(name: string): string {
-  const parts = name.split(" ");
-  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  return name.substring(0, 2).toUpperCase();
 }
 
 export default function Dashboard() {
@@ -115,7 +109,7 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
   return (
     <div className="max-w-3xl mx-auto px-4 py-12 pb-24">
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-display font-black text-white uppercase tracking-tighter italic" data-testid="text-dashboard-title">
+        <h1 className="text-4xl font-display font-black text-white uppercase tracking-tighter italic">
           Welcome, @{user.username}
         </h1>
         <p className="text-muted-foreground mt-2">Select a league or create a new one.</p>
@@ -133,7 +127,6 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
                   <button
                     key={m.lobbyId}
                     onClick={() => setActiveLobbyId(m.lobbyId)}
-                    data-testid={`button-lobby-${m.lobbyId}`}
                     className="w-full glass-panel rounded-xl p-5 flex items-center justify-between hover:border-primary/50 transition-all group text-left border-2 border-transparent"
                   >
                     <div>
@@ -157,7 +150,6 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
                   <button
                     key={m.lobbyId}
                     onClick={() => setActiveLobbyId(m.lobbyId)}
-                    data-testid={`button-lobby-${m.lobbyId}`}
                     className="w-full glass-panel rounded-xl p-5 flex items-center justify-between hover:border-primary/50 transition-all group text-left border-2 border-transparent"
                   >
                     <div>
@@ -174,7 +166,6 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
             <button
               onClick={() => setMode("create")}
-              data-testid="button-create-league"
               className="glass-panel rounded-xl p-6 flex flex-col items-center gap-3 hover:border-primary/50 transition-all border-2 border-transparent group"
             >
               <PlusCircle className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
@@ -182,7 +173,6 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
             </button>
             <button
               onClick={() => setMode("join")}
-              data-testid="button-join-league"
               className="glass-panel rounded-xl p-6 flex flex-col items-center gap-3 hover:border-primary/50 transition-all border-2 border-transparent group"
             >
               <LogIn className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
@@ -205,24 +195,21 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
               placeholder="League Name"
               value={leagueName}
               onChange={(e) => setLeagueName(e.target.value)}
-              data-testid="input-league-name"
               className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-bold uppercase focus:border-primary outline-none"
             />
             <input
               placeholder="Your Scuderia Name"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
-              data-testid="input-team-name-create"
               className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-bold uppercase focus:border-primary outline-none"
             />
             <div className="flex gap-3">
-              <button type="button" onClick={() => setMode("list")} className="flex-1 py-3 rounded-xl font-bold uppercase text-sm text-muted-foreground hover:text-white transition-colors" data-testid="button-back-to-list">
+              <button type="button" onClick={() => setMode("list")} className="flex-1 py-3 rounded-xl font-bold uppercase text-sm text-muted-foreground hover:text-white transition-colors">
                 Back
               </button>
               <button
                 type="submit"
                 disabled={!leagueName.trim() || !teamName.trim() || createLobby.isPending}
-                data-testid="button-confirm-create"
                 className="flex-[2] bg-primary text-white rounded-xl py-3 font-bold uppercase disabled:opacity-50 hover:bg-primary/90 transition-all"
               >
                 {createLobby.isPending ? "Creating..." : "Create League"}
@@ -245,24 +232,21 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
               placeholder="F1-XXXX"
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
-              data-testid="input-lobby-code"
               className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-mono text-2xl text-center tracking-[0.3em] uppercase focus:border-primary outline-none"
             />
             <input
               placeholder="Your Scuderia Name"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
-              data-testid="input-team-name-join"
               className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-bold uppercase focus:border-primary outline-none"
             />
             <div className="flex gap-3">
-              <button type="button" onClick={() => setMode("list")} className="flex-1 py-3 rounded-xl font-bold uppercase text-sm text-muted-foreground hover:text-white transition-colors" data-testid="button-back-to-list-join">
+              <button type="button" onClick={() => setMode("list")} className="flex-1 py-3 rounded-xl font-bold uppercase text-sm text-muted-foreground hover:text-white transition-colors">
                 Back
               </button>
               <button
                 type="submit"
                 disabled={code.length < 4 || !teamName.trim() || joinLobby.isPending}
-                data-testid="button-confirm-join"
                 className="flex-[2] bg-primary text-white rounded-xl py-3 font-bold uppercase disabled:opacity-50 hover:bg-primary/90 transition-all"
               >
                 {joinLobby.isPending ? "Joining..." : "Join Grid"}
@@ -289,13 +273,11 @@ function SetTeamNameView({ lobbyId, lobbyName }: { lobbyId: number; lobbyName: s
             placeholder="SCUDERIA EXAMPLE"
             value={teamName}
             onChange={(e) => setTeamName(e.target.value)}
-            data-testid="input-team-name"
             className="w-full bg-background border-2 border-border rounded-xl px-4 py-4 text-white font-bold uppercase focus:border-primary outline-none"
           />
           <button
             type="submit"
             disabled={!teamName.trim() || setTeamNameMutation.isPending}
-            data-testid="button-set-team-name"
             className="w-full bg-primary text-white rounded-xl py-4 font-bold uppercase disabled:opacity-50 hover:bg-primary/90 transition-all"
           >
             {setTeamNameMutation.isPending ? "Saving..." : "Confirm Team Name"}
@@ -307,15 +289,10 @@ function SetTeamNameView({ lobbyId, lobbyName }: { lobbyId: number; lobbyName: s
 }
 
 function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }: { lobbyId: number; membership: any; user: any; setActiveLobbyId: (id: number | null) => void }) {
-  const { toast } = useToast();
   const { data: races, isLoading: racesLoading } = useRaces();
-  const { data: lobby } = useLobbyInfo(lobbyId);
   const [expandedRaceId, setExpandedRaceId] = useState<number | null>(null);
 
   const hasMultipleLobbies = user.memberships.length > 1;
-
-  const driverJollies = membership.driverJollies ?? 2;
-  const constructorJollies = membership.constructorJollies ?? 2;
 
   if (racesLoading || !races) {
     return (
@@ -335,7 +312,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
         <div>
           <div className="flex items-center gap-3">
             {hasMultipleLobbies && (
-              <button onClick={() => setActiveLobbyId(null)} className="text-muted-foreground hover:text-white transition-colors text-sm font-bold uppercase" data-testid="button-switch-lobby">
+              <button onClick={() => setActiveLobbyId(null)} className="text-muted-foreground hover:text-white transition-colors text-sm font-bold uppercase">
                 Switch
               </button>
             )}
@@ -344,16 +321,13 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
             Welcome back, <span className="text-primary font-bold">{membership.teamName}</span>
           </p>
         </div>
-
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        </div>
       </div>
 
       <div className="mb-6">
         <h2 className="text-lg font-bold uppercase tracking-wider text-white flex items-center gap-2">
           <Calendar className="text-primary w-5 h-5" /> 2026 Season
         </h2>
-        <p className="text-muted-foreground text-sm mt-1">Click a race to see details</p>
+        <p className="text-muted-foreground text-sm mt-1">Official FIA/F1 Information</p>
       </div>
 
       <div className="space-y-2">
@@ -362,11 +336,10 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
           const isExpanded = expandedRaceId === race.id;
 
           return (
-            <div key={race.id} className="glass-panel rounded-xl overflow-hidden" data-testid={`race-accordion-${race.id}`}>
+            <div key={race.id} className="glass-panel rounded-xl overflow-hidden">
               <button
                 onClick={() => toggleAccordion(race.id)}
                 className="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-white/5 transition-all"
-                data-testid={`button-race-${race.id}`}
               >
                 <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                   <div className="text-xs font-black text-muted-foreground w-6 text-center shrink-0">R{race.round}</div>
@@ -379,7 +352,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className={`text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border ${getStatusColor(status)}`} data-testid={`status-${race.id}`}>
+                  <span className={`text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border ${getStatusColor(status)}`}>
                     {getStatusLabel(status)}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
@@ -408,17 +381,6 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
 }
 
 function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: string; lobbyId: number }) {
-  const { data: usage } = useQuery<any>({
-    queryKey: [`/api/usage/${lobbyId}`],
-    initialData: {
-      driverUsage: {},
-      constructorUsage: {},
-      driverJolliesRemaining: 2,
-      constructorJolliesRemaining: 2,
-      jolliesRemaining: 4
-    }
-  });
-
   const { data: raceDetails } = useQuery<any>({
     queryKey: ["/api/f1/race", race.id, "details"],
     queryFn: async () => {
@@ -426,24 +388,26 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
       if (!res.ok) return null;
       return res.json();
     },
-    enabled: status === "risultati",
+    enabled: status === "risultati" || status === "in-corso",
   });
 
-  const { data: fantasyWinners } = useQuery<RaceFantasyWinners>({
-    queryKey: ["/api/lobby", lobbyId, "race", race.id, "fantasy-winners"],
+  const { data: liveStatusData } = useQuery({
+    queryKey: ["/api/f1/live-status", race.id],
     queryFn: async () => {
-      const res = await fetch(`/api/lobby/${lobbyId}/race/${race.id}/fantasy-winners`, { credentials: "include" });
-      if (!res.ok) return { driverWinner: null, constructorWinner: null };
-      return res.json();
+      const res = await fetch(`https://api.openf1.org/v1/sessions?circuit_key=latest`, { mode: 'cors' });
+      if (!res.ok) return null;
+      const sessions = await res.json();
+      return sessions?.[0] || null;
     },
-    enabled: status === "risultati",
+    refetchInterval: 30000,
+    enabled: status === "in-corso",
   });
 
-  const podium = useMemo(() => {
+  const isActuallyLive = liveStatusData && new Date(liveStatusData.date_start) <= new Date() && (!liveStatusData.date_end || new Date(liveStatusData.date_end) > new Date());
+
+  const results = useMemo(() => {
     if (!raceDetails?.driverResults) return [];
-    return raceDetails.driverResults
-      .filter((r: any) => r.position && r.position <= 3)
-      .sort((a: any, b: any) => a.position - b.position);
+    return [...raceDetails.driverResults].sort((a: any, b: any) => (a.position || 999) - (b.position || 999));
   }, [raceDetails]);
 
   return (
@@ -463,100 +427,86 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
       </div>
 
       {status === "coming-soon" && (
-        <div className="mt-4 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-center gap-3">
-              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-              <div>
-                <p className="text-[10px] uppercase text-muted-foreground leading-none mb-1">Driver Jollies</p>
-                <p className="text-xl font-bold leading-none">{usage?.driverJolliesRemaining ?? 0}</p>
-              </div>
-            </div>
-            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-center gap-3">
-              <Star className="w-5 h-5 text-blue-500 fill-blue-500" />
-              <div>
-                <p className="text-[10px] uppercase text-muted-foreground leading-none mb-1">Team Jollies</p>
-                <p className="text-xl font-bold leading-none">{usage?.constructorJolliesRemaining ?? 0}</p>
-              </div>
-            </div>
-          </div>
-          <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
-            <p className="text-blue-400 text-sm font-semibold">Race not yet started. Make your picks in the Paddock!</p>
-          </div>
+        <div className="mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
+          <p className="text-blue-400 text-sm font-semibold uppercase tracking-wider">Coming Soon</p>
         </div>
       )}
 
       {status === "in-corso" && (
-        <div className="mt-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <p className="text-red-500 text-sm font-bold uppercase">LIVE</p>
+        <div className="mt-4 space-y-4">
+          <div className={`p-3 rounded-xl border text-center transition-all ${isActuallyLive ? "bg-red-500/20 border-red-500/40 animate-pulse" : "bg-red-500/10 border-red-500/20"}`}>
+            <div className="flex items-center justify-center gap-2">
+              <div className={`w-2 h-2 bg-red-500 rounded-full ${isActuallyLive ? "animate-ping" : ""}`} />
+              <p className="text-red-500 text-sm font-bold uppercase">{isActuallyLive ? "LIVE NOW" : "SESSION IN PROGRESS"}</p>
+            </div>
           </div>
+          {results.length > 0 && (
+            <div className="space-y-1">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase px-2 mb-1">Live Standing</div>
+              {results.map((dr, idx) => (
+                <div key={dr.driverId} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors border border-transparent">
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 text-center font-bold text-xs text-muted-foreground">{dr.position || "-"}</span>
+                    <TeamIcon name={dr.driverTeam} className="w-4 h-4" />
+                    <span className="text-white font-bold text-xs">{dr.driverName}</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-muted-foreground">{idx === 0 ? "Interval" : `+${dr.gap || "0.000"}s`}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {status === "risultati" && (
-        <div className="mt-4 space-y-4">
-          {podium.length > 0 && (
-            <div>
-              <div className="text-xs font-bold text-muted-foreground uppercase mb-3 flex items-center gap-2">
-                <Trophy className="w-3 h-3 text-yellow-400" /> Real Podium
-              </div>
-              <div className="flex gap-3">
-                {podium.map((result: any) => (
-                  <div key={result.driverId} className={`flex-1 p-3 rounded-xl border text-center ${
-                    result.position === 1 ? "bg-yellow-500/10 border-yellow-500/30" :
-                    result.position === 2 ? "bg-gray-400/10 border-gray-400/30" :
-                    "bg-amber-600/10 border-amber-600/30"
-                  }`}>
-                    <div className="text-xs text-muted-foreground mb-1">P{result.position}</div>
-                    <div className="text-white font-black text-lg flex items-center justify-center gap-2" data-testid={`podium-${result.position}`}>
-                      <TeamIcon name={result.driverTeam} className="w-5 h-5" />
-                      {getDriverInitials(result.driverName)}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">{result.driverName}</div>
-                    <div className="text-primary font-bold text-sm mt-1">{result.points} pts</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        <div className="mt-6 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+             <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+                <Timer className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+                <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Fastest Lap</div>
+                <div className="text-white font-bold text-xs">{raceDetails?.fastestLapDriver || "N/A"}</div>
+             </div>
+             <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+                <Trophy className="w-4 h-4 text-yellow-400 mx-auto mb-1" />
+                <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Winner</div>
+                <div className="text-white font-bold text-xs">{results[0]?.driverName || "N/A"}</div>
+             </div>
+             <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+                <Zap className="w-4 h-4 text-orange-400 mx-auto mb-1" />
+                <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Overtakes</div>
+                <div className="text-white font-bold text-xs">{raceDetails?.totalOvertakes || 0}</div>
+             </div>
+          </div>
 
-          {(fantasyWinners?.driverWinner || fantasyWinners?.constructorWinner) && (
-            <div>
-              <div className="text-xs font-bold text-muted-foreground uppercase mb-3 flex items-center gap-2">
-                <Star className="w-3 h-3 text-primary fill-primary" /> Fantasy Winners
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {fantasyWinners.driverWinner && (
-                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/30" data-testid="fantasy-driver-winner">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Car className="w-3 h-3 text-primary" />
-                      <span className="text-xs font-bold text-primary uppercase">Best Driver Pick</span>
-                    </div>
-                    <div className="text-white font-bold flex items-center gap-2">
-                      <TeamIcon name={fantasyWinners.driverWinner.teamName} className="w-4 h-4" />
-                      {fantasyWinners.driverWinner.teamName}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Picked: {fantasyWinners.driverWinner.driverName} ({fantasyWinners.driverWinner.points} pts)</div>
-                  </div>
-                )}
-                {fantasyWinners.constructorWinner && (
-                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/30" data-testid="fantasy-constructor-winner">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Shield className="w-3 h-3 text-primary" />
-                      <span className="text-xs font-bold text-primary uppercase">Best Constructor Pick</span>
-                    </div>
-                    <div className="text-white font-bold flex items-center gap-2">
-                      <TeamIcon name={fantasyWinners.constructorWinner.teamName} className="w-4 h-4" />
-                      {fantasyWinners.constructorWinner.teamName}
-                    </div>
-                    <div className="text-xs text-muted-foreground">Picked: {fantasyWinners.constructorWinner.constructorName} ({fantasyWinners.constructorWinner.points} pts)</div>
-                  </div>
-                )}
-              </div>
+          <div>
+            <div className="text-[10px] font-bold text-muted-foreground uppercase px-2 mb-2 flex justify-between items-center">
+              <span>Full Classification</span>
+              <span className="font-mono">Time / Gap</span>
             </div>
-          )}
+            <div className="space-y-1">
+              {results.map((dr, idx) => (
+                <div key={dr.driverId} className={`flex items-center justify-between p-3 rounded-lg ${idx < 3 ? "bg-white/5 border border-white/10" : "hover:bg-white/5"}`}>
+                  <div className="flex items-center gap-3">
+                    <span className={`w-6 text-center font-display font-bold text-sm ${idx === 0 ? "text-yellow-400" : idx === 1 ? "text-gray-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground"}`}>
+                      {dr.position || "-"}
+                    </span>
+                    <TeamIcon name={dr.driverTeam} className="w-5 h-5" />
+                    <div className="w-1 h-6 rounded-full" style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#666" }}></div>
+                    <div>
+                      <div className="text-white font-bold text-sm">{dr.driverName}</div>
+                      <div className="text-[10px] text-muted-foreground uppercase">{dr.driverTeam}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs font-mono text-muted-foreground">
+                      {idx === 0 ? (dr.time || "1:30:00.000") : (dr.gap ? `+${dr.gap}s` : (dr.status || "DNF"))}
+                    </span>
+                    <span className="font-display font-bold text-white w-8 text-right text-xs">{dr.points}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

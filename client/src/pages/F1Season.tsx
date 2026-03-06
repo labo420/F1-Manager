@@ -408,7 +408,7 @@ export default function F1Season() {
                               </div>
 
                               <div>
-                                <h3 className="text-sm font-bold text-muted-foreground uppercase mb-3">Podium & Full Classification</h3>
+                                <h3 className="text-sm font-bold text-muted-foreground uppercase mb-3">Full Classification</h3>
                                 <div className="space-y-1">
                                   {raceDetail.driverResults.map((dr, idx) => (
                                     <div
@@ -436,10 +436,9 @@ export default function F1Season() {
                                           <span className="text-xs text-muted-foreground font-mono">{dr.time || "1:30:00.000"}</span>
                                         ) : (
                                           <span className="text-xs text-muted-foreground font-mono">
-                                            {dr.status === "Finished" ? `+${dr.gap || "0.000"}s` : dr.status || "+1 Lap"}
+                                            {dr.status === "Finished" ? (dr.gap ? `+${dr.gap}s` : "Finished") : dr.status || "+1 Lap"}
                                           </span>
                                         )}
-                                        {dr.overtakes > 0 && <span className="text-xs text-yellow-500 font-bold">{dr.overtakes} OT</span>}
                                         <span className="font-display font-bold text-white w-10 text-right">{dr.points}</span>
                                       </div>
                                     </div>
