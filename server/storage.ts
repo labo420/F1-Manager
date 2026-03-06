@@ -122,9 +122,8 @@ export class DatabaseStorage implements IStorage {
       lobbyId: lobby.id,
       role: "admin",
       teamName: teamName || "TBD",
-      driverJokers: 2,
-      constructorJokers: 2,
-      jolliesRemaining: 4
+      driverJollies: 2,
+      constructorJollies: 2,
     }).returning();
     return lobby;
   }
@@ -145,9 +144,8 @@ export class DatabaseStorage implements IStorage {
     if (existing) return existing;
     const [member] = await db.insert(lobbyMembers).values({
       userId, lobbyId, role, teamName: teamName || "TBD",
-      driverJokers: 2,
-      constructorJokers: 2,
-      jolliesRemaining: 4
+      driverJollies: 2,
+      constructorJollies: 2,
     }).returning();
     return member;
   }
@@ -171,10 +169,8 @@ export class DatabaseStorage implements IStorage {
         lobbyName: lobby?.name || "Unknown",
         lobbyCode: lobby?.code || "",
         teamName: m.teamName,
-        jokerCount: m.jokerCount,
-        driverJokers: m.driverJokers,
-        constructorJokers: m.constructorJokers,
-        jolliesRemaining: m.jolliesRemaining,
+        driverJollies: m.driverJollies,
+        constructorJollies: m.constructorJollies,
         role: m.role,
       };
     });
@@ -187,7 +183,13 @@ export class DatabaseStorage implements IStorage {
     const userList = await db.select().from(users).where(inArray(users.id, userIds));
     return members.map(m => {
       const user = userList.find(u => u.id === m.userId);
-      return { ...m, username: user?.username || "Unknown", avatarUrl: user?.avatarUrl || null };
+      return { 
+        ...m, 
+        username: user?.username || "Unknown", 
+        avatarUrl: user?.avatarUrl || null,
+        driverJollies: m.driverJollies,
+        constructorJollies: m.constructorJollies
+      };
     });
   }
 
@@ -648,9 +650,9 @@ export class DatabaseStorage implements IStorage {
     return {
       driverUsage,
       constructorUsage,
-      driverJokersRemaining: member?.driverJokers ?? 0,
-      constructorJokersRemaining: member?.constructorJokers ?? 0,
-      jokersRemaining: (member?.driverJokers ?? 0) + (member?.constructorJokers ?? 0),
+      driverJolliesRemaining: member?.driverJollies ?? 0,
+      constructorJolliesRemaining: member?.constructorJollies ?? 0,
+      jolliesRemaining: (member?.driverJollies ?? 0) + (member?.constructorJollies ?? 0),
     };
   }
 
@@ -658,7 +660,7 @@ export class DatabaseStorage implements IStorage {
     const member = await this.getLobbyMember(userId, lobbyId);
     if (!member) throw new Error("Member not found");
     const [updated] = await db.update(lobbyMembers)
-      .set({ driverJokers: member.driverJokers - count })
+      .set({ driverJollies: Math.max(0, member.driverJollies - count) })
       .where(and(eq(lobbyMembers.userId, userId), eq(lobbyMembers.lobbyId, lobbyId)))
       .returning();
     return updated;
@@ -668,7 +670,7 @@ export class DatabaseStorage implements IStorage {
     const member = await this.getLobbyMember(userId, lobbyId);
     if (!member) throw new Error("Member not found");
     const [updated] = await db.update(lobbyMembers)
-      .set({ constructorJokers: member.constructorJokers - count })
+      .set({ constructorJollies: Math.max(0, member.constructorJollies - count) })
       .where(and(eq(lobbyMembers.userId, userId), eq(lobbyMembers.lobbyId, lobbyId)))
       .returning();
     return updated;

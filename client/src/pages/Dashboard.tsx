@@ -314,8 +314,8 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
 
   const hasMultipleLobbies = user.memberships.length > 1;
 
-  const driverStars = membership.driverJokers ?? 2;
-  const constructorStars = membership.constructorJokers ?? 2;
+  const driverStars = membership.driverJollies ?? 2;
+  const constructorStars = membership.constructorJollies ?? 2;
 
   if (racesLoading || !races) {
     return (
@@ -408,6 +408,17 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
 }
 
 function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: string; lobbyId: number }) {
+  const { data: usage } = useQuery<any>({
+    queryKey: [`/api/usage/${lobbyId}`],
+    initialData: {
+      driverUsage: {},
+      constructorUsage: {},
+      driverJolliesRemaining: 2,
+      constructorJolliesRemaining: 2,
+      jolliesRemaining: 4
+    }
+  });
+
   const { data: raceDetails } = useQuery<any>({
     queryKey: ["/api/f1/race", race.id, "details"],
     queryFn: async () => {
@@ -452,8 +463,26 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
       </div>
 
       {status === "coming-soon" && (
-        <div className="mt-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
-          <p className="text-blue-400 text-sm font-semibold">Race not yet started. Make your picks in the Paddock!</p>
+        <div className="mt-4 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-center gap-3">
+              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+              <div>
+                <p className="text-[10px] uppercase text-muted-foreground leading-none mb-1">Driver Jollies</p>
+                <p className="text-xl font-bold leading-none">{usage?.driverJolliesRemaining ?? 0}</p>
+              </div>
+            </div>
+            <div className="p-3 rounded-xl bg-primary/5 border border-primary/10 flex items-center gap-3">
+              <Star className="w-5 h-5 text-blue-500 fill-blue-500" />
+              <div>
+                <p className="text-[10px] uppercase text-muted-foreground leading-none mb-1">Team Jollies</p>
+                <p className="text-xl font-bold leading-none">{usage?.constructorJolliesRemaining ?? 0}</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center">
+            <p className="text-blue-400 text-sm font-semibold">Race not yet started. Make your picks in the Paddock!</p>
+          </div>
         </div>
       )}
 

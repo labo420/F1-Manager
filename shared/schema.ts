@@ -23,8 +23,8 @@ export const lobbyMembers = pgTable("lobby_members", {
   userId: integer("user_id").references(() => users.id).notNull(),
   lobbyId: integer("lobby_id").references(() => lobbies.id).notNull(),
   teamName: text("team_name").notNull().default("TBD"),
-  driverJokers: integer("driver_jokers").default(2).notNull(),
-  constructorJokers: integer("constructor_jokers").default(2).notNull(),
+  driverJollies: integer("driver_jokers").default(2).notNull(),
+  constructorJollies: integer("constructor_jokers").default(2).notNull(),
   role: text("role").notNull().default("player"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -140,41 +140,17 @@ export type Membership = {
   lobbyName: string;
   lobbyCode: string;
   teamName: string;
-  jokerCount: number;
-  driverJokers: number;
-  constructorJokers: number;
-  jolliesRemaining: number;
+  driverJollies: number;
+  constructorJollies: number;
   role: string;
-};
-
-export type LeaderboardEntry = {
-  userId: number;
-  username: string;
-  teamName: string;
-  avatarUrl: string | null;
-  totalPoints: number;
-};
-
-export type DriverLeaderboardEntry = LeaderboardEntry;
-export type ConstructorLeaderboardEntry = LeaderboardEntry;
-
-export type DraftStatus = {
-  draftOrder: Array<{ userId: number; username: string; teamName: string; avatarUrl: string | null; hasPicked: boolean }>;
-  currentDrafterIndex: number;
-  currentDrafterId: number;
-  currentDrafterName: string;
-  isMyTurn: boolean;
-  isComplete: boolean;
-  takenDriverIds: number[];
-  takenConstructorIds: number[];
 };
 
 export type UsageInfo = {
   driverUsage: Record<number, number>;
   constructorUsage: Record<number, number>;
-  driverJokersRemaining: number;
-  constructorJokersRemaining: number;
-  jokersRemaining: number;
+  driverJolliesRemaining: number;
+  constructorJolliesRemaining: number;
+  jolliesRemaining: number;
 };
 
 export type RaceFantasyWinners = {

@@ -119,11 +119,41 @@ export default function Profile() {
                           <span className="bg-primary/20 text-primary px-2 py-0.5 rounded font-bold uppercase">Admin</span>
                         )}
                         <span className="flex items-center gap-1"><Trophy className="w-3 h-3" /> {m.teamName}</span>
-                        <span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {m.driverJokers + m.constructorJokers} Stars</span>
+                        <span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {(m.driverJollies ?? 0) + (m.constructorJollies ?? 0)} Jollies</span>
                       </div>
                     </div>
                     <div className="text-sm font-mono text-primary">
                       {m.lobbyCode}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div className="p-2 bg-background rounded border text-center">
+                      <p className="text-[10px] uppercase text-muted-foreground leading-none mb-1">Driver Jollies</p>
+                      <div className="flex gap-1 mt-1 justify-center">
+                        {[...Array(2)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={cn(
+                              "w-3 h-3",
+                              i < (m.driverJollies ?? 0) ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground/30"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="p-2 bg-background rounded border text-center">
+                      <p className="text-[10px] uppercase text-muted-foreground leading-none mb-1">Team Jollies</p>
+                      <div className="flex gap-1 mt-1 justify-center">
+                        {[...Array(2)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={cn(
+                              "w-3 h-3",
+                              i < (m.constructorJollies ?? 0) ? "text-blue-500 fill-blue-500" : "text-muted-foreground/30"
+                            )}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

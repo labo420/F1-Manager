@@ -37,9 +37,9 @@ export default function LobbyDetail({ id }: { id: number }) {
     initialData: {
       driverUsage: {},
       constructorUsage: {},
-      driverJokersRemaining: 4,
-      constructorJokersRemaining: 4,
-      jokersRemaining: 8
+      driverJolliesRemaining: 2,
+      constructorJolliesRemaining: 2,
+      jolliesRemaining: 4
     }
   });
 
@@ -79,16 +79,16 @@ export default function LobbyDetail({ id }: { id: number }) {
                 <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                 <div>
                   <p className="text-[10px] uppercase text-muted-foreground leading-none">Driver Jollies</p>
-                  <p className="text-xl font-bold leading-tight">{usage?.driverJokersRemaining ?? 0}</p>
+                  <p className="text-xl font-bold leading-tight">{usage?.driverJolliesRemaining ?? 0}</p>
                 </div>
               </CardContent>
             </Card>
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="py-2 px-4 flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-500" />
+                <Star className="w-5 h-5 text-blue-500 fill-blue-500" />
                 <div>
                   <p className="text-[10px] uppercase text-muted-foreground leading-none">Team Jollies</p>
-                  <p className="text-xl font-bold leading-tight">{usage?.constructorJokersRemaining ?? 0}</p>
+                  <p className="text-xl font-bold leading-tight">{usage?.constructorJolliesRemaining ?? 0}</p>
                 </div>
               </CardContent>
             </Card>

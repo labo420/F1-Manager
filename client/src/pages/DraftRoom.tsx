@@ -136,7 +136,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                   onClick={() => setUseJolly(!useJolly)}
                 >
                   <Star className={cn("w-4 h-4 mr-2", useJolly && "fill-current")} />
-                  {useJolly ? "Star Active" : "Use Star"}
+                  {useJolly ? "Jolly Active" : "Use Jolly"}
                 </Button>
               )}
               <Button 
@@ -202,19 +202,19 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-start gap-2 text-xs text-muted-foreground">
                 <Info className="w-4 h-4 mt-0.5 shrink-0" />
-                <p>You can use each driver/constructor up to 2 (Driver) or 3 (Team) times per season. The last use consumes a Star.</p>
+                <p>You can use each driver/constructor up to 2 (Driver) or 3 (Team) times per season. The last use consumes a Jolly.</p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2 bg-background rounded border text-center">
-                  <p className="text-[10px] uppercase text-muted-foreground">Driver Stars</p>
+                  <p className="text-[10px] uppercase text-muted-foreground">Driver Jollies</p>
                   <div className="flex justify-center mt-1">
-                    <StarRating count={usage.driverJokersRemaining} total={2} />
+                    <StarRating count={usage.driverJolliesRemaining} total={2} />
                   </div>
                 </div>
                 <div className="p-2 bg-background rounded border text-center">
-                  <p className="text-[10px] uppercase text-muted-foreground">Team Stars</p>
+                  <p className="text-[10px] uppercase text-muted-foreground">Team Jollies</p>
                   <div className="flex justify-center mt-1">
-                    <StarRating count={usage.constructorJokersRemaining} total={2} />
+                    <StarRating count={usage.constructorJolliesRemaining} total={2} />
                   </div>
                 </div>
               </div>
