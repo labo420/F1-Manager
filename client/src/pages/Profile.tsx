@@ -4,7 +4,7 @@ import { useActiveLobby, useSetTeamName } from "@/hooks/use-lobby";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Camera, Save, User, Shield, Trophy, Zap } from "lucide-react";
+import { Camera, Save, User, Shield, Trophy, Star } from "lucide-react";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -119,7 +119,7 @@ export default function Profile() {
                           <span className="bg-primary/20 text-primary px-2 py-0.5 rounded font-bold uppercase">Admin</span>
                         )}
                         <span className="flex items-center gap-1"><Trophy className="w-3 h-3" /> {m.teamName}</span>
-                        <span className="flex items-center gap-1"><Zap className="w-3 h-3" /> {m.jokerCount} Jokers</span>
+                        <span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {m.driverJokers + m.constructorJokers} Stars</span>
                       </div>
                     </div>
                     <div className="text-sm font-mono text-primary">

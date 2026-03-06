@@ -271,32 +271,32 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const constructorUsageCount = usageInfo.constructorUsage[input.constructorId] || 0;
 
       // Article 3: Pool Constraints
-      // Driver: Every driver at least once. 2 Jollies (max 2 picks per driver)
+      // Driver: Every driver at least once. 2 Stars (max 2 picks per driver)
       if (driverUsageCount >= 2) {
-        return res.status(400).json({ message: "You have already used this driver 2 times (limit reached with Jolly)." });
+        return res.status(400).json({ message: "You have already used this driver 2 times (limit reached with Star)." });
       }
       
       const isManualJolly = req.body.useJolly === true;
 
       if (driverUsageCount === 1 && !isManualJolly) {
-        return res.status(400).json({ message: "This is your 2nd pick for this driver. You must click 'Use Jolly' to confirm." });
+        return res.status(400).json({ message: "This is your 2nd pick for this driver. You must click 'Use Star' to confirm." });
       }
 
       if (driverUsageCount === 1 && usageInfo.driverJokersRemaining <= 0) {
-        return res.status(400).json({ message: "No Driver Jollies remaining to pick this driver a second time." });
+        return res.status(400).json({ message: "No Driver Stars remaining to pick this driver a second time." });
       }
 
-      // Constructor: Exactly 2 times. 2 Jollies (allows a 3rd pick)
+      // Constructor: Exactly 2 times. 2 Stars (allows a 3rd pick)
       if (constructorUsageCount >= 3) {
-        return res.status(400).json({ message: "You have already used this constructor 3 times (limit reached with Jolly)." });
+        return res.status(400).json({ message: "You have already used this constructor 3 times (limit reached with Star)." });
       }
 
       if (constructorUsageCount === 2 && !isManualJolly) {
-        return res.status(400).json({ message: "This is your 3rd pick for this constructor. You must click 'Use Jolly' to confirm." });
+        return res.status(400).json({ message: "This is your 3rd pick for this constructor. You must click 'Use Star' to confirm." });
       }
 
       if (constructorUsageCount === 2 && usageInfo.constructorJokersRemaining <= 0) {
-        return res.status(400).json({ message: "No Constructor Jollies remaining for a 3rd selection." });
+        return res.status(400).json({ message: "No Team Stars remaining for a 3rd selection." });
       }
 
       // Obligated Picks logic (simplified for Fast Mode)
@@ -487,10 +487,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const lobbyId = Number(req.params.lobbyId);
       const member = await storage.getLobbyMember(req.session.userId, lobbyId);
       if (!member) return res.status(404).json({ message: "Member not found" });
-      if (member.jolliesRemaining <= 0) return res.status(400).json({ message: "No jollies remaining" });
+      if (member.driverJokers + member.constructorJokers <= 0) return res.status(400).json({ message: "No stars remaining" });
       
       const [updated] = await db.update(lobbyMembers)
-        .set({ jolliesRemaining: member.jolliesRemaining - 1 })
+        .set({ 
+          driverJokers: member.driverJokers > 0 ? member.driverJokers - 1 : 0,
+          constructorJokers: member.driverJokers <= 0 ? member.constructorJokers - 1 : member.constructorJokers
+        })
         .where(and(eq(lobbyMembers.userId, req.session.userId), eq(lobbyMembers.lobbyId, lobbyId)))
         .returning();
       res.json(updated);

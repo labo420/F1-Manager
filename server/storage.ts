@@ -123,7 +123,8 @@ export class DatabaseStorage implements IStorage {
       role: "admin",
       teamName: teamName || "TBD",
       driverJokers: 2,
-      constructorJokers: 2
+      constructorJokers: 2,
+      jolliesRemaining: 4
     }).returning();
     return lobby;
   }
@@ -145,7 +146,8 @@ export class DatabaseStorage implements IStorage {
     const [member] = await db.insert(lobbyMembers).values({
       userId, lobbyId, role, teamName: teamName || "TBD",
       driverJokers: 2,
-      constructorJokers: 2
+      constructorJokers: 2,
+      jolliesRemaining: 4
     }).returning();
     return member;
   }

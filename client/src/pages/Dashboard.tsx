@@ -314,8 +314,8 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
 
   const hasMultipleLobbies = user.memberships.length > 1;
 
-  const driverStars = membership.driverJokers ?? 4;
-  const constructorStars = membership.constructorJokers ?? 4;
+  const driverStars = membership.driverJokers ?? 2;
+  const constructorStars = membership.constructorJokers ?? 2;
 
   if (racesLoading || !races) {
     return (

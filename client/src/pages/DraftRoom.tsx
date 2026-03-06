@@ -4,7 +4,7 @@ import { useParams, useLocation } from "wouter";
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ChevronRight, User, ShieldCheck, Info } from "lucide-react";
+import { Loader2, ChevronRight, User, ShieldCheck, Info, Star } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Driver, Constructor, DraftStatus, Selection, UsageInfo } from "@shared/schema";
@@ -103,6 +103,22 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
     return unusedCount <= 3; // Highlight as mandatory if few unique drivers left
   };
 
+  const StarRating = ({ count, total }: { count: number; total: number }) => {
+    return (
+      <div className="flex gap-0.5">
+        {[...Array(total)].map((_, i) => (
+          <Star
+            key={i}
+            className={cn(
+              "w-3 h-3",
+              i < count ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground/30"
+            )}
+          />
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -119,7 +135,8 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                   className={cn(useJolly ? "bg-yellow-600 hover:bg-yellow-700" : "border-yellow-600 text-yellow-600")}
                   onClick={() => setUseJolly(!useJolly)}
                 >
-                  {useJolly ? "Jolly Active" : "Use Jolly"}
+                  <Star className={cn("w-4 h-4 mr-2", useJolly && "fill-current")} />
+                  {useJolly ? "Star Active" : "Use Star"}
                 </Button>
               )}
               <Button 
@@ -185,16 +202,20 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-start gap-2 text-xs text-muted-foreground">
                 <Info className="w-4 h-4 mt-0.5 shrink-0" />
-                <p>You can use each driver/constructor up to 3 times per season. The 3rd use consumes a Jolly.</p>
+                <p>You can use each driver/constructor up to 2 (Driver) or 3 (Team) times per season. The last use consumes a Star.</p>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2 bg-background rounded border text-center">
-                  <p className="text-[10px] uppercase text-muted-foreground">Driver Jollies</p>
-                  <p className="text-lg font-bold">{usage.driverJokersRemaining}</p>
+                  <p className="text-[10px] uppercase text-muted-foreground">Driver Stars</p>
+                  <div className="flex justify-center mt-1">
+                    <StarRating count={usage.driverJokersRemaining} total={2} />
+                  </div>
                 </div>
                 <div className="p-2 bg-background rounded border text-center">
-                  <p className="text-[10px] uppercase text-muted-foreground">Team Jollies</p>
-                  <p className="text-lg font-bold">{usage.constructorJokersRemaining}</p>
+                  <p className="text-[10px] uppercase text-muted-foreground">Team Stars</p>
+                  <div className="flex justify-center mt-1">
+                    <StarRating count={usage.constructorJokersRemaining} total={2} />
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -224,7 +245,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                         const isTaken = draftStatus?.takenDriverIds.includes(driver.id);
                         const usedCount = usage.driverUsage[driver.id] || 0;
                         const isSelected = selectedDriverId === driver.id;
-                        const isDisabled = !isMyTurn || isTaken || usedCount >= 3;
+                        const isDisabled = !isMyTurn || isTaken || usedCount >= 2;
                         
                         const isMandatory = isMandatoryDriver(driver.id);
                         
