@@ -55,6 +55,67 @@ type RaceDetail = {
   totalOvertakes: number;
 };
 
+const CIRCUIT_FLAGS: Record<string, string> = {
+  "Bahrain": "🇧🇭",
+  "Jeddah": "🇸🇦",
+  "Albert Park": "🇦🇺",
+  "Shanghai": "🇨🇳",
+  "Miami": "🇺🇸",
+  "Imola": "🇮🇹",
+  "Monaco": "🇲🇨",
+  "Montreal": "🇨🇦",
+  "Barcelona": "🇪🇸",
+  "Spielberg": "🇦🇹",
+  "Silverstone": "🇬🇧",
+  "Hungaroring": "🇭🇺",
+  "Spa-Francorchamps": "🇧🇪",
+  "Zandvoort": "🇳🇱",
+  "Monza": "🇮🇹",
+  "Baku": "🇦🇿",
+  "Marina Bay": "🇸🇬",
+  "Austin": "🇺🇸",
+  "Hermanos Rodriguez": "🇲🇽",
+  "Interlagos": "🇧🇷",
+  "Las Vegas": "🇺🇸",
+  "Lusail": "🇶🇦",
+  "Yas Marina": "🇦🇪",
+  "Suzuka": "🇯🇵",
+};
+
+function getCircuitFlag(name: string) {
+  if (!name) return "";
+  for (const [key, flag] of Object.entries(CIRCUIT_FLAGS)) {
+    if (name.toLowerCase().includes(key.toLowerCase())) return flag;
+  }
+  const nameMap: Record<string, string> = {
+    "Australian Grand Prix": "🇦🇺",
+    "Chinese Grand Prix": "🇨🇳",
+    "Japanese Grand Prix": "🇯🇵",
+    "Miami Grand Prix": "🇺🇸",
+    "Emilia Romagna Grand Prix": "🇮🇹",
+    "Monaco Grand Prix": "🇲🇨",
+    "Canadian Grand Prix": "🇨🇦",
+    "Spanish Grand Prix": "🇪🇸",
+    "Austrian Grand Prix": "🇦🇹",
+    "British Grand Prix": "🇬🇧",
+    "Hungarian Grand Prix": "🇭🇺",
+    "Belgian Grand Prix": "🇧🇪",
+    "Dutch Grand Prix": "🇳🇱",
+    "Italian Grand Prix": "🇮🇹",
+    "Azerbaijan Grand Prix": "🇦🇿",
+    "Singapore Grand Prix": "🇸🇬",
+    "United States Grand Prix": "🇺🇸",
+    "Mexico City Grand Prix": "🇲🇽",
+    "Sao Paulo Grand Prix": "🇧🇷",
+    "Las Vegas Grand Prix": "🇺🇸",
+    "Qatar Grand Prix": "🇶🇦",
+    "Abu Dhabi Grand Prix": "🇦🇪",
+    "Saudi Arabian Grand Prix": "🇸🇦",
+    "Bahrain Grand Prix": "🇧🇭",
+  };
+  return nameMap[name] || "";
+}
+
 const TEAM_COLORS: Record<string, string> = {
   "Red Bull Racing": "#3671C6",
   "Ferrari": "#E8002D",
@@ -116,7 +177,7 @@ function CircuitInfo({ race }: { race: RaceEntry }) {
         <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
           <MapPin className="w-4 h-4 text-primary mx-auto mb-1.5" />
           <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Circuit</div>
-          <div className="text-white font-bold text-xs leading-tight">{race.circuitName}</div>
+          <div className="text-white font-bold text-xs leading-tight">{getCircuitFlag(race.circuitName || "")} {race.circuitName}</div>
         </div>
       )}
       {race.circuitLength && (
@@ -366,7 +427,7 @@ export default function F1Season() {
                             R{race.round}
                           </div>
                           <div className="text-left">
-                            <div className="font-bold text-white">{race.name}</div>
+                            <div className="font-bold text-white">{getCircuitFlag(race.name)} {race.name}</div>
                             <div className="text-xs text-muted-foreground">
                               {race.country} · {race.circuitName || ""} · {format(new Date(race.date), "MMM do, yyyy")}
                             </div>
