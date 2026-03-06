@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Camera, Save, User, Shield, Trophy, Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function Profile() {
   const { user } = useAuth();
