@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useActiveLobby, useCreateLobby, useJoinLobby, useSetTeamName, useLobbyInfo } from "@/hooks/use-lobby";
 import { useRaces } from "@/hooks/use-races";
@@ -464,6 +464,10 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
 }
 
 function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: string; lobbyId: number }) {
+  const [liveData, setLiveData] = useState<any>(null);
+  const [liveError, setLiveError] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
+
   const { data: raceDetails } = useQuery<any>({
     queryKey: ["/api/f1/race", race.id, "details"],
     queryFn: async () => {
@@ -474,19 +478,108 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
     enabled: status === "risultati" || status === "in-corso",
   });
 
-  const { data: liveStatusData } = useQuery({
-    queryKey: ["/api/f1/live-status", race.id],
-    queryFn: async () => {
-      const res = await fetch(`https://api.openf1.org/v1/sessions?circuit_key=latest`, { mode: 'cors' });
-      if (!res.ok) return null;
-      const sessions = await res.json();
-      return sessions?.[0] || null;
-    },
-    refetchInterval: 30000,
-    enabled: status === "in-corso",
-  });
+  // Real-time polling for live sessions using OpenF1 API with AbortController cleanup
+  useEffect(() => {
+    if (status !== "in-corso") return;
 
-  const isActuallyLive = liveStatusData && new Date(liveStatusData.date_start) <= new Date() && (!liveStatusData.date_end || new Date(liveStatusData.date_end) > new Date());
+    const controller = new AbortController();
+    let pollInterval: NodeJS.Timeout;
+
+    const pollLiveData = async () => {
+      try {
+        setIsPolling(true);
+        
+        // Try OpenF1 for real-time intervals and positions
+        const [intervalsRes, positionsRes] = await Promise.all([
+          fetch("https://api.openf1.org/v1/intervals", { 
+            signal: controller.signal,
+            mode: 'cors'
+          }).catch(() => null),
+          fetch("https://api.openf1.org/v1/position", {
+            signal: controller.signal,
+            mode: 'cors'
+          }).catch(() => null)
+        ]);
+
+        let liveStandings = null;
+
+        if (intervalsRes?.ok && positionsRes?.ok) {
+          const intervals = await intervalsRes.json();
+          const positions = await positionsRes.json();
+          
+          if (Array.isArray(positions) && positions.length > 0) {
+            // Map OpenF1 driver_number to our database and build standings
+            liveStandings = positions
+              .filter((pos: any) => pos.position && pos.driver_number)
+              .map((pos: any) => ({
+                position: pos.position,
+                driverNumber: pos.driver_number,
+                driverName: pos.driver_name || `Driver #${pos.driver_number}`,
+                driverTeam: pos.team_name || "Unknown",
+                gap: intervals.find((i: any) => i.driver_number === pos.driver_number)?.gap || null,
+                interval: intervals.find((i: any) => i.driver_number === pos.driver_number)?.interval || null,
+              }))
+              .sort((a: any, b: any) => a.position - b.position);
+
+            if (liveStandings.length > 0) {
+              setLiveData(liveStandings);
+              setLiveError(false);
+            }
+          }
+        } else if (!liveStandings) {
+          // Fallback to Ergast for official classification if OpenF1 fails
+          const ergastRes = await fetch(
+            `https://ergast.com/api/f1/2026/${race.round || 1}/results.json`,
+            { signal: controller.signal }
+          ).catch(() => null);
+
+          if (ergastRes?.ok) {
+            const ergastData = await ergastRes.json();
+            const raceResults = ergastData.MRData?.RaceTable?.Races?.[0]?.Results;
+            
+            if (Array.isArray(raceResults) && raceResults.length > 0) {
+              liveStandings = raceResults
+                .map((result: any) => ({
+                  position: parseInt(result.position),
+                  driverNumber: parseInt(result.Driver?.permanentNumber),
+                  driverName: `${result.Driver?.givenName} ${result.Driver?.familyName}`,
+                  driverTeam: result.Constructor?.name || "Unknown",
+                  gap: result.position === "1" ? null : result.Time?.time || null,
+                  interval: null,
+                }))
+                .sort((a: any, b: any) => a.position - b.position);
+
+              setLiveData(liveStandings);
+              setLiveError(false);
+            }
+          }
+        }
+
+        if (!liveStandings) {
+          setLiveError(true);
+        }
+      } catch (error) {
+        if (error instanceof Error && error.name !== "AbortError") {
+          setLiveError(true);
+        }
+      } finally {
+        setIsPolling(false);
+      }
+    };
+
+    // Initial fetch
+    pollLiveData();
+
+    // Poll every 60 seconds
+    pollInterval = setInterval(pollLiveData, 60000);
+
+    return () => {
+      controller.abort();
+      clearInterval(pollInterval);
+    };
+  }, [status, race.round]);
+
+  const isActuallyLive = liveData && liveData.length > 0;
 
   const results = useMemo(() => {
     if (!raceDetails?.driverResults) return [];
@@ -521,21 +614,35 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
             <div className="flex items-center justify-center gap-2">
               <div className={`w-2 h-2 bg-red-500 rounded-full ${isActuallyLive ? "animate-ping" : ""}`} />
               <p className="text-red-500 text-sm font-bold uppercase">{isActuallyLive ? "LIVE NOW" : "SESSION IN PROGRESS"}</p>
+              {isPolling && <span className="text-[10px] text-red-400 ml-2 animate-pulse">Updating...</span>}
             </div>
           </div>
-          {results.length > 0 && (
+
+          {liveError && !liveData && (
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
+              <p className="text-amber-400 text-xs font-semibold">Live data unavailable. Showing race schedule.</p>
+            </div>
+          )}
+
+          {(liveData && liveData.length > 0) ? (
             <div className="space-y-1">
-              <div className="text-[10px] font-bold text-muted-foreground uppercase px-2 mb-1">Live Standing</div>
-              {results.map((dr, idx) => (
-                <div key={dr.driverId} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors border border-transparent">
+              <div className="text-[10px] font-bold text-muted-foreground uppercase px-2 mb-1">Live Standing (Real-time from OpenF1 / Ergast)</div>
+              {liveData.map((dr: any, idx: number) => (
+                <div key={dr.driverNumber} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors border border-transparent">
                   <div className="flex items-center gap-2">
                     <span className="w-5 text-center font-bold text-xs text-muted-foreground">{dr.position || "-"}</span>
                     <TeamIcon name={dr.driverTeam} className="w-4 h-4" />
                     <span className="text-white font-bold text-xs">{dr.driverName}</span>
                   </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">{idx === 0 ? "Interval" : `+${dr.gap || "0.000"}s`}</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">
+                    {idx === 0 ? "Interval" : (dr.gap ? `+${dr.gap}` : (dr.interval ? `+${dr.interval}` : "DNF"))}
+                  </span>
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-muted-foreground text-xs">Fetching live session data...</p>
             </div>
           )}
         </div>
