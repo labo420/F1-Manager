@@ -1,0 +1,141 @@
+2026-03-09T12:43:51.863273826Z ==> Downloading cache...
+2026-03-09T12:43:51.909982237Z ==> Cloning from https://github.com/labo420/F1-Manager
+2026-03-09T12:43:55.157074329Z ==> Checking out commit 417bcb8b06c1957f2897fc316fb552210190dfb9 in branch main
+2026-03-09T12:44:02.445210346Z ==> Downloaded 167MB in 3s. Extraction took 6s.
+2026-03-09T12:44:08.251425005Z ==> Using Node.js version 22.22.0 (default)
+2026-03-09T12:44:08.276248242Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-03-09T12:44:08.406900911Z ==> Running build command 'npm install && npm run build'...
+2026-03-09T12:44:11.961161871Z 
+2026-03-09T12:44:11.961189273Z added 72 packages, and audited 501 packages in 3s
+2026-03-09T12:44:11.961202473Z 
+2026-03-09T12:44:11.961231515Z 87 packages are looking for funding
+2026-03-09T12:44:11.961245965Z   run `npm fund` for details
+2026-03-09T12:44:11.97088505Z 
+2026-03-09T12:44:11.97090021Z 5 vulnerabilities (1 low, 1 moderate, 3 high)
+2026-03-09T12:44:11.970904751Z 
+2026-03-09T12:44:11.970910111Z To address all issues, run:
+2026-03-09T12:44:11.970916651Z   npm audit fix
+2026-03-09T12:44:11.970922522Z 
+2026-03-09T12:44:11.970928322Z Run `npm audit` for details.
+2026-03-09T12:44:12.144647016Z 
+2026-03-09T12:44:12.144675658Z > rest-express@1.0.0 build
+2026-03-09T12:44:12.144683438Z > node script/build.mjs
+2026-03-09T12:44:12.144689428Z 
+2026-03-09T12:44:12.321231119Z building client...
+2026-03-09T12:44:12.504892263Z vite v7.3.1 building client environment for production...
+2026-03-09T12:44:12.850618039Z transforming...
+2026-03-09T12:44:12.995733835Z ✓ 3 modules transformed.
+2026-03-09T12:44:12.996442509Z ✗ Build failed in 470ms
+2026-03-09T12:44:12.997220786Z [vite:css] [postcss] Cannot find module '@tailwindcss/typography'
+2026-03-09T12:44:12.997229357Z Require stack:
+2026-03-09T12:44:12.997233997Z - /opt/render/project/src/tailwind.config.ts
+2026-03-09T12:44:12.997238237Z file: /opt/render/project/src/client/src/index.css:undefined:NaN
+2026-03-09T12:44:12.997242178Z     at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+2026-03-09T12:44:12.997246208Z     at Function.resolve (node:internal/modules/helpers:157:19)
+2026-03-09T12:44:12.997250788Z     at _resolve (/opt/render/project/src/node_modules/jiti/dist/jiti.js:1:246378)
+2026-03-09T12:44:12.997254748Z     at jiti (/opt/render/project/src/node_modules/jiti/dist/jiti.js:1:249092)
+2026-03-09T12:44:12.997258628Z     at /opt/render/project/src/tailwind.config.ts:106:45
+2026-03-09T12:44:12.997262539Z     at evalModule (/opt/render/project/src/node_modules/jiti/dist/jiti.js:1:251913)
+2026-03-09T12:44:12.997266479Z     at jiti (/opt/render/project/src/node_modules/jiti/dist/jiti.js:1:249841)
+2026-03-09T12:44:12.997270359Z     at /opt/render/project/src/node_modules/tailwindcss/lib/lib/load-config.js:53:30
+2026-03-09T12:44:12.997275849Z     at loadConfig (/opt/render/project/src/node_modules/tailwindcss/lib/lib/load-config.js:55:6)
+2026-03-09T12:44:12.997282629Z     at getTailwindConfig (/opt/render/project/src/node_modules/tailwindcss/lib/lib/setupTrackingContext.js:74:116) {
+2026-03-09T12:44:12.99728895Z   code: 'PLUGIN_ERROR',
+2026-03-09T12:44:12.9972948Z   requireStack: [ '/opt/render/project/src/tailwind.config.ts' ],
+2026-03-09T12:44:12.99730079Z   loc: { file: undefined, line: undefined, column: NaN },
+2026-03-09T12:44:12.99730727Z   pluginCode: "@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');\n" +
+2026-03-09T12:44:12.997325211Z     '\n' +
+2026-03-09T12:44:12.997329862Z     '@tailwind base;\n' +
+2026-03-09T12:44:12.997333982Z     '@tailwind components;\n' +
+2026-03-09T12:44:12.997337952Z     '@tailwind utilities;\n' +
+2026-03-09T12:44:12.997342642Z     '\n' +
+2026-03-09T12:44:12.997346243Z     '@layer base {\n' +
+2026-03-09T12:44:12.997350343Z     '  :root {\n' +
+2026-03-09T12:44:12.997354183Z     "    --font-sans: 'Space Grotesk', sans-serif;\n" +
+2026-03-09T12:44:12.997357933Z     "    --font-display: 'Outfit', sans-serif;\n" +
+2026-03-09T12:44:12.997361913Z     '\n' +
+2026-03-09T12:44:12.997365993Z     '    /* Dark Mode F1 Theme */\n' +
+2026-03-09T12:44:12.997370684Z     '    --background: 0 0% 7%;\n' +
+2026-03-09T12:44:12.997373634Z     '    --foreground: 0 0% 98%;\n' +
+2026-03-09T12:44:12.997376194Z     '\n' +
+2026-03-09T12:44:12.997378724Z     '    --card: 0 0% 11%;\n' +
+2026-03-09T12:44:12.997381224Z     '    --card-foreground: 0 0% 98%;\n' +
+2026-03-09T12:44:12.997383714Z     '\n' +
+2026-03-09T12:44:12.997386234Z     '    --popover: 0 0% 11%;\n' +
+2026-03-09T12:44:12.997388834Z     '    --popover-foreground: 0 0% 98%;\n' +
+2026-03-09T12:44:12.997391465Z     '\n' +
+2026-03-09T12:44:12.997394015Z     '    /* F1 Racing Red */\n' +
+2026-03-09T12:44:12.997396525Z     '    --primary: 358 100% 45%;\n' +
+2026-03-09T12:44:12.997399045Z     '    --primary-foreground: 0 0% 100%;\n' +
+2026-03-09T12:44:12.997401565Z     '\n' +
+2026-03-09T12:44:12.997404025Z     '    --secondary: 0 0% 15%;\n' +
+2026-03-09T12:44:12.997406565Z     '    --secondary-foreground: 0 0% 98%;\n' +
+2026-03-09T12:44:12.997409055Z     '\n' +
+2026-03-09T12:44:12.997411526Z     '    --muted: 0 0% 15%;\n' +
+2026-03-09T12:44:12.997414076Z     '    --muted-foreground: 0 0% 65%;\n' +
+2026-03-09T12:44:12.997416586Z     '\n' +
+2026-03-09T12:44:12.997419046Z     '    --accent: 358 100% 45%;\n' +
+2026-03-09T12:44:12.997421566Z     '    --accent-foreground: 0 0% 100%;\n' +
+2026-03-09T12:44:12.997424046Z     '\n' +
+2026-03-09T12:44:12.997426516Z     '    --destructive: 0 84% 60%;\n' +
+2026-03-09T12:44:12.997429047Z     '    --destructive-foreground: 0 0% 98%;\n' +
+2026-03-09T12:44:12.997431547Z     '\n' +
+2026-03-09T12:44:12.997434097Z     '    --border: 0 0% 20%;\n' +
+2026-03-09T12:44:12.997436597Z     '    --input: 0 0% 20%;\n' +
+2026-03-09T12:44:12.997439067Z     '    --ring: 358 100% 45%;\n' +
+2026-03-09T12:44:12.997441537Z     '\n' +
+2026-03-09T12:44:12.997443997Z     '    --radius: 0.5rem;\n' +
+2026-03-09T12:44:12.997446507Z     '  }\n' +
+2026-03-09T12:44:12.997448997Z     '\n' +
+2026-03-09T12:44:12.997451468Z     '  * {\n' +
+2026-03-09T12:44:12.997453968Z     '    @apply border-border;\n' +
+2026-03-09T12:44:12.997456438Z     '  }\n' +
+2026-03-09T12:44:12.997460368Z     '\n' +
+2026-03-09T12:44:12.997464408Z     '  body {\n' +
+2026-03-09T12:44:12.997468838Z     '    @apply bg-background text-foreground antialiased selection:bg-primary/30;\n' +
+2026-03-09T12:44:12.997473479Z     '    font-family: var(--font-sans);\n' +
+2026-03-09T12:44:12.997477719Z     '    background-image: \n' +
+2026-03-09T12:44:12.997481919Z     '      radial-gradient(circle at 50% 0%, rgba(225, 6, 0, 0.15), transparent 50%),\n' +
+2026-03-09T12:44:12.997488629Z     `      url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h10v10H0V0zm10 10h10v10H10V10zM0 10h10v10H0V10zm10-10h10v10H10V0z' fill='%231a1a1a' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E");\n` +
+2026-03-09T12:44:12.99749896Z     '    background-attachment: fixed;\n' +
+2026-03-09T12:44:12.99750168Z     '  }\n' +
+2026-03-09T12:44:12.99750427Z     '\n' +
+2026-03-09T12:44:12.99750678Z     '  h1, h2, h3, h4, h5, h6 {\n' +
+2026-03-09T12:44:12.99750927Z     '    font-family: var(--font-display);\n' +
+2026-03-09T12:44:12.997511751Z     '    text-transform: uppercase;\n' +
+2026-03-09T12:44:12.99751424Z     '    letter-spacing: -0.02em;\n' +
+2026-03-09T12:44:12.997516851Z     '  }\n' +
+2026-03-09T12:44:12.997520151Z     '}\n' +
+2026-03-09T12:44:12.997522671Z     '\n' +
+2026-03-09T12:44:12.997525161Z     '@layer utilities {\n' +
+2026-03-09T12:44:12.997527691Z     '  .f1-slant {\n' +
+2026-03-09T12:44:12.997530251Z     '    transform: skewX(-12deg);\n' +
+2026-03-09T12:44:12.997532832Z     '  }\n' +
+2026-03-09T12:44:12.997535361Z     '  \n' +
+2026-03-09T12:44:12.997537902Z     '  .f1-slant-reverse {\n' +
+2026-03-09T12:44:12.997540432Z     '    transform: skewX(12deg);\n' +
+2026-03-09T12:44:12.997542992Z     '  }\n' +
+2026-03-09T12:44:12.997545502Z     '  \n' +
+2026-03-09T12:44:12.997548012Z     '  .glass-panel {\n' +
+2026-03-09T12:44:12.997550572Z     '    @apply bg-card/80 backdrop-blur-md border border-border/50 shadow-xl;\n' +
+2026-03-09T12:44:12.997553082Z     '  }\n' +
+2026-03-09T12:44:12.997555542Z     '\n' +
+2026-03-09T12:44:12.997558103Z     '  .red-glow {\n' +
+2026-03-09T12:44:12.997560663Z     '    box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.4);\n' +
+2026-03-09T12:44:12.997563143Z     '  }\n' +
+2026-03-09T12:44:12.997565623Z     '}\n',
+2026-03-09T12:44:12.997568083Z   plugin: 'vite:css',
+2026-03-09T12:44:12.997570663Z   hook: 'transform',
+2026-03-09T12:44:12.997573174Z   id: '/opt/render/project/src/client/src/index.css',
+2026-03-09T12:44:12.997575634Z   watchFiles: [
+2026-03-09T12:44:12.997591434Z     '/opt/render/project/src/client/index.html',
+2026-03-09T12:44:12.997594535Z     '/opt/render/project/src/client/src/main.tsx',
+2026-03-09T12:44:12.997597035Z     '/opt/render/project/src/package.json',
+2026-03-09T12:44:12.997599535Z     '/opt/render/project/src/node_modules/react/jsx-runtime.js',
+2026-03-09T12:44:12.997602235Z     '/opt/render/project/src/node_modules/react-dom/client.js',
+2026-03-09T12:44:12.997604715Z     '/opt/render/project/src/client/src/App.tsx',
+2026-03-09T12:44:12.997607195Z     '/opt/render/project/src/client/src/index.css'
+2026-03-09T12:44:12.997609765Z   ]
+2026-03-09T12:44:12.997612385Z }
+2026-03-09T12:44:13.066265515Z ==> Build failed 😞
+2026-03-09T12:44:13.066283106Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
