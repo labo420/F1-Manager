@@ -4,9 +4,10 @@ import { useActiveLobby, useCreateLobby, useJoinLobby, useSetTeamName, useLobbyI
 import { useRaces } from "@/hooks/use-races";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Lock, PlusCircle, LogIn, Crown, ChevronRight, ChevronDown, Users, Star, Trophy, Car, Copy, Timer, Zap } from "lucide-react";
+import { Calendar, Lock, PlusCircle, LogIn, Crown, ChevronRight, ChevronDown, Users, Star, Trophy, Car, Copy, Timer, Zap, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import type { RaceFantasyWinners } from "@shared/schema";
 import { DriverAvatar } from "@/components/DriverAvatar";
 
@@ -437,6 +438,17 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  {status === "risultati" && (
+                    <Link href={`/race/${race.id}/results`}>
+                      <button 
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-2 hover:bg-white/10 rounded-lg transition-colors group/link"
+                        title="View Official Results"
+                      >
+                        <ExternalLink className="w-4 h-4 text-primary group-hover/link:scale-110 transition-transform" />
+                      </button>
+                    </Link>
+                  )}
                   <span className={`text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border ${getStatusColor(status)}`}>
                     {getStatusLabel(status)}
                   </span>
