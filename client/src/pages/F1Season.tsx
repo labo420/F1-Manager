@@ -457,7 +457,7 @@ export default function F1Season() {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-[10px] uppercase font-bold bg-green-500/20 text-green-400 px-2.5 py-1 rounded-full">Official</span>
+                          <span className="text-[10px] uppercase font-bold bg-green-500/20 text-green-400 px-2.5 py-1 rounded-full">Results</span>
                           {expandedRace === race.id ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
                         </div>
                       </button>
