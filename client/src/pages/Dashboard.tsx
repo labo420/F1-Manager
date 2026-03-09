@@ -105,12 +105,14 @@ function getRaceStatus(race: any): "coming-soon" | "in-corso" | "risultati" {
   const now = new Date();
   const raceDate = new Date(race.date);
   
-  // LIVE logic: Active if today is the race date
+  // LIVE logic: Active only on the race day (within ~4 hours of start)
   const isSameDay = now.getUTCFullYear() === raceDate.getUTCFullYear() &&
                     now.getUTCMonth() === raceDate.getUTCMonth() &&
                     now.getUTCDate() === raceDate.getUTCDate();
-                    
-  if (isSameDay || now.getTime() >= raceDate.getTime()) return "in-corso";
+  const fourHoursMs = 4 * 60 * 60 * 1000;
+  const isWithinRaceWindow = now.getTime() >= raceDate.getTime() && now.getTime() <= raceDate.getTime() + fourHoursMs;
+
+  if (isSameDay && isWithinRaceWindow) return "in-corso";
   return "coming-soon";
 }
 
