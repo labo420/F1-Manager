@@ -251,39 +251,50 @@ export default function F1Season() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
-      <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-3 mb-4">
-          <div className="w-16 h-16 bg-primary rounded-tr-2xl rounded-bl-2xl f1-slant flex items-center justify-center red-glow">
-            <Flag className="w-8 h-8 text-white f1-slant-reverse" />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center mb-16"
+      >
+        <div className="inline-flex items-center justify-center mb-8 relative">
+          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+          <div className="w-24 h-24 bg-primary rounded-tr-[2rem] rounded-bl-[2rem] f1-slant flex items-center justify-center red-glow relative z-10 border-4 border-white/10 shadow-2xl">
+            <Flag className="w-12 h-12 text-white f1-slant-reverse" />
           </div>
         </div>
-        <h1 className="text-4xl md:text-5xl font-display font-black text-white uppercase tracking-tight" data-testid="text-f1-title">
-          F1 2026 <span className="text-primary">World Championship</span>
+        <h1 className="text-5xl md:text-7xl font-display font-black text-white uppercase tracking-tighter leading-none mb-4" data-testid="text-f1-title">
+          F1 2026 <span className="text-primary italic">World</span> <br className="sm:hidden" />
+          <span className="text-white">Championship</span>
         </h1>
-        <p className="text-muted-foreground mt-3 uppercase tracking-[0.2em] text-[11px] font-bold">
-          Official FIA Season Records
-        </p>
-      </div>
+        <div className="flex items-center justify-center gap-4">
+          <div className="h-px w-12 bg-white/20" />
+          <p className="text-muted-foreground uppercase tracking-[0.4em] text-[10px] font-black opacity-80">
+            Official FIA Season Records
+          </p>
+          <div className="h-px w-12 bg-white/20" />
+        </div>
+      </motion.div>
 
-      <div className="flex justify-center mb-8">
-        <div className="flex bg-zinc-950/50 p-1 rounded-xl border border-white/5 gap-1">
+      <div className="flex justify-center mb-12">
+        <div className="glass-panel rounded-2xl p-1.5 inline-flex gap-1 border-2 border-white/5 shadow-2xl" data-testid="toggle-f1-tabs">
           {[
-            { key: "drivers" as const, label: "Driver Standings", icon: Trophy },
-            { key: "constructors" as const, label: "Constructor Standings", icon: Users },
-            { key: "archive" as const, label: "Race Archive", icon: Calendar },
+            { key: "drivers" as const, label: "Drivers", icon: Trophy },
+            { key: "constructors" as const, label: "Teams", icon: Users },
+            { key: "archive" as const, label: "Races", icon: Calendar },
           ].map(t => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               data-testid={`tab-${t.key}`}
-              className={`flex items-center gap-2 px-5 py-3 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${
-                tab === t.key ? "bg-primary text-white shadow-lg" : "text-muted-foreground hover:text-white"
+              className={`flex items-center gap-3 px-8 py-4 text-[11px] font-black uppercase tracking-[0.15em] rounded-xl transition-all duration-300 ${
+                tab === t.key 
+                  ? "bg-primary text-white shadow-xl shadow-primary/20 scale-105 z-10" 
+                  : "text-muted-foreground hover:text-white hover:bg-white/5"
               }`}
             >
-              <t.icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{t.label}</span>
-              <span className="sm:hidden">{t.key === "constructors" ? "Teams" : t.key === "archive" ? "Races" : "Drivers"}</span>
+              <t.icon className={`w-4 h-4 transition-transform ${tab === t.key ? "scale-110" : ""}`} />
+              <span>{t.label}</span>
             </button>
           ))}
         </div>
@@ -297,16 +308,16 @@ export default function F1Season() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse" data-testid="table-driver-standings">
                     <thead>
-                      <tr className="border-b border-border bg-secondary/50">
-                        <th className="px-4 py-4 font-bold text-muted-foreground uppercase text-[10px] w-12">Pos</th>
-                        <th className="px-4 py-4 font-bold text-muted-foreground uppercase text-[10px]">Driver</th>
-                        <th className="px-4 py-4 font-bold text-muted-foreground uppercase text-[10px] hidden md:table-cell">Team</th>
-                        <th className="px-4 py-4 font-bold text-muted-foreground uppercase text-[10px] text-center hidden sm:table-cell">Wins</th>
-                        <th className="px-4 py-4 font-bold text-muted-foreground uppercase text-[10px] text-center hidden sm:table-cell">Podiums</th>
-                        <th className="px-4 py-4 font-bold text-primary uppercase text-[10px] text-right">Pts</th>
+                      <tr className="border-b border-white/5 bg-white/5">
+                        <th className="px-6 py-5 font-black text-muted-foreground uppercase text-[10px] tracking-widest w-16">Pos</th>
+                        <th className="px-6 py-5 font-black text-muted-foreground uppercase text-[10px] tracking-widest">Driver</th>
+                        <th className="px-6 py-5 font-black text-muted-foreground uppercase text-[10px] tracking-widest hidden md:table-cell">Team</th>
+                        <th className="px-6 py-5 font-black text-muted-foreground uppercase text-[10px] tracking-widest text-center hidden sm:table-cell">Wins</th>
+                        <th className="px-6 py-5 font-black text-muted-foreground uppercase text-[10px] tracking-widest text-center hidden sm:table-cell">Podiums</th>
+                        <th className="px-6 py-5 font-black text-primary uppercase text-[10px] tracking-widest text-right">Pts</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-white/5">
                       {displayDriverStandings.map((d, i) => (
                         <motion.tr
                           key={d.driverId}
@@ -314,29 +325,51 @@ export default function F1Season() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.03 }}
                           data-testid={`row-driver-${d.driverId}`}
-                          className={`border-b border-border/30 hover:bg-white/5 transition-colors ${i === 0 ? "bg-primary/5" : ""}`}
+                          className={`group hover:bg-white/10 transition-all duration-300 ${i === 0 ? "bg-primary/10" : ""}`}
                         >
-                          <td className="px-4 py-4 font-display font-bold text-lg">
-                            {i === 0 ? <span className="text-yellow-400">1</span> :
-                             i === 1 ? <span className="text-gray-300">2</span> :
-                             i === 2 ? <span className="text-amber-600">3</span> :
-                             <span className="text-muted-foreground">{i + 1}</span>}
-                          </td>
-                          <td className="px-4 py-4">
-                            <div className="flex items-center gap-2.5">
-                              <DriverAvatar number={d.number ?? undefined} name={d.name} teamColor={TEAM_COLORS[d.team]} />
-                              <div className="w-0.5 h-7 rounded-full shrink-0" style={{ backgroundColor: TEAM_COLORS[d.team] || "#666" }}></div>
-                              <div>
-                                <div className="font-bold text-white">{d.name}</div>
-                                <div className="text-[10px] text-muted-foreground md:hidden">{d.team}</div>
-                              </div>
-                              {d.number && <span className="text-[10px] font-mono text-muted-foreground bg-white/5 px-1.5 py-0.5 rounded hidden lg:inline">#{d.number}</span>}
+                          <td className="px-6 py-6">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors">
+                              <span className={`font-display font-black text-xl ${
+                                i === 0 ? "text-yellow-400" :
+                                i === 1 ? "text-gray-300" :
+                                i === 2 ? "text-amber-600" :
+                                "text-muted-foreground"
+                              }`}>
+                                {i + 1}
+                              </span>
                             </div>
                           </td>
-                          <td className="px-4 py-4 text-muted-foreground text-sm hidden md:table-cell">{d.team}</td>
-                          <td className="px-4 py-4 text-center text-white font-bold hidden sm:table-cell">{d.wins}</td>
-                          <td className="px-4 py-4 text-center text-muted-foreground hidden sm:table-cell">{d.podiums}</td>
-                          <td className="px-4 py-4 text-right font-display font-black text-xl text-white">{d.totalPoints}</td>
+                          <td className="px-6 py-6">
+                            <div className="flex items-center gap-4">
+                              <div className="relative">
+                                <DriverAvatar number={d.number ?? undefined} name={d.name} teamColor={TEAM_COLORS[d.team]} />
+                                <div 
+                                  className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background shadow-lg" 
+                                  style={{ backgroundColor: TEAM_COLORS[d.team] || "#444" }}
+                                />
+                              </div>
+                              <div>
+                                <div className="font-display font-black text-lg text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none mb-1">{d.name}</div>
+                                <div className="text-[10px] text-muted-foreground font-black uppercase tracking-widest md:hidden">{d.team}</div>
+                                {d.number && <span className="text-[9px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded tracking-tighter lg:hidden">#{d.number}</span>}
+                              </div>
+                              {d.number && <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-1 rounded tracking-tighter hidden lg:inline-block">#{d.number}</span>}
+                            </div>
+                          </td>
+                          <td className="px-6 py-6 hidden md:table-cell">
+                            <div className="flex items-center gap-3">
+                              <TeamAvatar name={d.team} size="sm" />
+                              <span className="text-muted-foreground font-black uppercase text-xs tracking-widest">{d.team}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-6 text-center text-white font-display font-black text-lg hidden sm:table-cell tabular-nums">{d.wins}</td>
+                          <td className="px-6 py-6 text-center text-muted-foreground font-display font-bold text-lg hidden sm:table-cell tabular-nums">{d.podiums}</td>
+                          <td className="px-6 py-6 text-right">
+                            <div className="flex flex-col items-end">
+                              <span className="font-display font-black text-2xl text-white tracking-tighter tabular-nums leading-none">{d.totalPoints}</span>
+                              <span className="text-[8px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
+                            </div>
+                          </td>
                         </motion.tr>
                       ))}
                     </tbody>
@@ -349,18 +382,18 @@ export default function F1Season() {
 
         {tab === "constructors" && (
           <motion.div key="constructors" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <div className="glass-panel rounded-3xl p-1 overflow-hidden">
-              <div className="bg-background rounded-[22px] overflow-hidden">
+            <div className="glass-panel rounded-3xl p-1 overflow-hidden shadow-2xl">
+              <div className="bg-background/40 backdrop-blur-sm rounded-[22px] overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse" data-testid="table-constructor-standings">
                     <thead>
-                      <tr className="border-b border-border bg-secondary/50">
-                        <th className="px-6 py-4 font-bold text-muted-foreground uppercase text-[10px] w-16">Pos</th>
-                        <th className="px-6 py-4 font-bold text-muted-foreground uppercase text-[10px]">Constructor</th>
-                        <th className="px-6 py-4 font-bold text-primary uppercase text-[10px] text-right">Pts</th>
+                      <tr className="border-b border-white/5 bg-white/5">
+                        <th className="px-6 py-5 font-black text-muted-foreground uppercase text-[10px] tracking-widest w-20">Pos</th>
+                        <th className="px-6 py-5 font-black text-muted-foreground uppercase text-[10px] tracking-widest">Constructor</th>
+                        <th className="px-6 py-5 font-black text-primary uppercase text-[10px] tracking-widest text-right">Pts</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-white/5">
                       {constructorStandings?.map((c, i) => (
                         <motion.tr
                           key={c.constructorId}
@@ -368,22 +401,33 @@ export default function F1Season() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.05 }}
                           data-testid={`row-constructor-${c.constructorId}`}
-                          className={`border-b border-border/30 hover:bg-white/5 transition-colors ${i === 0 ? "bg-primary/5" : ""}`}
+                          className={`group hover:bg-white/10 transition-all duration-300 ${i === 0 ? "bg-primary/10" : ""}`}
                         >
-                          <td className="px-6 py-5 font-display font-bold text-xl">
-                            {i === 0 ? <span className="text-yellow-400">1</span> :
-                             i === 1 ? <span className="text-gray-300">2</span> :
-                             i === 2 ? <span className="text-amber-600">3</span> :
-                             <span className="text-muted-foreground">{i + 1}</span>}
-                          </td>
-                          <td className="px-6 py-5">
-                            <div className="flex items-center gap-4">
-                              <div className="w-1.5 h-10 rounded-full" style={{ backgroundColor: c.color || "#666" }}></div>
-                              <TeamAvatar name={c.name} size="md" />
-                              <span className="font-bold text-white text-lg">{c.name}</span>
+                          <td className="px-6 py-6">
+                            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors">
+                              <span className={`font-display font-black text-2xl ${
+                                i === 0 ? "text-yellow-400" :
+                                i === 1 ? "text-gray-300" :
+                                i === 2 ? "text-amber-600" :
+                                "text-muted-foreground"
+                              }`}>
+                                {i + 1}
+                              </span>
                             </div>
                           </td>
-                          <td className="px-6 py-5 text-right font-display font-black text-2xl text-white">{c.totalPoints}</td>
+                          <td className="px-6 py-6">
+                            <div className="flex items-center gap-5">
+                              <div className="w-1.5 h-12 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]" style={{ backgroundColor: c.color || "#666", boxShadow: `0 0 15px ${c.color}40` }}></div>
+                              <TeamAvatar name={c.name} size="lg" />
+                              <span className="font-display font-black text-xl text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none">{c.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-6 text-right">
+                            <div className="flex flex-col items-end">
+                              <span className="font-display font-black text-3xl text-white tracking-tighter tabular-nums leading-none">{c.totalPoints}</span>
+                              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
+                            </div>
+                          </td>
                         </motion.tr>
                       ))}
                     </tbody>
@@ -397,35 +441,62 @@ export default function F1Season() {
         {tab === "archive" && (
           <motion.div key="archive" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             {completedRaces.length > 0 && (
-              <div className="mb-8">
-                <h2 className="text-lg font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-primary" /> Completed Rounds
+              <div className="mb-12">
+                <h2 className="text-xl font-display font-black text-white uppercase tracking-[0.2em] mb-8 flex items-center gap-4 px-2">
+                  <Award className="w-6 h-6 text-primary" /> 
+                  <span>Completed Rounds</span>
+                  <div className="h-px flex-1 bg-white/5" />
                 </h2>
-                <div className="space-y-3">
-                  {completedRaces.map((race) => (
-                    <div key={race.id} data-testid={`archive-race-${race.id}`}>
+                <div className="grid grid-cols-1 gap-4">
+                  {completedRaces.map((race, idx) => (
+                    <motion.div 
+                      key={race.id} 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      data-testid={`archive-race-${race.id}`}
+                    >
                       <button
                         onClick={() => setExpandedRace(expandedRace === race.id ? null : race.id)}
-                        className="w-full glass-panel rounded-2xl p-5 flex items-center justify-between hover:bg-white/5 transition-all group"
+                        className={`w-full glass-panel rounded-3xl p-6 flex items-center justify-between transition-all duration-300 group relative overflow-hidden border-2 ${
+                          expandedRace === race.id ? "bg-white/10 border-primary/50" : "hover:bg-white/5 border-white/5"
+                        }`}
                         data-testid={`button-expand-race-${race.id}`}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary font-display font-black text-sm">
-                            R{race.round}
+                        {expandedRace === race.id && (
+                          <div className="absolute top-0 left-0 w-1.5 h-full bg-primary" />
+                        )}
+                        <div className="flex items-center gap-6">
+                          <div className="w-14 h-14 bg-white/5 rounded-2xl flex flex-col items-center justify-center border border-white/10 group-hover:bg-primary/10 group-hover:border-primary/20 transition-colors">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase leading-none mb-1">RND</span>
+                            <span className="text-xl font-display font-black text-white leading-none">{race.round}</span>
                           </div>
                           <div className="text-left">
-                            <div className="font-bold text-white flex items-center gap-2">
-                              {getCircuitFlag(race.name)}
-                              <span>{race.name}</span>
+                            <div className="flex items-center gap-3 mb-1">
+                              <span className="font-display font-black text-2xl text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none">
+                                {race.name}
+                              </span>
                             </div>
-                            <div className="text-xs text-muted-foreground">
-                              {race.country} · {race.circuitName || ""} · {format(new Date(race.date), "MMM do, yyyy")}
+                            <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                              <div className="flex items-center gap-1.5">
+                                {getCircuitFlag(race.name)}
+                                <span>{race.country}</span>
+                              </div>
+                              <span className="w-1 h-1 rounded-full bg-white/20" />
+                              <span>{format(new Date(race.date), "MMM do, yyyy")}</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-[10px] uppercase font-bold bg-green-500/20 text-green-400 px-2.5 py-1 rounded-full">Results</span>
-                          {expandedRace === race.id ? <ChevronUp className="w-5 h-5 text-muted-foreground" /> : <ChevronDown className="w-5 h-5 text-muted-foreground" />}
+                        <div className="flex items-center gap-6">
+                          <div className="hidden md:flex flex-col items-end">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 opacity-40">Circuit</span>
+                            <span className="text-xs font-bold text-white uppercase tracking-tight">{race.circuitName || "TBA"}</span>
+                          </div>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                            expandedRace === race.id ? "bg-primary text-white rotate-180" : "bg-white/5 text-muted-foreground group-hover:text-white"
+                          }`}>
+                            <ChevronDown className="w-6 h-6" />
+                          </div>
                         </div>
                       </button>
 
@@ -437,64 +508,83 @@ export default function F1Season() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className="glass-panel rounded-2xl mt-2 p-6 space-y-6">
+                            <div className="glass-panel rounded-3xl mt-3 p-8 border-2 border-white/10 shadow-2xl relative overflow-hidden">
+                              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
+                              
                               <CircuitInfo race={race} />
 
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div className="bg-zinc-900 rounded-xl p-4 text-center border border-white/5">
-                                  <Timer className="w-5 h-5 text-purple-400 mx-auto mb-2" />
-                                  <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Fastest Lap</div>
-                                  <div className="text-white font-bold">{raceDetail.fastestLapDriver || "N/A"}</div>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+                                <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 group hover:border-primary/30 transition-colors">
+                                  <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <Timer className="w-6 h-6 text-purple-400" />
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Fastest Lap</div>
+                                  <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.fastestLapDriver || "N/A"}</div>
                                 </div>
-                                <div className="bg-zinc-900 rounded-xl p-4 text-center border border-white/5">
-                                  <Zap className="w-5 h-5 text-yellow-400 mx-auto mb-2" />
-                                  <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Total Overtakes</div>
-                                  <div className="text-white font-bold text-xl">{raceDetail.totalOvertakes}</div>
+                                <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 group hover:border-primary/30 transition-colors">
+                                  <div className="w-12 h-12 bg-yellow-400/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <Zap className="w-6 h-6 text-yellow-400" />
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Overtakes</div>
+                                  <div className="text-white font-display font-black text-3xl uppercase tracking-tighter leading-none">{raceDetail.totalOvertakes}</div>
                                 </div>
-                                <div className="bg-zinc-900 rounded-xl p-4 text-center border border-white/5">
-                                  <Trophy className="w-5 h-5 text-yellow-400 mx-auto mb-2" />
-                                  <div className="text-[10px] text-muted-foreground uppercase font-bold mb-1">Winner</div>
-                                  <div className="text-white font-bold">{raceDetail.driverResults[0]?.driverName || "N/A"}</div>
+                                <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 group hover:border-primary/30 transition-colors">
+                                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <Trophy className="w-6 h-6 text-primary" />
+                                  </div>
+                                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Winner</div>
+                                  <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.driverResults[0]?.driverName || "N/A"}</div>
                                 </div>
                               </div>
 
-                              <div>
-                                <h3 className="text-sm font-bold text-muted-foreground uppercase mb-3">Full Classification</h3>
-                                <div className="space-y-1">
+                              <div className="mt-10">
+                                <div className="flex items-center justify-between mb-6 px-2">
+                                  <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em]">Grid Classification</h3>
+                                  <div className="h-px flex-1 bg-white/5 mx-4" />
+                                </div>
+                                <div className="space-y-2">
                                   {raceDetail.driverResults.map((dr, idx) => (
                                     <div
                                       key={dr.driverId}
-                                      className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-                                        idx < 3 ? "bg-zinc-900 border border-white/5" : "hover:bg-white/5"
+                                      className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${
+                                        idx < 3 ? "bg-white/5 border border-white/10 shadow-lg" : "hover:bg-white/5"
                                       }`}
                                     >
-                                      <div className="flex items-center gap-2.5">
-                                        <span className={`w-5 text-center font-display font-bold text-xs shrink-0 ${
-                                          idx === 0 ? "text-yellow-400" : idx === 1 ? "text-gray-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground"
+                                      <div className="flex items-center gap-4">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border ${
+                                          idx === 0 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" : 
+                                          idx === 1 ? "bg-gray-300/20 border-gray-300/40 text-gray-300" : 
+                                          idx === 2 ? "bg-amber-600/20 border-amber-600/40 text-amber-600" : 
+                                          "bg-white/5 border-white/10 text-muted-foreground"
                                         }`}>
-                                          P{dr.position ?? "-"}
-                                        </span>
-                                        <DriverAvatar name={dr.driverName} teamColor={TEAM_COLORS[dr.driverTeam]} />
-                                        <div className="w-0.5 h-6 rounded-full shrink-0" style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#666" }}></div>
+                                          {dr.position ?? "-"}
+                                        </div>
+                                        <div className="relative">
+                                          <DriverAvatar name={dr.driverName} teamColor={TEAM_COLORS[dr.driverTeam]} />
+                                          <div 
+                                            className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" 
+                                            style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#444" }}
+                                          />
+                                        </div>
                                         <div>
-                                          <div className="text-white font-bold text-sm flex items-center gap-1">
+                                          <div className="text-white font-display font-black text-base uppercase tracking-tight flex items-center gap-2">
                                             {dr.driverName}
-                                            {dr.fastestLap && <span className="text-[9px] bg-purple-500/20 text-purple-400 px-1 py-0.5 rounded font-bold">FL</span>}
+                                            {dr.fastestLap && (
+                                              <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black tracking-widest border border-purple-500/30">FL</span>
+                                            )}
                                           </div>
-                                          <div className="text-muted-foreground text-xs">{dr.driverTeam}</div>
+                                          <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{dr.driverTeam}</div>
                                         </div>
                                       </div>
-                                      <div className="flex items-center gap-4">
-                                        {idx === 0 ? (
-                                          <span className="text-xs text-muted-foreground font-mono">{dr.time || "—"}</span>
-                                        ) : (
-                                          <span className="text-xs text-muted-foreground font-mono">
-                                            {dr.status === "Finished"
-                                              ? (dr.gap ? (dr.gap.startsWith("+") ? `${dr.gap}s` : `+${dr.gap}s`) : "Finished")
-                                              : dr.status || "DNF"}
-                                          </span>
-                                        )}
-                                        <span className="font-display font-bold text-white w-10 text-right">{dr.points}</span>
+                                      <div className="flex items-center gap-6">
+                                        <div className="text-right tabular-nums">
+                                          <div className="text-sm font-display font-black text-white leading-none">{dr.time || (idx === 0 ? "WINNER" : dr.gap || "DNF")}</div>
+                                          <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Interval</div>
+                                        </div>
+                                        <div className="w-12 text-right tabular-nums">
+                                          <div className="text-lg font-display font-black text-primary leading-none">+{dr.points}</div>
+                                          <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Points</div>
+                                        </div>
                                       </div>
                                     </div>
                                   ))}
@@ -504,42 +594,73 @@ export default function F1Season() {
                           </motion.div>
                         )}
                       </AnimatePresence>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
             )}
 
             <div>
-              <h2 className="text-lg font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-muted-foreground" /> Upcoming Rounds
+              <h2 className="text-xl font-display font-black text-white uppercase tracking-[0.2em] mb-8 flex items-center gap-4 px-2">
+                <Calendar className="w-6 h-6 text-muted-foreground" /> 
+                <span>Upcoming Grid</span>
+                <div className="h-px flex-1 bg-white/5" />
               </h2>
               {upcomingRaces.length === 0 ? (
-                <div className="glass-panel rounded-2xl p-8 text-center text-muted-foreground">Season complete.</div>
+                <div className="glass-panel rounded-3xl p-12 text-center text-muted-foreground border-2 border-dashed border-white/10">
+                  <Flag className="w-12 h-12 text-primary mx-auto mb-4 opacity-20" />
+                  <p className="font-display font-bold uppercase tracking-widest text-sm">Season Grid Complete</p>
+                </div>
               ) : (
-                <div className="space-y-3">
-                  {upcomingRaces.map((race) => (
-                    <div key={race.id} data-testid={`upcoming-race-${race.id}`}>
+                <div className="grid grid-cols-1 gap-4">
+                  {upcomingRaces.map((race, idx) => (
+                    <motion.div 
+                      key={race.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      data-testid={`upcoming-race-${race.id}`}
+                    >
                       <button
                         onClick={() => setExpandedUpcoming(expandedUpcoming === race.id ? null : race.id)}
-                        className="w-full glass-panel rounded-xl p-4 flex items-center justify-between hover:bg-white/5 transition-all text-left"
+                        className={`w-full glass-panel rounded-[2rem] p-6 flex items-center justify-between transition-all duration-300 group border-2 ${
+                          expandedUpcoming === race.id ? "bg-white/10 border-white/20" : "hover:bg-white/5 border-white/5"
+                        }`}
                         data-testid={`button-expand-upcoming-${race.id}`}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 bg-secondary rounded-lg flex items-center justify-center text-muted-foreground font-display font-bold text-xs">
-                            R{race.round}
+                        <div className="flex items-center gap-6">
+                          <div className="w-14 h-14 bg-white/5 rounded-2xl flex flex-col items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
+                            <span className="text-[10px] font-black text-muted-foreground uppercase leading-none mb-1">RND</span>
+                            <span className="text-xl font-display font-black text-white leading-none">{race.round}</span>
                           </div>
-                          <div>
-                            <div className="font-bold text-white text-sm">{race.name}</div>
-                            <div className="text-[10px] text-muted-foreground">
-                              {race.country} · {format(new Date(race.date), "MMM do, yyyy")}
-                              {race.circuitName && <span> · {race.circuitName}</span>}
+                          <div className="text-left">
+                            <div className="font-display font-black text-2xl text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none mb-1">
+                              {race.name}
+                            </div>
+                            <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                              <div className="flex items-center gap-1.5">
+                                {getCircuitFlag(race.name)}
+                                <span>{race.country}</span>
+                              </div>
+                              <span className="w-1 h-1 rounded-full bg-white/20" />
+                              <span>{format(new Date(race.date), "MMM do, yyyy")}</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {race.isLocked && <span className="text-[9px] uppercase font-bold bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full">Locked</span>}
-                          {expandedUpcoming === race.id ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                        <div className="flex items-center gap-6">
+                          <div className="flex items-center gap-3">
+                            {race.isLocked && (
+                              <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-400 px-3 py-1.5 rounded-full border border-amber-500/20">
+                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Locked</span>
+                              </div>
+                            )}
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                              expandedUpcoming === race.id ? "bg-white/20 text-white rotate-180" : "bg-white/5 text-muted-foreground group-hover:text-white"
+                            }`}>
+                              <ChevronDown className="w-6 h-6" />
+                            </div>
+                          </div>
                         </div>
                       </button>
 
@@ -551,13 +672,13 @@ export default function F1Season() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className="glass-panel rounded-xl mt-1 p-4">
+                            <div className="glass-panel rounded-3xl mt-3 p-8 border-2 border-white/10 shadow-2xl">
                               <CircuitInfo race={race} />
                             </div>
                           </motion.div>
                         )}
                       </AnimatePresence>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
