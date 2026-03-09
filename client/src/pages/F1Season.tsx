@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Flag, Calendar, ChevronDown, ChevronUp, Zap, Timer, Award, Users, MapPin, Ruler, RotateCcw } from "lucide-react";
+import { Trophy, Flag, Calendar, ChevronDown, Zap, Timer, Award, Users, MapPin, Ruler, RotateCcw, Activity, Gauge } from "lucide-react";
 import { format } from "date-fns";
 import { DriverAvatar } from "@/components/DriverAvatar";
 import { TeamAvatar } from "@/components/TeamAvatar";
@@ -58,6 +58,30 @@ type RaceDetail = {
   }>;
   fastestLapDriver: string | null;
   totalOvertakes: number;
+};
+
+type QualifyingResult = {
+  position: number;
+  driverNumber: number;
+  driverCode: string | null;
+  driverName: string;
+  teamName: string;
+  q1: string | null;
+  q2: string | null;
+  q3: string | null;
+  gap: string | null;
+};
+
+type SprintResult = {
+  position: number;
+  driverNumber: number;
+  driverName: string;
+  teamName: string;
+  time: string | null;
+  gap: string | null;
+  status: string | null;
+  points: number;
+  fastestLap: boolean;
 };
 
 const CIRCUIT_FLAGS: Record<string, string> = {
@@ -196,6 +220,7 @@ export default function F1Season() {
   const [tab, setTab] = useState<"drivers" | "constructors" | "archive">("drivers");
   const [expandedRace, setExpandedRace] = useState<number | null>(null);
   const [expandedUpcoming, setExpandedUpcoming] = useState<number | null>(null);
+  const [raceSessionTab, setRaceSessionTab] = useState<"race" | "qualifying" | "sprint">("race");
 
   const { data: driverStandings, isLoading: driversLoading } = useQuery<DriverStanding[]>({
     queryKey: ["/api/f1/driver-standings"],
@@ -212,8 +237,6 @@ export default function F1Season() {
   const { data: raceDetail } = useQuery<RaceDetail>({
     queryKey: ["/api/f1/race", expandedRace, "details"],
     queryFn: async () => {
-      // Use Ergast API for results if not available locally or as a fallback
-      // For now, we assume the backend handles the proxying/fetching
       const res = await fetch(`/api/f1/race/${expandedRace}/details`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch");
       return res.json();
@@ -221,14 +244,24 @@ export default function F1Season() {
     enabled: !!expandedRace,
   });
 
-  const { data: liveStatus } = useQuery({
-    queryKey: ["/api/f1/live-status"],
+  const { data: qualifyingResults, isLoading: qualLoading } = useQuery<QualifyingResult[]>({
+    queryKey: ["/api/f1/race", expandedRace, "qualifying"],
     queryFn: async () => {
-      const res = await fetch("https://api.openf1.org/v1/sessions?latest", { mode: 'cors' });
-      if (!res.ok) return null;
+      const res = await fetch(`/api/f1/race/${expandedRace}/qualifying`, { credentials: "include" });
+      if (!res.ok) return [];
       return res.json();
     },
-    refetchInterval: 30000,
+    enabled: !!expandedRace && raceSessionTab === "qualifying",
+  });
+
+  const { data: sprintResults, isLoading: sprintLoading } = useQuery<SprintResult[]>({
+    queryKey: ["/api/f1/race", expandedRace, "sprint"],
+    queryFn: async () => {
+      const res = await fetch(`/api/f1/race/${expandedRace}/sprint`, { credentials: "include" });
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!expandedRace,
   });
 
   const isLoading = driversLoading || constructorsLoading || racesLoading;
@@ -457,7 +490,14 @@ export default function F1Season() {
                       data-testid={`archive-race-${race.id}`}
                     >
                       <button
-                        onClick={() => setExpandedRace(expandedRace === race.id ? null : race.id)}
+                        onClick={() => {
+                          if (expandedRace === race.id) {
+                            setExpandedRace(null);
+                          } else {
+                            setExpandedRace(race.id);
+                            setRaceSessionTab("race");
+                          }
+                        }}
                         className={`w-full glass-panel rounded-3xl p-6 flex items-center justify-between transition-all duration-300 group relative overflow-hidden border-2 ${
                           expandedRace === race.id ? "bg-white/10 border-primary/50" : "hover:bg-white/5 border-white/5"
                         }`}
@@ -501,94 +541,231 @@ export default function F1Season() {
                       </button>
 
                       <AnimatePresence>
-                        {expandedRace === race.id && raceDetail && (
+                        {expandedRace === race.id && (
                           <motion.div
                             initial={{ height: 0, opacity: 0 }}
                             animate={{ height: "auto", opacity: 1 }}
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className="glass-panel rounded-3xl mt-3 p-8 border-2 border-white/10 shadow-2xl relative overflow-hidden">
+                            <div className="glass-panel rounded-3xl mt-3 border-2 border-white/10 shadow-2xl relative overflow-hidden">
                               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
-                              
-                              <CircuitInfo race={race} />
 
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
-                                <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 group hover:border-primary/30 transition-colors">
-                                  <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                    <Timer className="w-6 h-6 text-purple-400" />
-                                  </div>
-                                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Fastest Lap</div>
-                                  <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.fastestLapDriver || "N/A"}</div>
-                                </div>
-                                <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 group hover:border-primary/30 transition-colors">
-                                  <div className="w-12 h-12 bg-yellow-400/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                    <Zap className="w-6 h-6 text-yellow-400" />
-                                  </div>
-                                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Overtakes</div>
-                                  <div className="text-white font-display font-black text-3xl uppercase tracking-tighter leading-none">{raceDetail.totalOvertakes}</div>
-                                </div>
-                                <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 group hover:border-primary/30 transition-colors">
-                                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                    <Trophy className="w-6 h-6 text-primary" />
-                                  </div>
-                                  <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Winner</div>
-                                  <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.driverResults[0]?.driverName || "N/A"}</div>
-                                </div>
+                              <div className="flex items-center gap-1 p-4 pb-0 border-b border-white/5">
+                                {[
+                                  { key: "race" as const, label: "Race", icon: Trophy },
+                                  { key: "qualifying" as const, label: "Qualifying", icon: Gauge },
+                                  ...(sprintResults && sprintResults.length > 0 ? [{ key: "sprint" as const, label: "Sprint", icon: Activity }] : []),
+                                ].map(st => (
+                                  <button
+                                    key={st.key}
+                                    onClick={() => setRaceSessionTab(st.key)}
+                                    data-testid={`tab-session-${st.key}-${race.id}`}
+                                    className={`flex items-center gap-2 px-5 py-3 text-[10px] font-black uppercase tracking-[0.15em] rounded-t-xl transition-all border-b-2 -mb-px ${
+                                      raceSessionTab === st.key
+                                        ? "text-white border-primary bg-primary/10"
+                                        : "text-muted-foreground border-transparent hover:text-white hover:bg-white/5"
+                                    }`}
+                                  >
+                                    <st.icon className="w-3.5 h-3.5" />
+                                    <span>{st.label}</span>
+                                    {st.key === "sprint" && <span className="text-[8px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded-full border border-orange-500/30 ml-1">Sprint</span>}
+                                  </button>
+                                ))}
                               </div>
 
-                              <div className="mt-10">
-                                <div className="flex items-center justify-between mb-6 px-2">
-                                  <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em]">Grid Classification</h3>
-                                  <div className="h-px flex-1 bg-white/5 mx-4" />
-                                </div>
-                                <div className="space-y-2">
-                                  {raceDetail.driverResults.map((dr, idx) => (
-                                    <div
-                                      key={dr.driverId}
-                                      className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${
-                                        idx < 3 ? "bg-white/5 border border-white/10 shadow-lg" : "hover:bg-white/5"
-                                      }`}
-                                    >
-                                      <div className="flex items-center gap-4">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border ${
-                                          idx === 0 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" : 
-                                          idx === 1 ? "bg-gray-300/20 border-gray-300/40 text-gray-300" : 
-                                          idx === 2 ? "bg-amber-600/20 border-amber-600/40 text-amber-600" : 
-                                          "bg-white/5 border-white/10 text-muted-foreground"
-                                        }`}>
-                                          {dr.position ?? "-"}
-                                        </div>
-                                        <div className="relative">
-                                          <DriverAvatar name={dr.driverName} teamColor={TEAM_COLORS[dr.driverTeam]} />
-                                          <div 
-                                            className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" 
-                                            style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#444" }}
-                                          />
-                                        </div>
-                                        <div>
-                                          <div className="text-white font-display font-black text-base uppercase tracking-tight flex items-center gap-2">
-                                            {dr.driverName}
-                                            {dr.fastestLap && (
-                                              <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black tracking-widest border border-purple-500/30">FL</span>
-                                            )}
+                              <div className="p-8">
+                                <CircuitInfo race={race} />
+
+                                <AnimatePresence mode="wait">
+                                  {raceSessionTab === "race" && raceDetail && (
+                                    <motion.div key="race-tab" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+                                        <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
+                                          <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                            <Timer className="w-6 h-6 text-purple-400" />
                                           </div>
-                                          <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{dr.driverTeam}</div>
+                                          <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Fastest Lap</div>
+                                          <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.fastestLapDriver || "N/A"}</div>
+                                        </div>
+                                        <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-yellow-500/30 transition-colors">
+                                          <div className="w-12 h-12 bg-yellow-400/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                            <Zap className="w-6 h-6 text-yellow-400" />
+                                          </div>
+                                          <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Overtakes</div>
+                                          <div className="text-white font-display font-black text-3xl uppercase tracking-tighter leading-none">{raceDetail.totalOvertakes}</div>
+                                        </div>
+                                        <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-primary/30 transition-colors">
+                                          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                            <Trophy className="w-6 h-6 text-primary" />
+                                          </div>
+                                          <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Winner</div>
+                                          <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.driverResults[0]?.driverName || "N/A"}</div>
                                         </div>
                                       </div>
-                                      <div className="flex items-center gap-6">
-                                        <div className="text-right tabular-nums">
-                                          <div className="text-sm font-display font-black text-white leading-none">{dr.time || (idx === 0 ? "WINNER" : dr.gap || "DNF")}</div>
-                                          <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Interval</div>
+                                      <div className="mt-10">
+                                        <div className="flex items-center mb-6">
+                                          <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em] shrink-0">Race Classification</h3>
+                                          <div className="h-px flex-1 bg-white/5 ml-4" />
                                         </div>
-                                        <div className="w-12 text-right tabular-nums">
-                                          <div className="text-lg font-display font-black text-primary leading-none">+{dr.points}</div>
-                                          <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Points</div>
+                                        <div className="space-y-2">
+                                          {raceDetail.driverResults.map((dr, idx) => (
+                                            <div key={dr.driverId} className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${idx < 3 ? "bg-white/5 border border-white/10 shadow-lg" : "hover:bg-white/5"}`}>
+                                              <div className="flex items-center gap-4">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border ${idx === 0 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" : idx === 1 ? "bg-gray-300/20 border-gray-300/40 text-gray-300" : idx === 2 ? "bg-amber-600/20 border-amber-600/40 text-amber-600" : "bg-white/5 border-white/10 text-muted-foreground"}`}>{dr.position ?? "-"}</div>
+                                                <div className="relative">
+                                                  <DriverAvatar name={dr.driverName} teamColor={TEAM_COLORS[dr.driverTeam]} />
+                                                  <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#444" }} />
+                                                </div>
+                                                <div>
+                                                  <div className="text-white font-display font-black text-base uppercase tracking-tight flex items-center gap-2">
+                                                    {dr.driverName}
+                                                    {dr.fastestLap && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black tracking-widest border border-purple-500/30">FL</span>}
+                                                  </div>
+                                                  <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{dr.driverTeam}</div>
+                                                </div>
+                                              </div>
+                                              <div className="flex items-center gap-6">
+                                                <div className="text-right tabular-nums hidden sm:block">
+                                                  <div className="text-sm font-display font-black text-white leading-none">{idx === 0 ? (dr.time || "WINNER") : (dr.gap || dr.status || "DNF")}</div>
+                                                  <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Interval</div>
+                                                </div>
+                                                <div className="w-12 text-right tabular-nums">
+                                                  <div className="text-lg font-display font-black text-primary leading-none">+{dr.points}</div>
+                                                  <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Pts</div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          ))}
                                         </div>
                                       </div>
-                                    </div>
-                                  ))}
-                                </div>
+                                    </motion.div>
+                                  )}
+
+                                  {raceSessionTab === "qualifying" && (
+                                    <motion.div key="qual-tab" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-8">
+                                      {qualLoading ? (
+                                        <div className="flex items-center justify-center py-16">
+                                          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                                        </div>
+                                      ) : !qualifyingResults || qualifyingResults.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                                          <Gauge className="w-12 h-12 mb-4 opacity-20" />
+                                          <p className="font-display font-black uppercase tracking-widest text-sm">Qualifying Data Unavailable</p>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <div className="flex items-center mb-6">
+                                            <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em] shrink-0">Qualifying Classification</h3>
+                                            <div className="h-px flex-1 bg-white/5 ml-4" />
+                                          </div>
+                                          <div className="overflow-x-auto">
+                                            <table className="w-full">
+                                              <thead>
+                                                <tr className="border-b border-white/5">
+                                                  <th className="pb-3 text-left text-[9px] font-black text-muted-foreground uppercase tracking-widest w-10">P</th>
+                                                  <th className="pb-3 text-left text-[9px] font-black text-muted-foreground uppercase tracking-widest">Driver</th>
+                                                  <th className="pb-3 text-center text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Q1</th>
+                                                  <th className="pb-3 text-center text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Q2</th>
+                                                  <th className="pb-3 text-right text-[9px] font-black text-yellow-400 uppercase tracking-widest">Q3 / Best</th>
+                                                  <th className="pb-3 text-right text-[9px] font-black text-muted-foreground uppercase tracking-widest pl-4">Gap</th>
+                                                </tr>
+                                              </thead>
+                                              <tbody className="divide-y divide-white/5">
+                                                {qualifyingResults.map((q, idx) => (
+                                                  <tr key={q.position} className={`transition-all ${idx === 0 ? "bg-yellow-400/5" : "hover:bg-white/5"}`}>
+                                                    <td className="py-4">
+                                                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-black border ${idx === 0 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" : idx === 1 ? "bg-gray-300/10 border-gray-300/20 text-gray-300" : idx === 2 ? "bg-amber-600/10 border-amber-600/20 text-amber-600" : "bg-white/5 border-white/10 text-muted-foreground"}`}>{q.position}</div>
+                                                    </td>
+                                                    <td className="py-4">
+                                                      <div className="flex items-center gap-3">
+                                                        <div className="relative">
+                                                          <DriverAvatar name={q.driverName} teamColor={TEAM_COLORS[q.teamName]} />
+                                                          <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" style={{ backgroundColor: TEAM_COLORS[q.teamName] || "#444" }} />
+                                                        </div>
+                                                        <div>
+                                                          <div className="text-white font-display font-black text-sm uppercase tracking-tight">{q.driverName}</div>
+                                                          <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{q.teamName}</div>
+                                                        </div>
+                                                      </div>
+                                                    </td>
+                                                    <td className="py-4 text-center font-mono text-xs text-muted-foreground hidden md:table-cell">{q.q1 || "—"}</td>
+                                                    <td className="py-4 text-center font-mono text-xs text-muted-foreground hidden md:table-cell">{q.q2 || "—"}</td>
+                                                    <td className="py-4 text-right">
+                                                      <span className={`font-mono text-sm font-black ${idx === 0 ? "text-yellow-400" : "text-white"}`}>{q.q3 || q.q2 || q.q1 || "—"}</span>
+                                                    </td>
+                                                    <td className="py-4 text-right pl-4">
+                                                      {idx === 0 ? (
+                                                        <span className="text-[9px] bg-yellow-400/20 text-yellow-400 px-2 py-1 rounded-full font-black tracking-widest border border-yellow-400/30">POLE</span>
+                                                      ) : (
+                                                        <span className="font-mono text-xs text-red-400 font-black">{q.gap || "—"}</span>
+                                                      )}
+                                                    </td>
+                                                  </tr>
+                                                ))}
+                                              </tbody>
+                                            </table>
+                                          </div>
+                                        </>
+                                      )}
+                                    </motion.div>
+                                  )}
+
+                                  {raceSessionTab === "sprint" && (
+                                    <motion.div key="sprint-tab" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-8">
+                                      {sprintLoading ? (
+                                        <div className="flex items-center justify-center py-16">
+                                          <div className="w-8 h-8 border-4 border-orange-400 border-t-transparent rounded-full animate-spin" />
+                                        </div>
+                                      ) : !sprintResults || sprintResults.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                                          <Activity className="w-12 h-12 mb-4 opacity-20" />
+                                          <p className="font-display font-black uppercase tracking-widest text-sm">Sprint Data Unavailable</p>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <div className="flex items-center mb-6">
+                                            <div className="flex items-center gap-3 shrink-0">
+                                              <span className="bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-orange-500/30">Sprint Race</span>
+                                              <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em]">Results</h3>
+                                            </div>
+                                            <div className="h-px flex-1 bg-white/5 ml-4" />
+                                          </div>
+                                          <div className="space-y-2">
+                                            {sprintResults.map((sr, idx) => (
+                                              <div key={sr.position} className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${idx < 3 ? "bg-white/5 border border-white/10 shadow-lg" : "hover:bg-white/5"}`}>
+                                                <div className="flex items-center gap-4">
+                                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border ${idx === 0 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" : idx === 1 ? "bg-gray-300/20 border-gray-300/40 text-gray-300" : idx === 2 ? "bg-amber-600/20 border-amber-600/40 text-amber-600" : "bg-white/5 border-white/10 text-muted-foreground"}`}>{sr.position}</div>
+                                                  <div className="relative">
+                                                    <DriverAvatar name={sr.driverName} teamColor={TEAM_COLORS[sr.teamName]} />
+                                                    <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" style={{ backgroundColor: TEAM_COLORS[sr.teamName] || "#444" }} />
+                                                  </div>
+                                                  <div>
+                                                    <div className="text-white font-display font-black text-base uppercase tracking-tight flex items-center gap-2">
+                                                      {sr.driverName}
+                                                      {sr.fastestLap && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black tracking-widest border border-purple-500/30">FL</span>}
+                                                    </div>
+                                                    <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{sr.teamName}</div>
+                                                  </div>
+                                                </div>
+                                                <div className="flex items-center gap-6">
+                                                  <div className="text-right tabular-nums hidden sm:block">
+                                                    <div className="text-sm font-display font-black text-white leading-none">{idx === 0 ? (sr.time || "WINNER") : (sr.gap || sr.status || "DNF")}</div>
+                                                    <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Gap</div>
+                                                  </div>
+                                                  <div className="w-12 text-right tabular-nums">
+                                                    <div className="text-lg font-display font-black text-orange-400 leading-none">+{sr.points}</div>
+                                                    <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Pts</div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </>
+                                      )}
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
                               </div>
                             </div>
                           </motion.div>

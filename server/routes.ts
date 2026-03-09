@@ -669,6 +669,48 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  app.get("/api/f1/race/:id/sprint", async (req, res) => {
+    try {
+      const raceId = Number(req.params.id);
+      const race = await storage.getRace(raceId);
+      if (!race) return res.status(404).json({ message: "Race not found" });
+      const year = new Date(race.date).getFullYear();
+      const round = race.round;
+      const response = await fetch(`https://api.jolpi.ca/ergast/f1/${year}/${round}/sprint/?format=json`);
+      if (!response.ok) return res.json([]);
+      const data = await response.json();
+      const sprintResults = data.MRData?.RaceTable?.Races?.[0]?.SprintResults;
+      if (!sprintResults || sprintResults.length === 0) return res.json([]);
+      const teamNameMap: Record<string, string> = {
+        "Red Bull": "Red Bull Racing",
+        "Racing Bulls": "RB",
+        "RB F1 Team": "RB",
+        "Kick Sauber": "Audi",
+        "Sauber": "Audi",
+        "Alfa Romeo": "Audi",
+        "Haas F1 Team": "Haas",
+        "Alpine F1 Team": "Alpine",
+        "Cadillac F1 Team": "Cadillac",
+        "Aston Martin Aramco": "Aston Martin",
+      };
+      const normalizeTeam = (name: string) => teamNameMap[name] || name;
+      const mapped = sprintResults.map((r: any) => ({
+        position: parseInt(r.position),
+        driverNumber: parseInt(r.number),
+        driverName: `${r.Driver.givenName} ${r.Driver.familyName}`,
+        teamName: normalizeTeam(r.Constructor.name),
+        time: r.Time?.time || null,
+        gap: r.position === 1 ? null : (r.Time?.time ? `+${r.Time.time}` : null),
+        status: r.status || null,
+        points: parseFloat(r.points) || 0,
+        fastestLap: r.FastestLap?.rank === "1",
+      }));
+      res.json(mapped);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch sprint results" });
+    }
+  });
+
   app.get("/api/f1/race/:id/external-results", async (req, res) => {
     try {
       const raceId = Number(req.params.id);
