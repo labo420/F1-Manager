@@ -861,8 +861,8 @@ async function seedDatabase() {
       { name: "Valtteri Bottas", team: "Cadillac", number: 77 },
     ]);
   }
-  if (needsRaceReseed) {
-    if (existingRaces.length > 0) {
+  if (needsRaceReseed || driversNeedReseed) {
+    if (!driversNeedReseed && existingRaces.length > 0) {
       await db.delete(driverResults);
       await db.delete(constructorResults);
       await db.delete(selections);
@@ -870,11 +870,42 @@ async function seedDatabase() {
       await db.delete(draftState);
       await db.delete(races);
     }
-    const raceValues = parseCalendarCSV();
-    await db.insert(races).values(raceValues);
+    const raceValues = getHardcodedRaces();
+    if (raceValues.length > 0) {
+      await db.insert(races).values(raceValues);
+    }
   }
 
   console.log("F1 2026 database seeding completed.");
+}
+
+function getHardcodedRaces() {
+  return [
+    { name: "Australian Grand Prix", round: 1, country: "Australia", circuitName: "Albert Park Circuit", circuitLength: "5,278", laps: 58, date: "2026-03-08T04:00:00.000Z", itaTime: "05:00" },
+    { name: "Chinese Grand Prix", round: 2, country: "China", circuitName: "Shanghai International Circuit", circuitLength: "5,451", laps: 56, date: "2026-03-15T07:00:00.000Z", itaTime: "08:00" },
+    { name: "Japanese Grand Prix", round: 3, country: "Japan", circuitName: "Suzuka International Racing Course", circuitLength: "5,807", laps: 53, date: "2026-03-29T05:00:00.000Z", itaTime: "07:00" },
+    { name: "Bahrain Grand Prix", round: 4, country: "Bahrain", circuitName: "Bahrain International Circuit", circuitLength: "5,412", laps: 57, date: "2026-04-12T15:00:00.000Z", itaTime: "17:00" },
+    { name: "Saudi Arabian Grand Prix", round: 5, country: "Saudi Arabia", circuitName: "Jeddah Corniche Circuit", circuitLength: "6,175", laps: 50, date: "2026-04-19T17:00:00.000Z", itaTime: "19:00" },
+    { name: "Miami Grand Prix", round: 6, country: "USA", circuitName: "Miami International Autodrome", circuitLength: "5,412", laps: 57, date: "2026-05-03T20:00:00.000Z", itaTime: "22:00" },
+    { name: "Canadian Grand Prix", round: 7, country: "Canada", circuitName: "Circuit Gilles Villeneuve", circuitLength: "4,361", laps: 70, date: "2026-05-24T20:00:00.000Z", itaTime: "22:00" },
+    { name: "Monaco Grand Prix", round: 8, country: "Monaco", circuitName: "Circuit de Monaco", circuitLength: "3,337", laps: 78, date: "2026-06-07T13:00:00.000Z", itaTime: "15:00" },
+    { name: "Spanish Grand Prix", round: 9, country: "Spain", circuitName: "Circuit de Barcelona-Catalunya", circuitLength: "4,657", laps: 66, date: "2026-06-14T13:00:00.000Z", itaTime: "15:00" },
+    { name: "Austrian Grand Prix", round: 10, country: "Austria", circuitName: "Red Bull Ring", circuitLength: "4,326", laps: 71, date: "2026-06-28T13:00:00.000Z", itaTime: "15:00" },
+    { name: "British Grand Prix", round: 11, country: "UK", circuitName: "Silverstone Circuit", circuitLength: "5,891", laps: 52, date: "2026-07-05T14:00:00.000Z", itaTime: "16:00" },
+    { name: "Belgian Grand Prix", round: 12, country: "Belgium", circuitName: "Circuit de Spa-Francorchamps", circuitLength: "7,004", laps: 44, date: "2026-07-19T13:00:00.000Z", itaTime: "15:00" },
+    { name: "Hungarian Grand Prix", round: 13, country: "Hungary", circuitName: "Hungaroring", circuitLength: "4,381", laps: 70, date: "2026-07-26T13:00:00.000Z", itaTime: "15:00" },
+    { name: "Dutch Grand Prix", round: 14, country: "Netherlands", circuitName: "Circuit Zandvoort", circuitLength: "4,259", laps: 72, date: "2026-08-23T13:00:00.000Z", itaTime: "15:00" },
+    { name: "Italian Grand Prix", round: 15, country: "Italy", circuitName: "Autodromo Nazionale Monza", circuitLength: "5,793", laps: 53, date: "2026-09-06T13:00:00.000Z", itaTime: "15:00" },
+    { name: "Spanish Grand Prix (Madrid)", round: 16, country: "Spain", circuitName: "Circuito de Madrid", circuitLength: "5,416", laps: 57, date: "2026-09-13T13:00:00.000Z", itaTime: "15:00" },
+    { name: "Azerbaijan Grand Prix", round: 17, country: "Azerbaijan", circuitName: "Baku City Circuit", circuitLength: "6,003", laps: 51, date: "2026-09-26T11:00:00.000Z", itaTime: "13:00" },
+    { name: "Singapore Grand Prix", round: 18, country: "Singapore", circuitName: "Marina Bay Street Circuit", circuitLength: "4,927", laps: 62, date: "2026-10-11T12:00:00.000Z", itaTime: "14:00" },
+    { name: "United States Grand Prix", round: 19, country: "USA", circuitName: "Circuit of the Americas", circuitLength: "5,513", laps: 56, date: "2026-10-25T20:00:00.000Z", itaTime: "21:00" },
+    { name: "Mexico City Grand Prix", round: 20, country: "Mexico", circuitName: "Autodromo Hermanos Rodriguez", circuitLength: "4,304", laps: 71, date: "2026-11-01T20:00:00.000Z", itaTime: "21:00" },
+    { name: "Sao Paulo Grand Prix", round: 21, country: "Brazil", circuitName: "Autodromo Jose Carlos Pace", circuitLength: "4,309", laps: 71, date: "2026-11-08T17:00:00.000Z", itaTime: "18:00" },
+    { name: "Las Vegas Grand Prix", round: 22, country: "USA", circuitName: "Las Vegas Strip Circuit", circuitLength: "6,201", laps: 50, date: "2026-11-21T04:00:00.000Z", itaTime: "05:00" },
+    { name: "Qatar Grand Prix", round: 23, country: "Qatar", circuitName: "Lusail International Circuit", circuitLength: "5,419", laps: 57, date: "2026-11-29T16:00:00.000Z", itaTime: "17:00" },
+    { name: "Abu Dhabi Grand Prix", round: 24, country: "UAE", circuitName: "Yas Marina Circuit", circuitLength: "5,281", laps: 58, date: "2026-12-06T13:00:00.000Z", itaTime: "14:00" },
+  ];
 }
 
 const CIRCUIT_NAMES: Record<string, string> = {
