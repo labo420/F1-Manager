@@ -86,45 +86,46 @@ function getCircuitFlag(name: string) {
   );
 }
 
-const F1_CDN = "https://media.formula1.com/image/upload/f_auto,c_limit,q_75,w_80/content/dam/fom-website/drivers";
+const F1_CDN = (year: number, team: string, code: string) =>
+  `https://media.formula1.com/image/upload/c_fill,w_80/q_auto/v1740000000/common/f1/${year}/${team}/${code}/${year}${team}${code}right.webp`;
 
 const DRIVER_IMAGES: Record<string, string> = {
-  "RUS": `${F1_CDN}/G/GEORUS01_George_Russell/georus01`,
-  "ANT": `${F1_CDN}/K/KIMANT01_Andrea_Kimi_Antonelli/kimant01`,
-  "HAD": `${F1_CDN}/I/ISAHAD01_Isack_Hadjar/isahad01`,
-  "LEC": `${F1_CDN}/C/CHALEC01_Charles_Leclerc/chalec01`,
-  "PIA": `${F1_CDN}/O/OSCPIA01_Oscar_Piastri/oscpia01`,
-  "NOR": `${F1_CDN}/L/LANNOR01_Lando_Norris/lannor01`,
-  "HAM": `${F1_CDN}/L/LEWHAM01_Lewis_Hamilton/lewham01`,
-  "LAW": `${F1_CDN}/L/LIALAW01_Liam_Lawson/lialaw01`,
-  "LIN": `${F1_CDN}/A/ARVLIN01_Arvid_Lindblad/arvlin01`,
-  "BOR": `${F1_CDN}/G/GABBOR01_Gabriel_Bortoleto/gabbor01`,
-  "HUL": `${F1_CDN}/N/NICHUL01_Nico_Hulkenberg/nichul01`,
-  "BEA": `${F1_CDN}/O/OLIBEA01_Oliver_Bearman/olibea01`,
-  "OCO": `${F1_CDN}/E/ESTOCO01_Esteban_Ocon/estoco01`,
-  "GAS": `${F1_CDN}/P/PIEGAS01_Pierre_Gasly/piegas01`,
-  "ALB": `${F1_CDN}/A/ALEALB01_Alexander_Albon/alealb01`,
-  "COL": `${F1_CDN}/F/FRACOL01_Franco_Colapinto/fracol01`,
-  "ALO": `${F1_CDN}/F/FERALO01_Fernando_Alonso/feralo01`,
-  "PER": `${F1_CDN}/S/SERPER01_Sergio_Perez/serper01`,
-  "BOT": `${F1_CDN}/V/VALBOT01_Valtteri_Bottas/valbot01`,
-  "VER": `${F1_CDN}/M/MAXVER01_Max_Verstappen/maxver01`,
-  "SAI": `${F1_CDN}/C/CARSAI01_Carlos_Sainz/carsai01`,
-  "DOO": `${F1_CDN}/J/JACDOO01_Jack_Doohan/jacdoo01`,
-  "TSU": `${F1_CDN}/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01`,
-  "STR": `${F1_CDN}/L/LANSTR01_Lance_Stroll/lanstr01`,
+  "RUS": F1_CDN(2026, "mercedes",      "georus01"),
+  "ANT": F1_CDN(2026, "mercedes",      "andant01"),
+  "LEC": F1_CDN(2026, "ferrari",       "chalec01"),
+  "HAM": F1_CDN(2026, "ferrari",       "lewham01"),
+  "NOR": F1_CDN(2026, "mclaren",       "lannor01"),
+  "PIA": F1_CDN(2026, "mclaren",       "oscpia01"),
+  "VER": F1_CDN(2026, "redbullracing", "maxver01"),
+  "HAD": F1_CDN(2026, "redbullracing", "isahad01"),
+  "LAW": F1_CDN(2026, "racingbulls",   "lialaw01"),
+  "LIN": F1_CDN(2026, "racingbulls",   "arvlin01"),
+  "ALO": F1_CDN(2026, "astonmartin",   "feralo01"),
+  "STR": F1_CDN(2026, "astonmartin",   "lanstr01"),
+  "GAS": F1_CDN(2026, "alpine",        "piegas01"),
+  "COL": F1_CDN(2026, "alpine",        "fracol01"),
+  "ALB": F1_CDN(2026, "williams",      "alealb01"),
+  "SAI": F1_CDN(2026, "williams",      "carsai01"),
+  "HUL": F1_CDN(2026, "audi",          "nichul01"),
+  "BOR": F1_CDN(2026, "audi",          "gabbor01"),
+  "BEA": F1_CDN(2026, "haas",          "olibea01"),
+  "OCO": F1_CDN(2026, "haas",          "estoco01"),
+  "PER": F1_CDN(2026, "cadillac",      "serper01"),
+  "BOT": F1_CDN(2026, "cadillac",      "valbot01"),
+  "TSU": F1_CDN(2025, "redbullracing", "yuktsu01"),
+  "DOO": F1_CDN(2025, "alpine",        "jacdoo01"),
 };
 
 const DRIVER_IMAGES_BY_NUMBER: Record<number, string> = {
-  63: DRIVER_IMAGES["RUS"], 12: DRIVER_IMAGES["ANT"], 6: DRIVER_IMAGES["HAD"],
-  16: DRIVER_IMAGES["LEC"], 81: DRIVER_IMAGES["PIA"], 1: DRIVER_IMAGES["NOR"],
+  63: DRIVER_IMAGES["RUS"], 12: DRIVER_IMAGES["ANT"], 6:  DRIVER_IMAGES["HAD"],
+  16: DRIVER_IMAGES["LEC"], 81: DRIVER_IMAGES["PIA"], 1:  DRIVER_IMAGES["NOR"],
   4:  DRIVER_IMAGES["NOR"], 44: DRIVER_IMAGES["HAM"], 30: DRIVER_IMAGES["LAW"],
-  41: DRIVER_IMAGES["LIN"], 5: DRIVER_IMAGES["BOR"],  27: DRIVER_IMAGES["HUL"],
+  41: DRIVER_IMAGES["LIN"], 5:  DRIVER_IMAGES["BOR"], 27: DRIVER_IMAGES["HUL"],
   87: DRIVER_IMAGES["BEA"], 31: DRIVER_IMAGES["OCO"], 10: DRIVER_IMAGES["GAS"],
   23: DRIVER_IMAGES["ALB"], 43: DRIVER_IMAGES["COL"], 14: DRIVER_IMAGES["ALO"],
-  11: DRIVER_IMAGES["PER"], 77: DRIVER_IMAGES["BOT"], 33: DRIVER_IMAGES["VER"],
-  55: DRIVER_IMAGES["SAI"], 7:  DRIVER_IMAGES["DOO"], 22: DRIVER_IMAGES["TSU"],
-  18: DRIVER_IMAGES["STR"],
+  11: DRIVER_IMAGES["PER"], 77: DRIVER_IMAGES["BOT"], 3:  DRIVER_IMAGES["VER"],
+  33: DRIVER_IMAGES["VER"], 55: DRIVER_IMAGES["SAI"], 7:  DRIVER_IMAGES["DOO"],
+  22: DRIVER_IMAGES["TSU"], 18: DRIVER_IMAGES["STR"],
 };
 
 const DRIVER_CODE_BY_NAME: Record<string, string> = {
