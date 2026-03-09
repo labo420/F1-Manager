@@ -4,41 +4,7 @@ import { useActiveLobby, useLobbyInfo } from "@/hooks/use-lobby";
 import { useDriverLeaderboard, useConstructorLeaderboard } from "@/hooks/use-leaderboard";
 import { motion } from "framer-motion";
 import { Trophy, Medal, Car, Shield, ChevronRight, Users } from "lucide-react";
-
-const TEAM_LOGOS: Record<string, string> = {
-  "red bull racing": "/logos/redbull.png",
-  "ferrari": "/logos/ferrari.png",
-  "mclaren": "/logos/mclaren.png",
-  "mercedes": "/logos/mercedes.png",
-  "aston martin": "/logos/astonmartin.png",
-  "alpine": "/logos/alpine.png",
-  "rb": "/logos/racingbulls.png",
-  "williams": "/logos/williams.png",
-  "audi": "/logos/audi.png",
-  "haas": "/logos/haas.png",
-  "cadillac": "/logos/cadillac.png",
-};
-
-function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
-  const officialTeams = [
-    "red bull racing", "ferrari", "mclaren", "mercedes", "aston martin",
-    "alpine", "racing bulls", "rb", "williams", "audi", "haas", "cadillac"
-  ];
-
-  const lowerName = name.toLowerCase();
-  const isOfficial = officialTeams.includes(lowerName);
-
-  if (isOfficial) {
-    const fileName = lowerName === "racing bulls" || lowerName === "rb" ? "racingbulls" : lowerName.replace(/\s+/g, "");
-    return <img src={`/logos/${fileName}.png`} alt={name} className={`${className} object-contain`} />;
-  }
-
-  return (
-    <div className={`${className} bg-zinc-800 rounded-full flex items-center justify-center text-muted-foreground border border-white/10`}>
-      <Shield className="w-1/2 h-1/2" />
-    </div>
-  );
-}
+import { TeamAvatar } from "@/components/TeamAvatar";
 
 export default function Leaderboard() {
   const { user } = useAuth();
@@ -201,7 +167,7 @@ export default function Leaderboard() {
                     </td>
                     <td className="px-6 py-6">
                       <div className="flex items-center gap-3">
-                        <TeamIcon name={entry.teamName} className="w-8 h-8" />
+                        <TeamAvatar name={entry.teamName} size="md" />
                         <span className={`font-bold text-lg ${index === 0 ? "text-primary" : "text-white"}`}>{entry.teamName}</span>
                       </div>
                     </td>

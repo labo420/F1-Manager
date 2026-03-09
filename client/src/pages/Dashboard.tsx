@@ -4,7 +4,7 @@ import { useActiveLobby, useCreateLobby, useJoinLobby, useSetTeamName, useLobbyI
 import { useRaces } from "@/hooks/use-races";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Lock, PlusCircle, LogIn, Crown, ChevronRight, ChevronDown, Users, Star, Trophy, Car, Shield, Copy, Timer, Zap } from "lucide-react";
+import { Calendar, Lock, PlusCircle, LogIn, Crown, ChevronRight, ChevronDown, Users, Star, Trophy, Car, Copy, Timer, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import type { RaceFantasyWinners } from "@shared/schema";
@@ -132,26 +132,6 @@ function getRaceStatusFromSessions(
   return "coming-soon";
 }
 
-function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
-  const officialTeams = [
-    "red bull racing", "ferrari", "mclaren", "mercedes", "aston martin",
-    "alpine", "racing bulls", "rb", "williams", "audi", "haas", "cadillac"
-  ];
-
-  const lowerName = name.toLowerCase();
-  const isOfficial = officialTeams.includes(lowerName);
-
-  if (isOfficial) {
-    const fileName = lowerName === "racing bulls" || lowerName === "rb" ? "racingbulls" : lowerName.replace(/\s+/g, "");
-    return <img src={`/logos/${fileName}.png`} alt={name} className={`${className} object-contain`} />;
-  }
-
-  return (
-    <div className={`${className} bg-zinc-800 rounded-full flex items-center justify-center text-muted-foreground border border-white/10`}>
-      <Shield className="w-1/2 h-1/2" />
-    </div>
-  );
-}
 
 function getStatusLabel(status: string) {
   switch (status) {

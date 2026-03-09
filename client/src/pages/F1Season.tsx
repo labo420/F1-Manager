@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Flag, Calendar, ChevronDown, ChevronUp, Zap, Timer, Award, Users, MapPin, Ruler, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { DriverAvatar } from "@/components/DriverAvatar";
+import { TeamAvatar } from "@/components/TeamAvatar";
 
 type DriverStanding = {
   driverId: number;
@@ -150,40 +151,6 @@ const TEAM_COLORS: Record<string, string> = {
   "Cadillac": "#d1d1d1",
 };
 
-const TEAM_LOGOS: Record<string, string> = {
-  "red bull racing": "/logos/redbull.png",
-  "ferrari": "/logos/ferrari.png",
-  "mclaren": "/logos/mclaren.png",
-  "mercedes": "/logos/mercedes.png",
-  "aston martin": "/logos/astonmartin.png",
-  "alpine": "/logos/alpine.png",
-  "rb": "/logos/racingbulls.png",
-  "williams": "/logos/williams.png",
-  "audi": "/logos/audi.png",
-  "haas": "/logos/haas.png",
-  "cadillac": "/logos/cadillac.png",
-};
-
-function TeamIcon({ name, className = "w-6 h-6" }: { name: string; className?: string }) {
-  const officialTeams = [
-    "red bull racing", "ferrari", "mclaren", "mercedes", "aston martin",
-    "alpine", "racing bulls", "rb", "williams", "audi", "haas", "cadillac"
-  ];
-
-  const lowerName = name.toLowerCase();
-  const isOfficial = officialTeams.includes(lowerName);
-
-  if (isOfficial) {
-    const fileName = lowerName === "racing bulls" || lowerName === "rb" ? "racingbulls" : lowerName.replace(/\s+/g, "");
-    return <img src={`/logos/${fileName}.png`} alt={name} className={`${className} object-contain`} />;
-  }
-
-  return (
-    <div className={`${className} bg-zinc-800 rounded-full flex items-center justify-center text-muted-foreground border border-white/10`}>
-      <Shield className="w-1/2 h-1/2" />
-    </div>
-  );
-}
 
 function CircuitInfo({ race }: { race: RaceEntry }) {
   const length = race.circuitLength ? parseFloat(race.circuitLength.replace(',', '.')) : null;
@@ -412,7 +379,7 @@ export default function F1Season() {
                           <td className="px-6 py-5">
                             <div className="flex items-center gap-4">
                               <div className="w-1.5 h-10 rounded-full" style={{ backgroundColor: c.color || "#666" }}></div>
-                              <TeamIcon name={c.name} className="w-8 h-8" />
+                              <TeamAvatar name={c.name} size="md" />
                               <span className="font-bold text-white text-lg">{c.name}</span>
                             </div>
                           </td>
