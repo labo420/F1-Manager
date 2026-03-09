@@ -107,9 +107,9 @@ export default function RaceResults() {
                   <td className="px-6 py-4">
                     <span className={`
                       text-lg font-display font-black italic
-                      ${res.position === "1" ? "text-yellow-500" : res.position === "2" ? "text-zinc-400" : res.position === "3" ? "text-orange-500" : "text-white/40"}
+                      ${res.position === 1 || res.position === "1" ? "text-yellow-500" : res.position === 2 || res.position === "2" ? "text-zinc-400" : res.position === 3 || res.position === "3" ? "text-orange-500" : "text-white/40"}
                     `}>
-                      {res.position.padStart(2, '0')}
+                      {String(res.positionText || res.position || "??").padStart(2, '0')}
                     </span>
                   </td>
                   <td className="px-6 py-4">
