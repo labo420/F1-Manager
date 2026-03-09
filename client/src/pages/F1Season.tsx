@@ -46,6 +46,9 @@ type RaceDetail = {
     fastestLap: boolean;
     driverName: string;
     driverTeam: string;
+    time?: string | null;
+    gap?: string | null;
+    status?: string | null;
   }>;
   constructorResults: Array<{
     constructorId: number;
@@ -516,10 +519,12 @@ export default function F1Season() {
                                       </div>
                                       <div className="flex items-center gap-4">
                                         {idx === 0 ? (
-                                          <span className="text-xs text-muted-foreground font-mono">{dr.time || "1:30:00.000"}</span>
+                                          <span className="text-xs text-muted-foreground font-mono">{dr.time || "—"}</span>
                                         ) : (
                                           <span className="text-xs text-muted-foreground font-mono">
-                                            {dr.status === "Finished" ? (dr.gap ? `+${dr.gap}s` : "Finished") : dr.status || "+1 Lap"}
+                                            {dr.status === "Finished"
+                                              ? (dr.gap ? (dr.gap.startsWith("+") ? `${dr.gap}s` : `+${dr.gap}s`) : "Finished")
+                                              : dr.status || "DNF"}
                                           </span>
                                         )}
                                         <span className="font-display font-bold text-white w-10 text-right">{dr.points}</span>

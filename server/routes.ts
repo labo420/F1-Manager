@@ -515,10 +515,75 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   app.get("/api/f1/race/:id/details", async (req, res) => {
+    const TEAM_NAME_MAP: Record<string, string> = {
+      "Red Bull": "Red Bull Racing", "Racing Bulls": "RB", "RB F1 Team": "RB",
+      "Haas F1 Team": "Haas", "Alpine F1 Team": "Alpine", "Cadillac F1 Team": "Cadillac",
+      "Kick Sauber": "Audi", "Sauber": "Audi", "Alfa Romeo": "Audi",
+      "Aston Martin Aramco": "Aston Martin",
+    };
+    const normalizeTeam = (name: string) => TEAM_NAME_MAP[name] || name;
+
     try {
       const raceId = Number(req.params.id);
+      const race = await storage.getRace(raceId);
+      if (!race) return res.status(404).json({ message: "Race not found" });
+
+      const year = new Date(race.date).getFullYear();
+      const round = race.round;
+      const externalRes = await fetch(`https://api.jolpi.ca/ergast/f1/${year}/${round}/results/?format=json`);
+
+      if (externalRes.ok) {
+        const externalData = await externalRes.json() as any;
+        const raceResults = externalData.MRData?.RaceTable?.Races?.[0]?.Results;
+
+        if (raceResults && raceResults.length > 0) {
+          const localDrivers = await storage.getDrivers();
+          const localConstructors = await storage.getConstructors();
+          const constructorPoints: Record<string, number> = {};
+
+          const driverResults = raceResults.map((r: any, idx: number) => {
+            const driverNum = parseInt(r.number);
+            const fullName = `${r.Driver.givenName} ${r.Driver.familyName}`;
+            const teamName = normalizeTeam(r.Constructor.name);
+            const local = localDrivers.find(d =>
+              d.number === driverNum || d.name.toLowerCase().includes(r.Driver.familyName.toLowerCase())
+            );
+            const isRetired = ["R", "D", "E", "W", "F", "N"].includes(r.positionText);
+            const pts = parseFloat(r.points) || 0;
+
+            constructorPoints[teamName] = (constructorPoints[teamName] || 0) + pts;
+
+            return {
+              id: idx + 1,
+              driverId: local?.id ?? 0,
+              position: isRetired ? null : parseInt(r.position),
+              points: pts,
+              overtakes: 0,
+              fastestLap: r.FastestLap?.rank === "1",
+              driverName: local?.name ?? fullName,
+              driverTeam: local?.team ?? teamName,
+              time: r.Time?.time ?? null,
+              gap: r.position === "1" ? null : (r.Time?.time ?? null),
+              status: r.status ?? null,
+            };
+          });
+
+          const constructorResults = Object.entries(constructorPoints).map(([name, points], idx) => {
+            const local = localConstructors.find(c => c.name.toLowerCase() === name.toLowerCase());
+            return { constructorId: local?.id ?? idx + 100, points, constructorName: local?.name ?? name };
+          }).sort((a, b) => b.points - a.points);
+
+          const fastestLapResult = raceResults.find((r: any) => r.FastestLap?.rank === "1");
+          const fastestLapDriver = fastestLapResult
+            ? `${fastestLapResult.Driver.givenName} ${fastestLapResult.Driver.familyName}`
+            : null;
+
+          return res.json({ race, driverResults, constructorResults, fastestLapDriver, totalOvertakes: 0 });
+        }
+      }
+
+      // Fallback: local DB results
       const details = await storage.getRaceDetails(raceId);
-      if (!details.race) return res.status(404).json({ message: "Race not found" });
       res.json(details);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch race details" });
