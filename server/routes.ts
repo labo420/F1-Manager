@@ -514,6 +514,32 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json(archive);
   });
 
+  app.get("/api/f1/race/:id/schedule", async (req, res) => {
+    try {
+      const raceId = Number(req.params.id);
+      const race = await storage.getRace(raceId);
+      if (!race) return res.status(404).json({ message: "Race not found" });
+      const year = new Date(race.date).getFullYear();
+      const round = race.round;
+      const response = await fetch(`https://api.jolpi.ca/ergast/f1/${year}/${round}/?format=json`);
+      if (!response.ok) return res.json(null);
+      const data = await response.json();
+      const raceData = data.MRData?.RaceTable?.Races?.[0];
+      if (!raceData) return res.json(null);
+
+      return res.json({
+        fp1: raceData.FirstPractice ? `${raceData.FirstPractice.date}T${raceData.FirstPractice.time}` : null,
+        fp2: raceData.SecondPractice ? `${raceData.SecondPractice.date}T${raceData.SecondPractice.time}` : null,
+        fp3: raceData.ThirdPractice ? `${raceData.ThirdPractice.date}T${raceData.ThirdPractice.time}` : null,
+        qualifying: raceData.Qualifying ? `${raceData.Qualifying.date}T${raceData.Qualifying.time}` : null,
+        sprint: raceData.Sprint ? `${raceData.Sprint.date}T${raceData.Sprint.time}` : null,
+        sprintQualifying: raceData.SprintQualifying ? `${raceData.SprintQualifying.date}T${raceData.SprintQualifying.time}` : null,
+      });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch race schedule" });
+    }
+  });
+
   app.get("/api/f1/race/:id/details", async (req, res) => {
     const TEAM_NAME_MAP: Record<string, string> = {
       "Red Bull": "Red Bull Racing", "Racing Bulls": "RB", "RB F1 Team": "RB",

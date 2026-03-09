@@ -176,40 +176,73 @@ const TEAM_COLORS: Record<string, string> = {
 };
 
 
-function CircuitInfo({ race }: { race: RaceEntry }) {
+type RaceSchedule = {
+  fp1: string | null;
+  fp2: string | null;
+  fp3: string | null;
+  qualifying: string | null;
+  sprint: string | null;
+  sprintQualifying: string | null;
+};
+
+function CircuitInfo({ race, schedule }: { race: RaceEntry, schedule?: RaceSchedule | null }) {
   const length = race.circuitLength ? parseFloat(race.circuitLength.replace(',', '.')) : null;
   const totalDistance = length && race.laps ? (length * race.laps).toFixed(3) : null;
 
-  if (!race.circuitName && !length && !race.laps) return null;
-
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3" data-testid={`circuit-info-${race.id}`}>
-      {race.circuitName && (
-        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
-          <MapPin className="w-4 h-4 text-primary mx-auto mb-1.5" />
-          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Circuit</div>
-          <div className="text-white font-bold text-xs leading-tight">{getCircuitFlag(race.circuitName || "")} {race.circuitName}</div>
-        </div>
-      )}
-      {race.circuitLength && (
-        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
-          <Ruler className="w-4 h-4 text-blue-400 mx-auto mb-1.5" />
-          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Length</div>
-          <div className="text-white font-bold text-sm">{race.circuitLength.replace(',', '.')} km</div>
-        </div>
-      )}
-      {race.laps && (
-        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
-          <RotateCcw className="w-4 h-4 text-green-400 mx-auto mb-1.5" />
-          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Laps</div>
-          <div className="text-white font-bold text-sm">{race.laps}</div>
-        </div>
-      )}
-      {totalDistance && (
-        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
-          <Flag className="w-4 h-4 text-yellow-400 mx-auto mb-1.5" />
-          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Total Distance</div>
-          <div className="text-white font-bold text-sm">{totalDistance} km</div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3" data-testid={`circuit-info-${race.id}`}>
+        {race.circuitName && (
+          <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+            <MapPin className="w-4 h-4 text-primary mx-auto mb-1.5" />
+            <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Circuit</div>
+            <div className="text-white font-bold text-xs leading-tight">{getCircuitFlag(race.circuitName || "")} {race.circuitName}</div>
+          </div>
+        )}
+        {race.circuitLength && (
+          <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+            <Ruler className="w-4 h-4 text-blue-400 mx-auto mb-1.5" />
+            <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Length</div>
+            <div className="text-white font-bold text-sm">{race.circuitLength.replace(',', '.')} km</div>
+          </div>
+        )}
+        {race.laps && (
+          <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+            <RotateCcw className="w-4 h-4 text-green-400 mx-auto mb-1.5" />
+            <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Laps</div>
+            <div className="text-white font-bold text-sm">{race.laps}</div>
+          </div>
+        )}
+        {totalDistance && (
+          <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
+            <Flag className="w-4 h-4 text-yellow-400 mx-auto mb-1.5" />
+            <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Total Distance</div>
+            <div className="text-white font-bold text-sm">{totalDistance} km</div>
+          </div>
+        )}
+      </div>
+
+      {schedule && (
+        <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+          <div className="flex items-center gap-3 mb-4">
+            <Calendar className="w-4 h-4 text-primary" />
+            <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Weekend Schedule</h4>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { label: "Practice 1", date: schedule.fp1 },
+              { label: "Practice 2", date: schedule.fp2 },
+              { label: "Practice 3", date: schedule.fp3 },
+              { label: "Qualifying", date: schedule.qualifying },
+              { label: "Sprint Shootout", date: schedule.sprintQualifying },
+              { label: "Sprint Race", date: schedule.sprint },
+            ].filter(s => s.date).map((session, i) => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-black/20 border border-white/5">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{session.label}</span>
+                <span className="text-[10px] font-mono font-bold text-white">{format(new Date(session.date!), "MMM d, HH:mm")}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -242,6 +275,17 @@ export default function F1Season() {
       return res.json();
     },
     enabled: !!expandedRace,
+  });
+
+  const { data: raceSchedule } = useQuery<RaceSchedule>({
+    queryKey: ["/api/f1/race", expandedRace || expandedUpcoming, "schedule"],
+    queryFn: async () => {
+      const id = expandedRace || expandedUpcoming;
+      const res = await fetch(`/api/f1/race/${id}/schedule`, { credentials: "include" });
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!expandedRace || !!expandedUpcoming,
   });
 
   const { data: qualifyingResults, isLoading: qualLoading } = useQuery<QualifyingResult[]>({
@@ -575,7 +619,7 @@ export default function F1Season() {
                               </div>
 
                               <div className="p-8">
-                                <CircuitInfo race={race} />
+                                <CircuitInfo race={race} schedule={raceSchedule} />
 
                                 <AnimatePresence mode="wait">
                                   {raceSessionTab === "race" && raceDetail && (
@@ -850,7 +894,7 @@ export default function F1Season() {
                             className="overflow-hidden"
                           >
                             <div className="glass-panel rounded-3xl mt-3 p-8 border-2 border-white/10 shadow-2xl">
-                              <CircuitInfo race={race} />
+                              <CircuitInfo race={race} schedule={raceSchedule} />
                             </div>
                           </motion.div>
                         )}
