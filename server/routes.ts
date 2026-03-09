@@ -444,26 +444,61 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const raceId = Number(req.params.id);
       const details = await storage.getRaceDetails(raceId);
       if (!details.race) return res.status(404).json({ message: "Race not found" });
-
-      // If results are empty and race is in-corso, try to fetch from OpenF1
-      if ((!details.driverResults || details.driverResults.length === 0) && !details.race.isCompleted) {
-         try {
-            const openF1Res = await fetch(`https://api.openf1.org/v1/sessions?circuit_key=latest`, { mode: 'cors' });
-            if (openF1Res.ok) {
-               const sessions = await openF1Res.json();
-               if (sessions && sessions.length > 0) {
-                  // This is a stub for live mapping
-                  // In a real app we'd fetch positions/laps here
-               }
-            }
-         } catch (e) {
-            console.error("OpenF1 fetch error:", e);
-         }
-      }
-
       res.json(details);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch race details" });
+    }
+  });
+
+  app.get("/api/f1/sessions-status", async (_req, res) => {
+    try {
+      const year = new Date().getFullYear();
+      const [raceRes, qualRes] = await Promise.all([
+        fetch(`https://api.openf1.org/v1/sessions?year=${year}&session_type=Race`),
+        fetch(`https://api.openf1.org/v1/sessions?year=${year}&session_type=Qualifying`),
+      ]);
+      if (!raceRes.ok || !qualRes.ok) {
+        return res.status(502).json({ message: "Failed to fetch sessions from OpenF1" });
+      }
+      const [raceSessions, qualSessions] = await Promise.all([raceRes.json(), qualRes.json()]);
+      res.json({ raceSessions, qualSessions });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch session status" });
+    }
+  });
+
+  app.get("/api/f1/race/:id/qualifying", async (req, res) => {
+    try {
+      const raceId = Number(req.params.id);
+      const race = await storage.getRace(raceId);
+      if (!race) return res.status(404).json({ message: "Race not found" });
+      const year = new Date(race.date).getFullYear();
+      const round = race.round;
+      const response = await fetch(`https://api.jolpi.ca/ergast/f1/${year}/${round}/qualifying/?format=json`);
+      if (!response.ok) return res.status(502).json({ message: "Failed to fetch qualifying data" });
+      const data = await response.json();
+      const qualResults = data.MRData?.RaceTable?.Races?.[0]?.QualifyingResults;
+      if (!qualResults || qualResults.length === 0) return res.json([]);
+      const teamNameMap: Record<string, string> = {
+        "Red Bull": "Red Bull Racing",
+        "Racing Bulls": "RB",
+        "Kick Sauber": "Audi",
+        "Sauber": "Audi",
+        "Alfa Romeo": "Audi",
+      };
+      const normalizeTeam = (name: string) => teamNameMap[name] || name;
+      const mapped = qualResults.map((r: any) => ({
+        position: parseInt(r.position),
+        driverNumber: parseInt(r.number),
+        driverName: `${r.Driver.givenName} ${r.Driver.familyName}`,
+        teamName: normalizeTeam(r.Constructor.name),
+        q1: r.Q1 || null,
+        q2: r.Q2 || null,
+        q3: r.Q3 || null,
+      }));
+      res.json(mapped);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch qualifying results" });
     }
   });
 

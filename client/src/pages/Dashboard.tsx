@@ -100,19 +100,33 @@ const TEAM_COLORS: Record<string, string> = {
   "Cadillac": "#d1d1d1",
 };
 
-function getRaceStatus(race: any): "coming-soon" | "in-corso" | "risultati" {
+function getRaceStatusFromSessions(
+  race: any,
+  raceSessions: any[] | undefined
+): "coming-soon" | "in-corso" | "risultati" {
   if (race.isCompleted) return "risultati";
+
   const now = new Date();
   const raceDate = new Date(race.date);
-  
-  // LIVE logic: Active only on the race day (within ~4 hours of start)
-  const isSameDay = now.getUTCFullYear() === raceDate.getUTCFullYear() &&
-                    now.getUTCMonth() === raceDate.getUTCMonth() &&
-                    now.getUTCDate() === raceDate.getUTCDate();
-  const fourHoursMs = 4 * 60 * 60 * 1000;
-  const isWithinRaceWindow = now.getTime() >= raceDate.getTime() && now.getTime() <= raceDate.getTime() + fourHoursMs;
 
-  if (isSameDay && isWithinRaceWindow) return "in-corso";
+  if (!raceSessions || raceSessions.length === 0) {
+    const fourHoursMs = 4 * 60 * 60 * 1000;
+    if (now.getTime() >= raceDate.getTime() && now.getTime() <= raceDate.getTime() + fourHoursMs) return "in-corso";
+    return "coming-soon";
+  }
+
+  const twelveHoursMs = 12 * 60 * 60 * 1000;
+  const matchingSession = raceSessions.find((s: any) => {
+    if (s.session_name !== "Race") return false;
+    const diff = Math.abs(new Date(s.date_start).getTime() - raceDate.getTime());
+    return diff < twelveHoursMs;
+  });
+
+  if (!matchingSession) return "coming-soon";
+
+  const sessionStart = new Date(matchingSession.date_start);
+  const sessionEnd = new Date(matchingSession.date_end);
+  if (now >= sessionStart && now <= sessionEnd) return "in-corso";
   return "coming-soon";
 }
 
@@ -376,6 +390,10 @@ function SetTeamNameView({ lobbyId, lobbyName }: { lobbyId: number; lobbyName: s
 function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }: { lobbyId: number; membership: any; user: any; setActiveLobbyId: (id: number | null) => void }) {
   const { data: races, isLoading: racesLoading } = useRaces();
   const [expandedRaceId, setExpandedRaceId] = useState<number | null>(null);
+  const { data: sessionsStatus } = useQuery<{ raceSessions: any[]; qualSessions: any[] }>({
+    queryKey: ["/api/f1/sessions-status"],
+    staleTime: 5 * 60 * 1000,
+  });
 
   const hasMultipleLobbies = user.memberships.length > 1;
 
@@ -417,7 +435,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
 
       <div className="space-y-2">
         {races.map((race) => {
-          const status = getRaceStatus(race);
+          const status = getRaceStatusFromSessions(race, sessionsStatus?.raceSessions);
           const isExpanded = expandedRaceId === race.id;
 
           return (
@@ -453,7 +471,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <RaceAccordionContent race={race} status={status} lobbyId={lobbyId} />
+                    <RaceAccordionContent race={race} status={status} lobbyId={lobbyId} qualSessions={sessionsStatus?.qualSessions} />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -465,10 +483,27 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
   );
 }
 
-function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: string; lobbyId: number }) {
+function RaceAccordionContent({ race, status, lobbyId, qualSessions }: { race: any; status: string; lobbyId: number; qualSessions?: any[] }) {
   const [liveData, setLiveData] = useState<any>(null);
   const [liveError, setLiveError] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
+  const [activeTab, setActiveTab] = useState<"race" | "qualifying">("race");
+
+  const hasQualifyingData = (() => {
+    if (!qualSessions) return false;
+    const raceDate = new Date(race.date);
+    const twelveHoursMs = 12 * 60 * 60 * 1000;
+    return qualSessions.some((s: any) => {
+      const diff = Math.abs(new Date(s.date_start).getTime() - raceDate.getTime());
+      return diff < 48 * 60 * 60 * 1000 && new Date(s.date_end) < new Date();
+    });
+  })();
+
+  const { data: qualifyingResults, isLoading: qualLoading } = useQuery<any[]>({
+    queryKey: ["/api/f1/race", race.id, "qualifying"],
+    enabled: activeTab === "qualifying",
+    staleTime: 10 * 60 * 1000,
+  });
 
   const { data: raceDetails } = useQuery<any>({
     queryKey: ["/api/f1/race", race.id, "details"],
@@ -529,9 +564,9 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
             }
           }
         } else if (!liveStandings) {
-          // Fallback to Ergast for official classification if OpenF1 fails
+          // Fallback to Jolpica for official classification if OpenF1 fails
           const ergastRes = await fetch(
-            `https://ergast.com/api/f1/2026/${race.round || 1}/results.json`,
+            `https://api.jolpi.ca/ergast/f1/current/${race.round || 1}/results/?format=json`,
             { signal: controller.signal }
           ).catch(() => null);
 
@@ -590,7 +625,77 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
 
   return (
     <div className="px-4 sm:px-5 pb-5 border-t border-white/10">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+      <div className="flex gap-1 mt-4 mb-4 bg-white/5 rounded-lg p-1">
+        <button
+          onClick={() => setActiveTab("race")}
+          className={`flex-1 text-xs font-bold uppercase py-1.5 rounded-md transition-all ${activeTab === "race" ? "bg-white/15 text-white" : "text-muted-foreground hover:text-white"}`}
+          data-testid="tab-race"
+        >
+          Race
+        </button>
+        <button
+          onClick={() => setActiveTab("qualifying")}
+          className={`flex-1 text-xs font-bold uppercase py-1.5 rounded-md transition-all ${activeTab === "qualifying" ? "bg-white/15 text-white" : "text-muted-foreground hover:text-white"}`}
+          data-testid="tab-qualifying"
+        >
+          Qualifying
+        </button>
+      </div>
+
+      {activeTab === "qualifying" && (
+        <div className="mb-4">
+          {qualLoading ? (
+            <div className="text-center py-6">
+              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-muted-foreground text-xs mt-2">Fetching qualifying results...</p>
+            </div>
+          ) : qualifyingResults && qualifyingResults.length > 0 ? (
+            <div>
+              <div className="text-[10px] font-bold text-muted-foreground uppercase px-2 mb-2 flex justify-between">
+                <span>Qualifying Classification</span>
+                <span className="font-mono">Q1 / Q2 / Q3</span>
+              </div>
+              <div className="space-y-1">
+                {qualifyingResults.map((r: any) => (
+                  <div key={r.position} className={`flex items-center justify-between p-2.5 rounded-lg ${r.position <= 3 ? "bg-white/5 border border-white/10" : "hover:bg-white/5"}`} data-testid={`qual-row-${r.position}`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`w-6 text-center font-display font-bold text-sm ${r.position === 1 ? "text-yellow-400" : r.position === 2 ? "text-gray-300" : r.position === 3 ? "text-amber-600" : "text-muted-foreground"}`}>
+                        {r.position}
+                      </span>
+                      <TeamIcon name={r.teamName} className="w-5 h-5" />
+                      <div className="w-1 h-6 rounded-full" style={{ backgroundColor: TEAM_COLORS[r.teamName] || "#666" }} />
+                      <div>
+                        <div className="text-white font-bold text-sm">{r.driverName}</div>
+                        <div className="text-[10px] text-muted-foreground uppercase">{r.teamName}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {r.q3 ? (
+                        <div className="text-xs font-mono text-white font-bold">{r.q3}</div>
+                      ) : r.q2 ? (
+                        <div className="text-xs font-mono text-muted-foreground">{r.q2}</div>
+                      ) : (
+                        <div className="text-xs font-mono text-muted-foreground">{r.q1 || "—"}</div>
+                      )}
+                      <div className="text-[10px] text-muted-foreground font-mono">
+                        {r.q3 ? "Q3" : r.q2 ? "Q2" : "Q1"}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-muted-foreground text-sm">No qualifying data available yet.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "race" && (
+      <div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <div className="text-xs font-bold text-muted-foreground uppercase">Circuit</div>
           <div className="text-white font-semibold">{getCircuitFlag(race.circuitName || race.name)} {race.circuitName || race.name}</div>
@@ -700,6 +805,8 @@ function RaceAccordionContent({ race, status, lobbyId }: { race: any; status: st
             </div>
           </div>
         </div>
+      )}
+      </div>
       )}
     </div>
   );
