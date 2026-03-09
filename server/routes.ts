@@ -632,6 +632,18 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         "Aston Martin Aramco": "Aston Martin",
       };
       const normalizeTeam = (name: string) => teamNameMap[name] || name;
+      const parseQualTime = (t: string | undefined): number | null => {
+        if (!t) return null;
+        const parts = t.split(":");
+        if (parts.length === 2) {
+          return parseInt(parts[0]) * 60000 + parseFloat(parts[1]) * 1000;
+        }
+        return parseFloat(t) * 1000;
+      };
+      const formatGap = (ms: number): string => {
+        const s = ms / 1000;
+        return `+${s.toFixed(3)}`;
+      };
       const mapped = qualResults.map((r: any) => ({
         position: parseInt(r.position),
         driverNumber: parseInt(r.number),
@@ -641,8 +653,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         q1: r.Q1 || null,
         q2: r.Q2 || null,
         q3: r.Q3 || null,
+        bestTimeMs: parseQualTime(r.Q3) ?? parseQualTime(r.Q2) ?? parseQualTime(r.Q1),
       }));
-      res.json(mapped);
+      const poleMs = mapped[0]?.bestTimeMs ?? null;
+      const withGaps = mapped.map((r: any) => ({
+        ...r,
+        gap: r.position === 1 || poleMs === null || r.bestTimeMs === null
+          ? null
+          : formatGap(r.bestTimeMs - poleMs),
+        bestTimeMs: undefined,
+      }));
+      res.json(withGaps);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch qualifying results" });
     }

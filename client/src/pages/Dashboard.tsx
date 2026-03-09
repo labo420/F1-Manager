@@ -649,7 +649,7 @@ function RaceAccordionContent({ race, status, lobbyId, qualSessions }: { race: a
             <div>
               <div className="text-[10px] font-bold text-muted-foreground uppercase px-2 mb-2 flex justify-between">
                 <span>Qualifying Classification</span>
-                <span className="font-mono">Q1 / Q2 / Q3</span>
+                <span className="font-mono">Best / Gap</span>
               </div>
               <div className="space-y-1">
                 {qualifyingResults.map((r: any) => (
@@ -673,9 +673,11 @@ function RaceAccordionContent({ race, status, lobbyId, qualSessions }: { race: a
                       ) : (
                         <div className="text-xs font-mono text-muted-foreground">{r.q1 || "—"}</div>
                       )}
-                      <div className="text-[10px] text-muted-foreground font-mono">
-                        {r.q3 ? "Q3" : r.q2 ? "Q2" : "Q1"}
-                      </div>
+                      {r.gap ? (
+                        <div className="text-[10px] text-red-400 font-mono">{r.gap}</div>
+                      ) : (
+                        <div className="text-[10px] text-yellow-400 font-mono uppercase">Pole</div>
+                      )}
                     </div>
                   </div>
                 ))}
