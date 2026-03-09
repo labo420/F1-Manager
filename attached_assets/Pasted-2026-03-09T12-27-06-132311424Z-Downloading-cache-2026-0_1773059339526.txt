@@ -1,0 +1,42 @@
+2026-03-09T12:27:06.132311424Z ==> Downloading cache...
+2026-03-09T12:27:06.180794197Z ==> Cloning from https://github.com/labo420/F1-Manager
+2026-03-09T12:27:08.379093867Z ==> Checking out commit 163a4faa65cf840065b082756c0b4f72fb0b06b0 in branch main
+2026-03-09T12:27:13.089744383Z ==> Downloaded 154MB in 2s. Extraction took 4s.
+2026-03-09T12:28:04.477877769Z ==> Using Node.js version 22.22.0 (default)
+2026-03-09T12:28:04.502197937Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-03-09T12:28:04.619877962Z ==> Running build command 'npm install && npm run build'...
+2026-03-09T12:28:09.017111497Z 
+2026-03-09T12:28:09.017149348Z added 6 packages, and audited 429 packages in 4s
+2026-03-09T12:28:09.017155849Z 
+2026-03-09T12:28:09.017160459Z 74 packages are looking for funding
+2026-03-09T12:28:09.017181279Z   run `npm fund` for details
+2026-03-09T12:28:09.022080522Z 
+2026-03-09T12:28:09.022098202Z 4 vulnerabilities (1 low, 1 moderate, 2 high)
+2026-03-09T12:28:09.022102692Z 
+2026-03-09T12:28:09.022108802Z To address all issues, run:
+2026-03-09T12:28:09.022115253Z   npm audit fix
+2026-03-09T12:28:09.022121173Z 
+2026-03-09T12:28:09.022126773Z Run `npm audit` for details.
+2026-03-09T12:28:09.176477454Z 
+2026-03-09T12:28:09.176505115Z > rest-express@1.0.0 build
+2026-03-09T12:28:09.176510825Z > node script/build.mjs
+2026-03-09T12:28:09.176515325Z 
+2026-03-09T12:28:09.208415413Z node:internal/modules/package_json_reader:314
+2026-03-09T12:28:09.208434204Z   throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+2026-03-09T12:28:09.208438104Z         ^
+2026-03-09T12:28:09.208441464Z 
+2026-03-09T12:28:09.208445154Z Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'esbuild' imported from /opt/render/project/src/script/build.mjs
+2026-03-09T12:28:09.208449124Z     at Object.getPackageJSONURL (node:internal/modules/package_json_reader:314:9)
+2026-03-09T12:28:09.208452894Z     at packageResolve (node:internal/modules/esm/resolve:767:81)
+2026-03-09T12:28:09.208455974Z     at moduleResolve (node:internal/modules/esm/resolve:853:18)
+2026-03-09T12:28:09.208459094Z     at defaultResolve (node:internal/modules/esm/resolve:983:11)
+2026-03-09T12:28:09.208462855Z     at #cachedDefaultResolve (node:internal/modules/esm/loader:731:20)
+2026-03-09T12:28:09.208466004Z     at ModuleLoader.resolve (node:internal/modules/esm/loader:708:38)
+2026-03-09T12:28:09.208469184Z     at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:310:38)
+2026-03-09T12:28:09.208472295Z     at ModuleJob._link (node:internal/modules/esm/module_job:182:49) {
+2026-03-09T12:28:09.208478785Z   code: 'ERR_MODULE_NOT_FOUND'
+2026-03-09T12:28:09.208481955Z }
+2026-03-09T12:28:09.208484935Z 
+2026-03-09T12:28:09.208488015Z Node.js v22.22.0
+2026-03-09T12:28:09.25624447Z ==> Build failed 😞
+2026-03-09T12:28:09.25625926Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
