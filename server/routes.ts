@@ -425,13 +425,88 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   });
 
   app.get("/api/f1/driver-standings", async (_req, res) => {
-    const standings = await storage.getDriverStandings();
-    res.json(standings);
+    const CONSTRUCTOR_NAME_MAP: Record<string, string> = {
+      "Red Bull": "Red Bull Racing", "Racing Bulls": "RB", "RB F1 Team": "RB",
+      "Haas F1 Team": "Haas", "Alpine F1 Team": "Alpine", "Cadillac F1 Team": "Cadillac",
+    };
+    try {
+      const year = new Date().getFullYear();
+      const [standingsRes, resultsRes] = await Promise.all([
+        fetch(`https://api.jolpi.ca/ergast/f1/${year}/driverStandings/?format=json`),
+        fetch(`https://api.jolpi.ca/ergast/f1/${year}/results/?format=json&limit=500`),
+      ]);
+      if (!standingsRes.ok) throw new Error("Jolpica standings unavailable");
+      const standingsData = await standingsRes.json() as any;
+      const resultsData = resultsRes.ok ? await resultsRes.json() as any : null;
+      const apiStandings = standingsData.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings ?? [];
+      if (apiStandings.length === 0) throw new Error("No standings data");
+
+      const podiumsByCode: Record<string, number> = {};
+      if (resultsData) {
+        for (const race of resultsData.MRData?.RaceTable?.Races ?? []) {
+          for (const result of race.Results ?? []) {
+            if (parseInt(result.position) <= 3) {
+              const code = result.Driver.code;
+              podiumsByCode[code] = (podiumsByCode[code] || 0) + 1;
+            }
+          }
+        }
+      }
+
+      const localDrivers = await storage.getDrivers();
+      const standings = apiStandings.map((s: any) => {
+        const code: string = s.Driver.code;
+        const fullName = `${s.Driver.givenName} ${s.Driver.familyName}`;
+        const apiNumber = parseInt(s.Driver.permanentNumber);
+        const local = localDrivers.find(d =>
+          d.number === apiNumber || d.name.toLowerCase().includes(s.Driver.familyName.toLowerCase())
+        );
+        const rawTeam: string = s.Constructors?.[0]?.name ?? "";
+        return {
+          driverId: local?.id ?? 0,
+          name: local?.name ?? fullName,
+          team: local?.team ?? (CONSTRUCTOR_NAME_MAP[rawTeam] || rawTeam),
+          number: local?.number ?? (isNaN(apiNumber) ? null : apiNumber),
+          totalPoints: parseFloat(s.points) || 0,
+          wins: parseInt(s.wins) || 0,
+          podiums: podiumsByCode[code] || 0,
+        };
+      });
+      res.json(standings);
+    } catch {
+      res.json(await storage.getDriverStandings());
+    }
   });
 
   app.get("/api/f1/constructor-standings", async (_req, res) => {
-    const standings = await storage.getConstructorStandings();
-    res.json(standings);
+    const CONSTRUCTOR_NAME_MAP: Record<string, string> = {
+      "Red Bull": "Red Bull Racing", "Racing Bulls": "RB", "RB F1 Team": "RB",
+      "Haas F1 Team": "Haas", "Alpine F1 Team": "Alpine", "Cadillac F1 Team": "Cadillac",
+    };
+    try {
+      const year = new Date().getFullYear();
+      const response = await fetch(`https://api.jolpi.ca/ergast/f1/${year}/constructorStandings/?format=json`);
+      if (!response.ok) throw new Error("Jolpica standings unavailable");
+      const data = await response.json() as any;
+      const apiStandings = data.MRData?.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings ?? [];
+      if (apiStandings.length === 0) throw new Error("No standings data");
+
+      const localConstructors = await storage.getConstructors();
+      const standings = apiStandings.map((s: any) => {
+        const rawName: string = s.Constructor.name;
+        const name = CONSTRUCTOR_NAME_MAP[rawName] || rawName;
+        const local = localConstructors.find(c => c.name.toLowerCase() === name.toLowerCase());
+        return {
+          constructorId: local?.id ?? 0,
+          name: local?.name ?? name,
+          color: local?.color ?? null,
+          totalPoints: parseFloat(s.points) || 0,
+        };
+      });
+      res.json(standings);
+    } catch {
+      res.json(await storage.getConstructorStandings());
+    }
   });
 
   app.get("/api/f1/races", async (_req, res) => {
