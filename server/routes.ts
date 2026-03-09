@@ -95,6 +95,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.status(200).json({ ...user, memberships });
   });
 
+  app.patch("/api/user/bio", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const { bio } = z.object({ bio: z.string().max(1000).nullable() }).parse(req.body);
+      const user = await storage.updateUserBio(req.session.userId, bio || "");
+      res.json(user);
+    } catch (err) {
+      res.status(400).json({ message: "Invalid input" });
+    }
+  });
+
   app.post("/api/lobby", async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     try {

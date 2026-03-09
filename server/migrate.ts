@@ -9,6 +9,9 @@ export async function runMigrations() {
     await client.query(`
       ALTER TABLE races ADD COLUMN IF NOT EXISTS fp1_date TEXT;
     `);
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+    `);
     console.log("[migrate] Schema is up to date");
   } catch (err) {
     console.error("[migrate] Migration failed:", err);

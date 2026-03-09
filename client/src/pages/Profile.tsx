@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useActiveLobby, useSetTeamName } from "@/hooks/use-lobby";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Camera, Save, User, Shield, Trophy, Star } from "lucide-react";
+import { Camera, Save, User, Shield, Trophy, Star, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -16,6 +17,11 @@ export default function Profile() {
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [bio, setBio] = useState(user?.bio || "");
+
+  useEffect(() => {
+    if (user?.bio) setBio(user.bio);
+  }, [user?.bio]);
 
   const avatarMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -37,6 +43,20 @@ export default function Profile() {
     },
     onError: (error: Error) => {
       toast({ title: "Upload Failed", description: error.message, variant: "destructive" });
+    }
+  });
+
+  const bioMutation = useMutation({
+    mutationFn: async (newBio: string) => {
+      const res = await apiRequest("PATCH", "/api/user/bio", { bio: newBio });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
+      toast({ title: "Bio Updated", description: "Your racing profile is up to date!" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Update Failed", description: error.message, variant: "destructive" });
     }
   });
 
@@ -100,6 +120,32 @@ export default function Profile() {
                   {avatarMutation.isPending ? "Uploading..." : "Save Avatar"}
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-panel rounded-2xl p-8 mb-6">
+          <h2 className="text-lg font-bold text-white uppercase mb-6 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" /> Driver Bio
+          </h2>
+          <div className="space-y-4">
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Tell us about your racing history..."
+              className="w-full h-32 bg-background border-2 border-border rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 outline-none transition-all resize-none"
+              data-testid="textarea-bio"
+            />
+            <div className="flex justify-end">
+              <button
+                onClick={() => bioMutation.mutate(bio)}
+                disabled={bioMutation.isPending || bio === user.bio}
+                data-testid="button-save-bio"
+                className="bg-primary text-white rounded-xl px-6 py-3 font-bold uppercase text-sm hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                <Save className="w-4 h-4" />
+                {bioMutation.isPending ? "Saving..." : "Save Bio"}
+              </button>
             </div>
           </div>
         </div>

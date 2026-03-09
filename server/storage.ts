@@ -37,6 +37,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserAvatar(userId: number, avatarUrl: string): Promise<User>;
+  updateUserBio(userId: number, bio: string): Promise<User>;
 
   createLobby(name: string, code: string, adminId: number): Promise<Lobby>;
   getLobbyByCode(code: string): Promise<Lobby | undefined>;
@@ -112,6 +113,11 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserAvatar(userId: number, avatarUrl: string): Promise<User> {
     const [user] = await db.update(users).set({ avatarUrl }).where(eq(users.id, userId)).returning();
+    return user;
+  }
+
+  async updateUserBio(userId: number, bio: string): Promise<User> {
+    const [user] = await db.update(users).set({ bio }).where(eq(users.id, userId)).returning();
     return user;
   }
 
