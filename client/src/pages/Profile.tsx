@@ -4,7 +4,7 @@ import { useActiveLobby, useSetTeamName } from "@/hooks/use-lobby";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Camera, Save, User, Shield, Trophy, FileText } from "lucide-react";
+import { Camera, Save, User, Shield, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -17,11 +17,6 @@ export default function Profile() {
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [bio, setBio] = useState(user?.bio || "");
-
-  useEffect(() => {
-    if (user?.bio) setBio(user.bio);
-  }, [user?.bio]);
 
   const avatarMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -43,20 +38,6 @@ export default function Profile() {
     },
     onError: (error: Error) => {
       toast({ title: "Upload Failed", description: error.message, variant: "destructive" });
-    }
-  });
-
-  const bioMutation = useMutation({
-    mutationFn: async (newBio: string) => {
-      const res = await apiRequest("PATCH", "/api/user/bio", { bio: newBio });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
-      toast({ title: "Dossier Updated", description: "Racing history transmitted." });
-    },
-    onError: (error: Error) => {
-      toast({ title: "Update Failed", description: error.message, variant: "destructive" });
     }
   });
 
@@ -130,40 +111,6 @@ export default function Profile() {
         </div>
 
         <div className="max-w-4xl mx-auto space-y-12">
-          <div className="glass-panel rounded-[2rem] p-8 border-2 border-white/5 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
-            <div className="relative z-10">
-              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                <FileText className="w-4 h-4 text-primary" /> Driver Dossier
-              </h2>
-              <div className="space-y-6">
-                <textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Briefly describe your racing history, rivalries, and championship aspirations..."
-                  className="w-full h-40 bg-zinc-900/50 border-2 border-white/5 rounded-2xl px-6 py-5 text-white font-medium focus:border-primary focus:bg-zinc-900 outline-none transition-all resize-none shadow-inner text-lg placeholder:text-white/10"
-                  data-testid="textarea-bio"
-                />
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => bioMutation.mutate(bio)}
-                    disabled={bioMutation.isPending || bio === user.bio}
-                    data-testid="button-save-bio"
-                    className={cn(
-                      "rounded-xl px-8 py-4 font-black uppercase text-xs transition-all flex items-center gap-3",
-                      bio === user.bio 
-                        ? "bg-zinc-800 text-muted-foreground cursor-not-allowed"
-                        : "bg-primary text-white hover:bg-primary/90 red-glow shadow-xl shadow-primary/20"
-                    )}
-                  >
-                    <Save className="w-4 h-4" />
-                    {bioMutation.isPending ? "Transmitting..." : "Update Dossier"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {user.memberships && user.memberships.length > 0 && (
             <div className="space-y-6">
               <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] px-4 flex items-center gap-3">
