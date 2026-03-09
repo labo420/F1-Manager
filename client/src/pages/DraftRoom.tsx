@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Driver, Constructor, DraftStatus, Selection, UsageInfo } from "@shared/schema";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { DriverAvatar } from "@/components/DriverAvatar";
 
 export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId: number }) {
   const { user } = useAuth();
@@ -264,12 +265,15 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                             )}
                             onClick={() => setSelectedDriverId(driver.id)}
                           >
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="font-bold">{driver.name}</p>
-                                {isMandatory && <Badge variant="outline" className="text-[8px] border-orange-500 text-orange-500">Mandatory</Badge>}
+                            <div className="flex items-center gap-2.5">
+                              <DriverAvatar number={driver.number ?? undefined} name={driver.name} size="sm" />
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <p className="font-bold">{driver.name}</p>
+                                  {isMandatory && <Badge variant="outline" className="text-[8px] border-orange-500 text-orange-500">Mandatory</Badge>}
+                                </div>
+                                <p className="text-xs text-muted-foreground">{driver.team}</p>
                               </div>
-                              <p className="text-xs text-muted-foreground">{driver.team}</p>
                             </div>
                             <div className="text-right">
                               <p className="text-[10px] uppercase text-muted-foreground">Used</p>

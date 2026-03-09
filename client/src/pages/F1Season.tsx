@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Flag, Calendar, ChevronDown, ChevronUp, Zap, Timer, Award, Users, MapPin, Ruler, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
+import { DriverAvatar } from "@/components/DriverAvatar";
 
 type DriverStanding = {
   driverId: number;
@@ -352,9 +353,9 @@ export default function F1Season() {
                              <span className="text-muted-foreground">{i + 1}</span>}
                           </td>
                           <td className="px-4 py-4">
-                            <div className="flex items-center gap-3">
-                              <TeamIcon name={d.team} className="w-5 h-5" />
-                              <div className="w-1 h-8 rounded-full" style={{ backgroundColor: TEAM_COLORS[d.team] || "#666" }}></div>
+                            <div className="flex items-center gap-2.5">
+                              <DriverAvatar number={d.number ?? undefined} name={d.name} teamColor={TEAM_COLORS[d.team]} />
+                              <div className="w-0.5 h-7 rounded-full shrink-0" style={{ backgroundColor: TEAM_COLORS[d.team] || "#666" }}></div>
                               <div>
                                 <div className="font-bold text-white">{d.name}</div>
                                 <div className="text-[10px] text-muted-foreground md:hidden">{d.team}</div>
@@ -497,19 +498,21 @@ export default function F1Season() {
                                         idx < 3 ? "bg-zinc-900 border border-white/5" : "hover:bg-white/5"
                                       }`}
                                     >
-                                      <div className="flex items-center gap-3">
-                                        <span className={`w-7 text-center font-display font-bold text-sm ${
+                                      <div className="flex items-center gap-2.5">
+                                        <span className={`w-5 text-center font-display font-bold text-xs shrink-0 ${
                                           idx === 0 ? "text-yellow-400" : idx === 1 ? "text-gray-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground"
                                         }`}>
                                           P{dr.position ?? "-"}
                                         </span>
-                                        <TeamIcon name={dr.driverTeam} className="w-5 h-5" />
-                                        <div className="w-1 h-6 rounded-full" style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#666" }}></div>
+                                        <DriverAvatar name={dr.driverName} teamColor={TEAM_COLORS[dr.driverTeam]} />
+                                        <div className="w-0.5 h-6 rounded-full shrink-0" style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#666" }}></div>
                                         <div>
-                                          <span className="text-white font-bold text-sm">{dr.driverName}</span>
-                                          <span className="text-muted-foreground text-xs ml-2">{dr.driverTeam}</span>
+                                          <div className="text-white font-bold text-sm flex items-center gap-1">
+                                            {dr.driverName}
+                                            {dr.fastestLap && <span className="text-[9px] bg-purple-500/20 text-purple-400 px-1 py-0.5 rounded font-bold">FL</span>}
+                                          </div>
+                                          <div className="text-muted-foreground text-xs">{dr.driverTeam}</div>
                                         </div>
-                                        {dr.fastestLap && <span className="text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded font-bold uppercase">FL</span>}
                                       </div>
                                       <div className="flex items-center gap-4">
                                         {idx === 0 ? (
