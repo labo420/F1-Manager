@@ -4,7 +4,7 @@ import { useActiveLobby, useSetTeamName } from "@/hooks/use-lobby";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Camera, Save, User, Shield, Trophy, Star, FileText } from "lucide-react";
+import { Camera, Save, User, Shield, Trophy, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -129,148 +129,89 @@ export default function Profile() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <div className="glass-panel rounded-[2rem] p-8 border-2 border-white/5 shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
-              <div className="relative z-10">
-                <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                  <FileText className="w-4 h-4 text-primary" /> Driver Dossier
-                </h2>
-                <div className="space-y-6">
-                  <textarea
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Briefly describe your racing history, rivalries, and championship aspirations..."
-                    className="w-full h-40 bg-zinc-900/50 border-2 border-white/5 rounded-2xl px-6 py-5 text-white font-medium focus:border-primary focus:bg-zinc-900 outline-none transition-all resize-none shadow-inner text-lg placeholder:text-white/10"
-                    data-testid="textarea-bio"
-                  />
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => bioMutation.mutate(bio)}
-                      disabled={bioMutation.isPending || bio === user.bio}
-                      data-testid="button-save-bio"
-                      className={cn(
-                        "rounded-xl px-8 py-4 font-black uppercase text-xs transition-all flex items-center gap-3",
-                        bio === user.bio 
-                          ? "bg-zinc-800 text-muted-foreground cursor-not-allowed"
-                          : "bg-primary text-white hover:bg-primary/90 red-glow shadow-xl shadow-primary/20"
-                      )}
-                    >
-                      <Save className="w-4 h-4" />
-                      {bioMutation.isPending ? "Transmitting..." : "Update Dossier"}
-                    </button>
-                  </div>
+        <div className="max-w-4xl mx-auto space-y-12">
+          <div className="glass-panel rounded-[2rem] p-8 border-2 border-white/5 shadow-2xl relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
+            <div className="relative z-10">
+              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                <FileText className="w-4 h-4 text-primary" /> Driver Dossier
+              </h2>
+              <div className="space-y-6">
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Briefly describe your racing history, rivalries, and championship aspirations..."
+                  className="w-full h-40 bg-zinc-900/50 border-2 border-white/5 rounded-2xl px-6 py-5 text-white font-medium focus:border-primary focus:bg-zinc-900 outline-none transition-all resize-none shadow-inner text-lg placeholder:text-white/10"
+                  data-testid="textarea-bio"
+                />
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => bioMutation.mutate(bio)}
+                    disabled={bioMutation.isPending || bio === user.bio}
+                    data-testid="button-save-bio"
+                    className={cn(
+                      "rounded-xl px-8 py-4 font-black uppercase text-xs transition-all flex items-center gap-3",
+                      bio === user.bio 
+                        ? "bg-zinc-800 text-muted-foreground cursor-not-allowed"
+                        : "bg-primary text-white hover:bg-primary/90 red-glow shadow-xl shadow-primary/20"
+                    )}
+                  >
+                    <Save className="w-4 h-4" />
+                    {bioMutation.isPending ? "Transmitting..." : "Update Dossier"}
+                  </button>
                 </div>
               </div>
             </div>
-
-            {user.memberships && user.memberships.length > 0 && (
-              <div className="space-y-6">
-                <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] px-4 flex items-center gap-3">
-                  <Shield className="w-4 h-4 text-primary" /> Active Assignments
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {user.memberships.map((m: any, idx: number) => (
-                    <motion.div 
-                      key={m.lobbyId} 
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.1 }}
-                      className="glass-panel rounded-3xl p-6 border-2 border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden" 
-                      data-testid={`profile-lobby-${m.lobbyId}`}
-                    >
-                      <div className="flex justify-between items-start mb-6">
-                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-                          <Trophy className="w-6 h-6 text-primary" />
-                        </div>
-                        <div className="text-right">
-                          <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 opacity-50">Freq ID</div>
-                          <code className="text-primary font-mono font-black tracking-widest bg-zinc-900/50 px-2 py-0.5 rounded border border-white/5 text-[10px]">
-                            {m.lobbyCode}
-                          </code>
-                        </div>
-                      </div>
-
-                      <h3 className="font-display font-black text-white text-xl uppercase tracking-tight mb-4 group-hover:text-primary transition-colors">{m.lobbyName}</h3>
-                      
-                      <div className="space-y-3 pt-4 border-t border-white/5">
-                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                          <span>Team</span>
-                          <span className="text-white italic">{m.teamName}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</span>
-                          {m.role === "admin" ? (
-                            <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-[8px] font-black uppercase border border-primary/20">Race Director</span>
-                          ) : (
-                            <span className="bg-white/5 text-muted-foreground px-2 py-0.5 rounded-full text-[8px] font-black uppercase border border-white/10">Registered Driver</span>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="space-y-8">
-            <div className="glass-panel rounded-[2rem] p-8 border-2 border-white/5 shadow-2xl relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
-              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8 flex items-center gap-3 relative z-10">
-                <Star className="w-4 h-4 text-primary" /> Joker Inventory
+          {user.memberships && user.memberships.length > 0 && (
+            <div className="space-y-6">
+              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] px-4 flex items-center gap-3">
+                <Shield className="w-4 h-4 text-primary" /> Active Assignments
               </h2>
-              
-              <div className="space-y-6 relative z-10">
-                {user.memberships?.map((m: any) => (
-                  <div key={m.lobbyId} className="space-y-4">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40">{m.lobbyName}</p>
-                    <div className="grid grid-cols-1 gap-3">
-                      <div className="bg-zinc-900/80 rounded-2xl p-4 border border-white/5 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
-                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                          </div>
-                          <span className="text-[10px] font-black text-white uppercase tracking-widest">Driver Jollies</span>
-                        </div>
-                        <div className="flex gap-1.5">
-                          {[...Array(2)].map((_, i) => (
-                            <div key={i} className={cn(
-                              "w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]",
-                              i < (m.driverJollies ?? 0) ? "bg-yellow-500 red-glow" : "bg-zinc-800"
-                            )} />
-                          ))}
-                        </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {user.memberships.map((m: any, idx: number) => (
+                  <motion.div 
+                    key={m.lobbyId} 
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="glass-panel rounded-3xl p-6 border-2 border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden" 
+                    data-testid={`profile-lobby-${m.lobbyId}`}
+                  >
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
+                        <Trophy className="w-6 h-6 text-primary" />
                       </div>
-                      <div className="bg-zinc-900/80 rounded-2xl p-4 border border-white/5 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-                            <Star className="w-4 h-4 text-blue-500 fill-blue-500" />
-                          </div>
-                          <span className="text-[10px] font-black text-white uppercase tracking-widest">Team Jollies</span>
-                        </div>
-                        <div className="flex gap-1.5">
-                          {[...Array(2)].map((_, i) => (
-                            <div key={i} className={cn(
-                              "w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]",
-                              i < (m.constructorJollies ?? 0) ? "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" : "bg-zinc-800"
-                            )} />
-                          ))}
-                        </div>
+                      <div className="text-right">
+                        <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 opacity-50">Freq ID</div>
+                        <code className="text-primary font-mono font-black tracking-widest bg-zinc-900/50 px-2 py-0.5 rounded border border-white/5 text-[10px]">
+                          {m.lobbyCode}
+                        </code>
                       </div>
                     </div>
-                  </div>
+
+                    <h3 className="font-display font-black text-white text-xl uppercase tracking-tight mb-4 group-hover:text-primary transition-colors">{m.lobbyName}</h3>
+                    
+                    <div className="space-y-3 pt-4 border-t border-white/5">
+                      <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        <span>Team</span>
+                        <span className="text-white italic">{m.teamName}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</span>
+                        {m.role === "admin" ? (
+                          <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-[8px] font-black uppercase border border-primary/20">Race Director</span>
+                        ) : (
+                          <span className="bg-white/5 text-muted-foreground px-2 py-0.5 rounded-full text-[8px] font-black uppercase border border-white/10">Registered Driver</span>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
                 ))}
-                {(!user.memberships || user.memberships.length === 0) && (
-                  <div className="text-center py-12 opacity-20">
-                    <Trophy className="w-12 h-12 mx-auto mb-4" />
-                    <p className="text-[10px] font-black uppercase tracking-widest">No active assignments</p>
-                  </div>
-                )}
               </div>
             </div>
-          </div>
+          )}
         </div>
       </motion.div>
     </div>
