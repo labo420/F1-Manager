@@ -39,7 +39,7 @@ export default function Profile() {
       queryClient.invalidateQueries({ queryKey: ["/api/me"] });
       setAvatarFile(null);
       setAvatarPreview(null);
-      toast({ title: "Avatar Updated", description: "Looking good on the grid!" });
+      toast({ title: "Avatar Locked", description: "Identity updated on the grid." });
     },
     onError: (error: Error) => {
       toast({ title: "Upload Failed", description: error.message, variant: "destructive" });
@@ -53,7 +53,7 @@ export default function Profile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/me"] });
-      toast({ title: "Bio Updated", description: "Your racing profile is up to date!" });
+      toast({ title: "Dossier Updated", description: "Racing history transmitted." });
     },
     onError: (error: Error) => {
       toast({ title: "Update Failed", description: error.message, variant: "destructive" });
@@ -73,141 +73,205 @@ export default function Profile() {
   if (!user) return null;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 pb-24">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-display font-black text-white uppercase tracking-tighter italic" data-testid="text-profile-title">
-            Driver Profile
-          </h1>
-          <p className="text-muted-foreground mt-2">@{user.username}</p>
-        </div>
+    <div className="max-w-5xl mx-auto px-4 py-12 pb-24">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-12"
+      >
+        <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 text-center md:text-left">
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+            {(avatarPreview || user.avatarUrl) ? (
+              <img
+                src={avatarPreview || user.avatarUrl || ""}
+                alt="avatar"
+                className="relative w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-zinc-900 shadow-2xl transition-all"
+                data-testid="img-avatar-profile"
+              />
+            ) : (
+              <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full bg-zinc-900 flex items-center justify-center border-4 border-zinc-800 shadow-2xl" data-testid="img-avatar-placeholder">
+                <User className="w-16 h-16 text-muted-foreground/30" />
+              </div>
+            )}
+            <label className="absolute bottom-2 right-2 w-10 h-10 bg-primary hover:bg-primary/90 rounded-full flex items-center justify-center cursor-pointer shadow-xl border-2 border-zinc-900 transition-transform hover:scale-110 active:scale-95 z-20" data-testid="label-upload-avatar">
+              <Camera className="w-5 h-5 text-white" />
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} className="hidden" data-testid="input-avatar-file" />
+            </label>
+          </div>
 
-        <div className="glass-panel rounded-2xl p-8 mb-6">
-          <h2 className="text-lg font-bold text-white uppercase mb-6 flex items-center gap-2">
-            <Camera className="w-5 h-5 text-primary" /> Avatar
-          </h2>
-
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <div className="relative group">
-              {(avatarPreview || user.avatarUrl) ? (
-                <img
-                  src={avatarPreview || user.avatarUrl || ""}
-                  alt="avatar"
-                  className="w-28 h-28 rounded-full object-cover border-4 border-white/10 group-hover:border-primary/50 transition-all"
-                  data-testid="img-avatar-profile"
-                />
-              ) : (
-                <div className="w-28 h-28 rounded-full bg-white/10 flex items-center justify-center border-4 border-white/10 group-hover:border-primary/50 transition-all" data-testid="img-avatar-placeholder">
-                  <User className="w-12 h-12 text-muted-foreground" />
-                </div>
-              )}
-              <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" data-testid="label-upload-avatar">
-                <Camera className="w-6 h-6 text-white" />
-                <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarChange} className="hidden" data-testid="input-avatar-file" />
-              </label>
-            </div>
-
-            <div className="flex-1 text-center sm:text-left">
-              <p className="text-muted-foreground text-sm mb-3">Upload a JPG, PNG, or WebP image (max 2MB).</p>
-              {avatarFile && (
-                <button
-                  onClick={() => avatarMutation.mutate(avatarFile)}
-                  disabled={avatarMutation.isPending}
-                  data-testid="button-save-avatar"
-                  className="bg-primary text-white rounded-xl px-6 py-3 font-bold uppercase text-sm hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {avatarMutation.isPending ? "Uploading..." : "Save Avatar"}
-                </button>
-              )}
+          <div className="flex-1">
+            <h1 className="text-5xl md:text-6xl font-display font-black text-white uppercase tracking-tighter italic leading-none mb-2" data-testid="text-profile-title">
+              {user.username}
+            </h1>
+            <div className="flex flex-wrap justify-center md:justify-start gap-3">
+              <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Registry: #FL-{user.id.toString().padStart(4, '0')}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary">
+                Super License Active
+              </span>
             </div>
           </div>
-        </div>
 
-        <div className="glass-panel rounded-2xl p-8 mb-6">
-          <h2 className="text-lg font-bold text-white uppercase mb-6 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary" /> Driver Bio
-          </h2>
-          <div className="space-y-4">
-            <textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell us about your racing history..."
-              className="w-full h-32 bg-background border-2 border-border rounded-xl px-4 py-3 text-white focus:border-primary focus:ring-1 outline-none transition-all resize-none"
-              data-testid="textarea-bio"
-            />
-            <div className="flex justify-end">
+          {avatarFile && (
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
               <button
-                onClick={() => bioMutation.mutate(bio)}
-                disabled={bioMutation.isPending || bio === user.bio}
-                data-testid="button-save-bio"
-                className="bg-primary text-white rounded-xl px-6 py-3 font-bold uppercase text-sm hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-2"
+                onClick={() => avatarMutation.mutate(avatarFile)}
+                disabled={avatarMutation.isPending}
+                data-testid="button-save-avatar"
+                className="bg-white text-black rounded-2xl px-8 py-4 font-black uppercase text-xs hover:bg-zinc-200 transition-all disabled:opacity-50 flex items-center gap-3 shadow-2xl shadow-white/10"
               >
                 <Save className="w-4 h-4" />
-                {bioMutation.isPending ? "Saving..." : "Save Bio"}
+                {avatarMutation.isPending ? "Syncing..." : "Confirm Photo"}
               </button>
+            </motion.div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            <div className="glass-panel rounded-[2rem] p-8 border-2 border-white/5 shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
+              <div className="relative z-10">
+                <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+                  <FileText className="w-4 h-4 text-primary" /> Driver Dossier
+                </h2>
+                <div className="space-y-6">
+                  <textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Briefly describe your racing history, rivalries, and championship aspirations..."
+                    className="w-full h-40 bg-zinc-900/50 border-2 border-white/5 rounded-2xl px-6 py-5 text-white font-medium focus:border-primary focus:bg-zinc-900 outline-none transition-all resize-none shadow-inner text-lg placeholder:text-white/10"
+                    data-testid="textarea-bio"
+                  />
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => bioMutation.mutate(bio)}
+                      disabled={bioMutation.isPending || bio === user.bio}
+                      data-testid="button-save-bio"
+                      className={cn(
+                        "rounded-xl px-8 py-4 font-black uppercase text-xs transition-all flex items-center gap-3",
+                        bio === user.bio 
+                          ? "bg-zinc-800 text-muted-foreground cursor-not-allowed"
+                          : "bg-primary text-white hover:bg-primary/90 red-glow shadow-xl shadow-primary/20"
+                      )}
+                    >
+                      <Save className="w-4 h-4" />
+                      {bioMutation.isPending ? "Transmitting..." : "Update Dossier"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {user.memberships && user.memberships.length > 0 && (
+              <div className="space-y-6">
+                <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] px-4 flex items-center gap-3">
+                  <Shield className="w-4 h-4 text-primary" /> Active Assignments
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {user.memberships.map((m: any, idx: number) => (
+                    <motion.div 
+                      key={m.lobbyId} 
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="glass-panel rounded-3xl p-6 border-2 border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden" 
+                      data-testid={`profile-lobby-${m.lobbyId}`}
+                    >
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
+                          <Trophy className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 opacity-50">Freq ID</div>
+                          <code className="text-primary font-mono font-black tracking-widest bg-zinc-900/50 px-2 py-0.5 rounded border border-white/5 text-[10px]">
+                            {m.lobbyCode}
+                          </code>
+                        </div>
+                      </div>
+
+                      <h3 className="font-display font-black text-white text-xl uppercase tracking-tight mb-4 group-hover:text-primary transition-colors">{m.lobbyName}</h3>
+                      
+                      <div className="space-y-3 pt-4 border-t border-white/5">
+                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          <span>Team</span>
+                          <span className="text-white italic">{m.teamName}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</span>
+                          {m.role === "admin" ? (
+                            <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-[8px] font-black uppercase border border-primary/20">Race Director</span>
+                          ) : (
+                            <span className="bg-white/5 text-muted-foreground px-2 py-0.5 rounded-full text-[8px] font-black uppercase border border-white/10">Registered Driver</span>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-8">
+            <div className="glass-panel rounded-[2rem] p-8 border-2 border-white/5 shadow-2xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-8 flex items-center gap-3 relative z-10">
+                <Star className="w-4 h-4 text-primary" /> Joker Inventory
+              </h2>
+              
+              <div className="space-y-6 relative z-10">
+                {user.memberships?.map((m: any) => (
+                  <div key={m.lobbyId} className="space-y-4">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40">{m.lobbyName}</p>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="bg-zinc-900/80 rounded-2xl p-4 border border-white/5 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+                            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                          </div>
+                          <span className="text-[10px] font-black text-white uppercase tracking-widest">Driver Jollies</span>
+                        </div>
+                        <div className="flex gap-1.5">
+                          {[...Array(2)].map((_, i) => (
+                            <div key={i} className={cn(
+                              "w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]",
+                              i < (m.driverJollies ?? 0) ? "bg-yellow-500 red-glow" : "bg-zinc-800"
+                            )} />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="bg-zinc-900/80 rounded-2xl p-4 border border-white/5 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                            <Star className="w-4 h-4 text-blue-500 fill-blue-500" />
+                          </div>
+                          <span className="text-[10px] font-black text-white uppercase tracking-widest">Team Jollies</span>
+                        </div>
+                        <div className="flex gap-1.5">
+                          {[...Array(2)].map((_, i) => (
+                            <div key={i} className={cn(
+                              "w-2 h-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]",
+                              i < (m.constructorJollies ?? 0) ? "bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" : "bg-zinc-800"
+                            )} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {(!user.memberships || user.memberships.length === 0) && (
+                  <div className="text-center py-12 opacity-20">
+                    <Trophy className="w-12 h-12 mx-auto mb-4" />
+                    <p className="text-[10px] font-black uppercase tracking-widest">No active assignments</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-
-        {user.memberships && user.memberships.length > 0 && (
-          <div className="glass-panel rounded-2xl p-8">
-            <h2 className="text-lg font-bold text-white uppercase mb-6 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" /> My Leagues
-            </h2>
-            <div className="space-y-4">
-              {user.memberships.map((m: any) => (
-                <div key={m.lobbyId} className="bg-background rounded-xl p-5 border-2 border-border" data-testid={`profile-lobby-${m.lobbyId}`}>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                      <h3 className="font-bold text-white text-lg">{m.lobbyName}</h3>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                        {m.role === "admin" && (
-                          <span className="bg-primary/20 text-primary px-2 py-0.5 rounded font-bold uppercase">Admin</span>
-                        )}
-                        <span className="flex items-center gap-1"><Trophy className="w-3 h-3" /> {m.teamName}</span>
-                        <span className="flex items-center gap-1"><Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {(m.driverJollies ?? 0) + (m.constructorJollies ?? 0)} Jollies</span>
-                      </div>
-                    </div>
-                    <div className="text-sm font-mono text-primary">
-                      {m.lobbyCode}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <div className="p-2 bg-background rounded border text-center">
-                      <p className="text-[10px] uppercase text-muted-foreground leading-none mb-1">Driver Jollies</p>
-                      <div className="flex gap-1 mt-1 justify-center">
-                        {[...Array(2)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={cn(
-                              "w-3 h-3",
-                              i < (m.driverJollies ?? 0) ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground/30"
-                            )}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="p-2 bg-background rounded border text-center">
-                      <p className="text-[10px] uppercase text-muted-foreground leading-none mb-1">Team Jollies</p>
-                      <div className="flex gap-1 mt-1 justify-center">
-                        {[...Array(2)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={cn(
-                              "w-3 h-3",
-                              i < (m.constructorJollies ?? 0) ? "text-blue-500 fill-blue-500" : "text-muted-foreground/30"
-                            )}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </motion.div>
     </div>
   );
