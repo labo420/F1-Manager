@@ -14,7 +14,6 @@ import AdminPanel from "@/pages/Admin";
 import F1Season from "@/pages/F1Season";
 import Profile from "@/pages/Profile";
 import Paddock from "@/pages/Paddock";
-import RaceResults from "@/pages/RaceResults";
 import LobbyDetail from "@/pages/LobbyDetail";
 import DraftRoom from "@/pages/DraftRoom";
 import { Navigation } from "@/components/Navigation";
@@ -78,9 +77,6 @@ function Router() {
       </Route>
       <Route path="/profile">
         {() => <ProtectedRoute component={Profile} />}
-      </Route>
-      <Route path="/race/:id/results">
-        {(params) => <ProtectedRoute component={() => <RaceResults />} />}
       </Route>
       <Route component={NotFound} />
     </Switch>

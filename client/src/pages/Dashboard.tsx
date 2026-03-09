@@ -4,10 +4,9 @@ import { useActiveLobby, useCreateLobby, useJoinLobby, useSetTeamName, useLobbyI
 import { useRaces } from "@/hooks/use-races";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Lock, PlusCircle, LogIn, Crown, ChevronRight, ChevronDown, Users, Star, Trophy, Car, Copy, Timer, Zap, ExternalLink } from "lucide-react";
+import { Calendar, Lock, PlusCircle, LogIn, Crown, ChevronRight, ChevronDown, Users, Star, Trophy, Car, Copy, Timer, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
 import type { RaceFantasyWinners } from "@shared/schema";
 import { DriverAvatar } from "@/components/DriverAvatar";
 
@@ -422,18 +421,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
           const isExpanded = expandedRaceId === race.id;
 
           return (
-            <div key={race.id} className="glass-panel rounded-xl overflow-hidden relative">
-              {status === "risultati" && (
-                <Link href={`/race/${race.id}/results`}>
-                  <div 
-                    className="absolute right-12 top-1/2 -translate-y-1/2 z-20 p-2 hover:bg-white/10 rounded-lg transition-colors group/link cursor-pointer"
-                    title="View Official Results"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <ExternalLink className="w-4 h-4 text-primary group-hover/link:scale-110 transition-transform" />
-                  </div>
-                </Link>
-              )}
+            <div key={race.id} className="glass-panel rounded-xl overflow-hidden">
               <button
                 onClick={() => toggleAccordion(race.id)}
                 className="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-white/5 transition-all"
@@ -448,7 +436,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0 pr-8 md:pr-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <span className={`text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border ${getStatusColor(status)}`}>
                     {getStatusLabel(status)}
                   </span>
