@@ -495,6 +495,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const mapped = qualResults.map((r: any) => ({
         position: parseInt(r.position),
         driverNumber: parseInt(r.number),
+        driverCode: r.Driver.code || null,
         driverName: `${r.Driver.givenName} ${r.Driver.familyName}`,
         teamName: normalizeTeam(r.Constructor.name),
         q1: r.Q1 || null,
@@ -548,6 +549,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         return {
           position: r.positionText === "R" || r.positionText === "D" || r.positionText === "E" || r.positionText === "W" || r.positionText === "F" || r.positionText === "N" ? null : parseInt(r.position),
           driverNumber: driverNum,
+          driverCode: r.Driver.code || null,
           driverName: `${r.Driver.givenName} ${r.Driver.familyName}`,
           teamName: normalizeTeam(r.Constructor.name),
           points: parseFloat(r.points) || 0,

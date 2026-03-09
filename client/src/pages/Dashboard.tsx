@@ -86,6 +86,96 @@ function getCircuitFlag(name: string) {
   );
 }
 
+const F1_CDN = "https://media.formula1.com/image/upload/f_auto,c_limit,q_75,w_80/content/dam/fom-website/drivers";
+
+const DRIVER_IMAGES: Record<string, string> = {
+  "RUS": `${F1_CDN}/G/GEORUS01_George_Russell/georus01`,
+  "ANT": `${F1_CDN}/K/KIMANT01_Andrea_Kimi_Antonelli/kimant01`,
+  "HAD": `${F1_CDN}/I/ISAHAD01_Isack_Hadjar/isahad01`,
+  "LEC": `${F1_CDN}/C/CHALEC01_Charles_Leclerc/chalec01`,
+  "PIA": `${F1_CDN}/O/OSCPIA01_Oscar_Piastri/oscpia01`,
+  "NOR": `${F1_CDN}/L/LANNOR01_Lando_Norris/lannor01`,
+  "HAM": `${F1_CDN}/L/LEWHAM01_Lewis_Hamilton/lewham01`,
+  "LAW": `${F1_CDN}/L/LIALAW01_Liam_Lawson/lialaw01`,
+  "LIN": `${F1_CDN}/A/ARVLIN01_Arvid_Lindblad/arvlin01`,
+  "BOR": `${F1_CDN}/G/GABBOR01_Gabriel_Bortoleto/gabbor01`,
+  "HUL": `${F1_CDN}/N/NICHUL01_Nico_Hulkenberg/nichul01`,
+  "BEA": `${F1_CDN}/O/OLIBEA01_Oliver_Bearman/olibea01`,
+  "OCO": `${F1_CDN}/E/ESTOCO01_Esteban_Ocon/estoco01`,
+  "GAS": `${F1_CDN}/P/PIEGAS01_Pierre_Gasly/piegas01`,
+  "ALB": `${F1_CDN}/A/ALEALB01_Alexander_Albon/alealb01`,
+  "COL": `${F1_CDN}/F/FRACOL01_Franco_Colapinto/fracol01`,
+  "ALO": `${F1_CDN}/F/FERALO01_Fernando_Alonso/feralo01`,
+  "PER": `${F1_CDN}/S/SERPER01_Sergio_Perez/serper01`,
+  "BOT": `${F1_CDN}/V/VALBOT01_Valtteri_Bottas/valbot01`,
+  "VER": `${F1_CDN}/M/MAXVER01_Max_Verstappen/maxver01`,
+  "SAI": `${F1_CDN}/C/CARSAI01_Carlos_Sainz/carsai01`,
+  "DOO": `${F1_CDN}/J/JACDOO01_Jack_Doohan/jacdoo01`,
+  "TSU": `${F1_CDN}/Y/YUKTSU01_Yuki_Tsunoda/yuktsu01`,
+  "STR": `${F1_CDN}/L/LANSTR01_Lance_Stroll/lanstr01`,
+};
+
+const DRIVER_IMAGES_BY_NUMBER: Record<number, string> = {
+  63: DRIVER_IMAGES["RUS"], 12: DRIVER_IMAGES["ANT"], 6: DRIVER_IMAGES["HAD"],
+  16: DRIVER_IMAGES["LEC"], 81: DRIVER_IMAGES["PIA"], 1: DRIVER_IMAGES["NOR"],
+  4:  DRIVER_IMAGES["NOR"], 44: DRIVER_IMAGES["HAM"], 30: DRIVER_IMAGES["LAW"],
+  41: DRIVER_IMAGES["LIN"], 5: DRIVER_IMAGES["BOR"],  27: DRIVER_IMAGES["HUL"],
+  87: DRIVER_IMAGES["BEA"], 31: DRIVER_IMAGES["OCO"], 10: DRIVER_IMAGES["GAS"],
+  23: DRIVER_IMAGES["ALB"], 43: DRIVER_IMAGES["COL"], 14: DRIVER_IMAGES["ALO"],
+  11: DRIVER_IMAGES["PER"], 77: DRIVER_IMAGES["BOT"], 33: DRIVER_IMAGES["VER"],
+  55: DRIVER_IMAGES["SAI"], 7:  DRIVER_IMAGES["DOO"], 22: DRIVER_IMAGES["TSU"],
+  18: DRIVER_IMAGES["STR"],
+};
+
+const DRIVER_CODE_BY_NAME: Record<string, string> = {
+  "Max Verstappen": "VER", "Liam Lawson": "LAW", "Lewis Hamilton": "HAM",
+  "Charles Leclerc": "LEC", "Lando Norris": "NOR", "Oscar Piastri": "PIA",
+  "George Russell": "RUS", "Kimi Antonelli": "ANT", "Andrea Kimi Antonelli": "ANT",
+  "Fernando Alonso": "ALO", "Lance Stroll": "STR", "Pierre Gasly": "GAS",
+  "Jack Doohan": "DOO", "Yuki Tsunoda": "TSU", "Isack Hadjar": "HAD",
+  "Carlos Sainz": "SAI", "Alex Albon": "ALB", "Alexander Albon": "ALB",
+  "Nico Hulkenberg": "HUL", "Nico Hülkenberg": "HUL", "Gabriel Bortoleto": "BOR",
+  "Oliver Bearman": "BEA", "Esteban Ocon": "OCO", "Franco Colapinto": "COL",
+  "Sergio Perez": "PER", "Sergio Pérez": "PER", "Valtteri Bottas": "BOT",
+  "Arvid Lindblad": "LIN",
+};
+
+function getDriverImage(code?: string | null, number?: number | null, name?: string): string | null {
+  if (code && DRIVER_IMAGES[code]) return DRIVER_IMAGES[code];
+  if (number && DRIVER_IMAGES_BY_NUMBER[number]) return DRIVER_IMAGES_BY_NUMBER[number];
+  if (name) {
+    const c = DRIVER_CODE_BY_NAME[name];
+    if (c && DRIVER_IMAGES[c]) return DRIVER_IMAGES[c];
+  }
+  return null;
+}
+
+function DriverAvatar({ code, number, name, teamColor }: { code?: string | null; number?: number | null; name: string; teamColor?: string }) {
+  const src = getDriverImage(code, number, name);
+  if (!src) {
+    return (
+      <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 border border-white/10"
+        style={{ backgroundColor: teamColor ? `${teamColor}40` : "#333", borderColor: teamColor ? `${teamColor}60` : undefined }}>
+        {name.split(" ").map(p => p[0]).slice(0, 2).join("")}
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={name}
+      className="w-8 h-8 rounded-full object-cover object-top shrink-0 border border-white/10"
+      style={{ borderColor: teamColor ? `${teamColor}60` : undefined }}
+      onError={(e) => {
+        const el = e.currentTarget;
+        el.style.display = "none";
+        const fallback = el.nextElementSibling as HTMLElement | null;
+        if (fallback) fallback.style.display = "flex";
+      }}
+    />
+  );
+}
+
 const TEAM_COLORS: Record<string, string> = {
   "Red Bull Racing": "#3671C6",
   "Ferrari": "#E8002D",
@@ -673,12 +763,12 @@ function RaceAccordionContent({ race, status, lobbyId, qualSessions }: { race: a
               <div className="space-y-1">
                 {qualifyingResults.map((r: any) => (
                   <div key={r.position} className={`flex items-center justify-between p-2.5 rounded-lg ${r.position <= 3 ? "bg-white/5 border border-white/10" : "hover:bg-white/5"}`} data-testid={`qual-row-${r.position}`}>
-                    <div className="flex items-center gap-3">
-                      <span className={`w-6 text-center font-display font-bold text-sm ${r.position === 1 ? "text-yellow-400" : r.position === 2 ? "text-gray-300" : r.position === 3 ? "text-amber-600" : "text-muted-foreground"}`}>
+                    <div className="flex items-center gap-2.5">
+                      <span className={`w-5 text-center font-display font-bold text-xs shrink-0 ${r.position === 1 ? "text-yellow-400" : r.position === 2 ? "text-gray-300" : r.position === 3 ? "text-amber-600" : "text-muted-foreground"}`}>
                         {r.position}
                       </span>
-                      <TeamIcon name={r.teamName} className="w-5 h-5" />
-                      <div className="w-1 h-6 rounded-full" style={{ backgroundColor: TEAM_COLORS[r.teamName] || "#666" }} />
+                      <DriverAvatar code={r.driverCode} number={r.driverNumber} name={r.driverName} teamColor={TEAM_COLORS[r.teamName]} />
+                      <div className="w-0.5 h-6 rounded-full shrink-0" style={{ backgroundColor: TEAM_COLORS[r.teamName] || "#666" }} />
                       <div>
                         <div className="text-white font-bold text-sm">{r.driverName}</div>
                         <div className="text-[10px] text-muted-foreground uppercase">{r.teamName}</div>
@@ -752,8 +842,8 @@ function RaceAccordionContent({ race, status, lobbyId, qualSessions }: { race: a
               {liveData.map((dr: any, idx: number) => (
                 <div key={dr.driverNumber} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors border border-transparent">
                   <div className="flex items-center gap-2">
-                    <span className="w-5 text-center font-bold text-xs text-muted-foreground">{dr.position || "-"}</span>
-                    <TeamIcon name={dr.driverTeam} className="w-4 h-4" />
+                    <span className="w-5 text-center font-bold text-xs text-muted-foreground shrink-0">{dr.position || "-"}</span>
+                    <DriverAvatar code={dr.driverCode} number={dr.driverNumber} name={dr.driverName} teamColor={TEAM_COLORS[dr.driverTeam]} />
                     <span className="text-white font-bold text-xs">{dr.driverName}</span>
                   </div>
                   <span className="text-[10px] font-mono text-muted-foreground">
@@ -811,12 +901,12 @@ function RaceAccordionContent({ race, status, lobbyId, qualSessions }: { race: a
                 const team = dr.driverTeam || dr.teamName || "Unknown";
                 return (
                 <div key={dr.driverId || dr.driverNumber} className={`flex items-center justify-between p-3 rounded-lg ${idx < 3 ? "bg-white/5 border border-white/10" : "hover:bg-white/5"}`}>
-                  <div className="flex items-center gap-3">
-                    <span className={`w-6 text-center font-display font-bold text-sm ${idx === 0 ? "text-yellow-400" : idx === 1 ? "text-gray-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground"}`}>
+                  <div className="flex items-center gap-2.5">
+                    <span className={`w-5 text-center font-display font-bold text-xs shrink-0 ${idx === 0 ? "text-yellow-400" : idx === 1 ? "text-gray-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground"}`}>
                       {dr.position || dr.positionText || "-"}
                     </span>
-                    <TeamIcon name={team} className="w-5 h-5" />
-                    <div className="w-1 h-6 rounded-full" style={{ backgroundColor: TEAM_COLORS[team] || "#666" }} />
+                    <DriverAvatar code={dr.driverCode} number={dr.driverNumber} name={dr.driverName} teamColor={TEAM_COLORS[team]} />
+                    <div className="w-0.5 h-6 rounded-full shrink-0" style={{ backgroundColor: TEAM_COLORS[team] || "#666" }} />
                     <div>
                       <div className="text-white font-bold text-sm flex items-center gap-1">
                         {dr.driverName}
