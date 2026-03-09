@@ -157,7 +157,7 @@ function getStatusLabel(status: string) {
   switch (status) {
     case "coming-soon": return "Coming Soon";
     case "in-corso": return "LIVE";
-    case "risultati": return "Risultati";
+    case "risultati": return "Results";
     default: return "";
   }
 }
