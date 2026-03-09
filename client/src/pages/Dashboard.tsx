@@ -127,6 +127,7 @@ function getRaceStatusFromSessions(
   const sessionStart = new Date(matchingSession.date_start);
   const sessionEnd = new Date(matchingSession.date_end);
   if (now >= sessionStart && now <= sessionEnd) return "in-corso";
+  if (now > sessionEnd) return "risultati";
   return "coming-soon";
 }
 
@@ -505,6 +506,12 @@ function RaceAccordionContent({ race, status, lobbyId, qualSessions }: { race: a
     staleTime: 10 * 60 * 1000,
   });
 
+  const { data: externalResults, isLoading: externalLoading } = useQuery<any[]>({
+    queryKey: ["/api/f1/race", race.id, "external-results"],
+    enabled: status === "risultati" && !race.isCompleted,
+    staleTime: 10 * 60 * 1000,
+  });
+
   const { data: raceDetails } = useQuery<any>({
     queryKey: ["/api/f1/race", race.id, "details"],
     queryFn: async () => {
@@ -619,9 +626,17 @@ function RaceAccordionContent({ race, status, lobbyId, qualSessions }: { race: a
   const isActuallyLive = liveData && liveData.length > 0;
 
   const results = useMemo(() => {
-    if (!raceDetails?.driverResults) return [];
-    return [...raceDetails.driverResults].sort((a: any, b: any) => (a.position || 999) - (b.position || 999));
-  }, [raceDetails]);
+    if (race.isCompleted && raceDetails?.driverResults?.length > 0) {
+      return [...raceDetails.driverResults].sort((a: any, b: any) => (a.position || 999) - (b.position || 999));
+    }
+    if (externalResults && externalResults.length > 0) {
+      return [...externalResults].sort((a: any, b: any) => (a.position || 999) - (b.position || 999));
+    }
+    if (raceDetails?.driverResults) {
+      return [...raceDetails.driverResults].sort((a: any, b: any) => (a.position || 999) - (b.position || 999));
+    }
+    return [];
+  }, [raceDetails, externalResults, race.isCompleted]);
 
   return (
     <div className="px-4 sm:px-5 pb-5 border-t border-white/10">
@@ -757,11 +772,20 @@ function RaceAccordionContent({ race, status, lobbyId, qualSessions }: { race: a
 
       {status === "risultati" && (
         <div className="mt-6 space-y-6">
+          {externalLoading && !race.isCompleted && (
+            <div className="flex items-center justify-center py-6 gap-2">
+              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <span className="text-muted-foreground text-xs">Loading race results...</span>
+            </div>
+          )}
+          {!externalLoading && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
              <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
                 <Timer className="w-4 h-4 text-purple-400 mx-auto mb-1" />
                 <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Fastest Lap</div>
-                <div className="text-white font-bold text-xs">{raceDetails?.fastestLapDriver || "N/A"}</div>
+                <div className="text-white font-bold text-xs">
+                  {raceDetails?.fastestLapDriver || results.find((r: any) => r.fastestLap)?.driverName || "N/A"}
+                </div>
              </div>
              <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
                 <Trophy className="w-4 h-4 text-yellow-400 mx-auto mb-1" />
@@ -771,39 +795,48 @@ function RaceAccordionContent({ race, status, lobbyId, qualSessions }: { race: a
              <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
                 <Zap className="w-4 h-4 text-orange-400 mx-auto mb-1" />
                 <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Overtakes</div>
-                <div className="text-white font-bold text-xs">{raceDetails?.totalOvertakes || 0}</div>
+                <div className="text-white font-bold text-xs">{raceDetails?.totalOvertakes || "—"}</div>
              </div>
           </div>
+          )}
 
+          {!externalLoading && results.length > 0 && (
           <div>
             <div className="text-[10px] font-bold text-muted-foreground uppercase px-2 mb-2 flex justify-between items-center">
               <span>Full Classification</span>
               <span className="font-mono">Time / Gap</span>
             </div>
             <div className="space-y-1">
-              {results.map((dr, idx) => (
-                <div key={dr.driverId} className={`flex items-center justify-between p-3 rounded-lg ${idx < 3 ? "bg-white/5 border border-white/10" : "hover:bg-white/5"}`}>
+              {results.map((dr: any, idx: number) => {
+                const team = dr.driverTeam || dr.teamName || "Unknown";
+                return (
+                <div key={dr.driverId || dr.driverNumber} className={`flex items-center justify-between p-3 rounded-lg ${idx < 3 ? "bg-white/5 border border-white/10" : "hover:bg-white/5"}`}>
                   <div className="flex items-center gap-3">
                     <span className={`w-6 text-center font-display font-bold text-sm ${idx === 0 ? "text-yellow-400" : idx === 1 ? "text-gray-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground"}`}>
-                      {dr.position || "-"}
+                      {dr.position || dr.positionText || "-"}
                     </span>
-                    <TeamIcon name={dr.driverTeam} className="w-5 h-5" />
-                    <div className="w-1 h-6 rounded-full" style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#666" }}></div>
+                    <TeamIcon name={team} className="w-5 h-5" />
+                    <div className="w-1 h-6 rounded-full" style={{ backgroundColor: TEAM_COLORS[team] || "#666" }} />
                     <div>
-                      <div className="text-white font-bold text-sm">{dr.driverName}</div>
-                      <div className="text-[10px] text-muted-foreground uppercase">{dr.driverTeam}</div>
+                      <div className="text-white font-bold text-sm flex items-center gap-1">
+                        {dr.driverName}
+                        {dr.fastestLap && <span className="text-[9px] bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded px-1 font-bold">FL</span>}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground uppercase">{team}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-xs font-mono text-muted-foreground">
-                      {idx === 0 ? (dr.time || "1:30:00.000") : (dr.gap ? `+${dr.gap}s` : (dr.status || "DNF"))}
+                      {idx === 0 ? (dr.time || "—") : (dr.gap ? (typeof dr.gap === "string" && !dr.gap.startsWith("+") && dr.gap.length > 10 ? dr.gap : `+${dr.gap}`) : (dr.status || "DNF"))}
                     </span>
                     <span className="font-display font-bold text-white w-8 text-right text-xs">{dr.points}</span>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
+          )}
         </div>
       )}
       </div>

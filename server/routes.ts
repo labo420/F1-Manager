@@ -482,9 +482,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const teamNameMap: Record<string, string> = {
         "Red Bull": "Red Bull Racing",
         "Racing Bulls": "RB",
+        "RB F1 Team": "RB",
         "Kick Sauber": "Audi",
         "Sauber": "Audi",
         "Alfa Romeo": "Audi",
+        "Haas F1 Team": "Haas",
+        "Alpine F1 Team": "Alpine",
+        "Cadillac F1 Team": "Cadillac",
+        "Aston Martin Aramco": "Aston Martin",
       };
       const normalizeTeam = (name: string) => teamNameMap[name] || name;
       const mapped = qualResults.map((r: any) => ({
@@ -499,6 +504,64 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       res.json(mapped);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch qualifying results" });
+    }
+  });
+
+  app.get("/api/f1/race/:id/external-results", async (req, res) => {
+    try {
+      const raceId = Number(req.params.id);
+      const race = await storage.getRace(raceId);
+      if (!race) return res.status(404).json({ message: "Race not found" });
+      const year = new Date(race.date).getFullYear();
+      const round = race.round;
+      const [raceRes, qualRes] = await Promise.all([
+        fetch(`https://api.jolpi.ca/ergast/f1/${year}/${round}/results/?format=json`),
+        fetch(`https://api.jolpi.ca/ergast/f1/${year}/${round}/qualifying/?format=json`),
+      ]);
+      if (!raceRes.ok) return res.status(502).json({ message: "Failed to fetch race results" });
+      const raceData = await raceRes.json();
+      const raceResults = raceData.MRData?.RaceTable?.Races?.[0]?.Results;
+      if (!raceResults || raceResults.length === 0) return res.json([]);
+      let qualMap: Record<number, number> = {};
+      if (qualRes.ok) {
+        const qualData = await qualRes.json();
+        const qualResults = qualData.MRData?.RaceTable?.Races?.[0]?.QualifyingResults || [];
+        qualResults.forEach((q: any) => {
+          qualMap[parseInt(q.number)] = parseInt(q.position);
+        });
+      }
+      const teamNameMap: Record<string, string> = {
+        "Red Bull": "Red Bull Racing",
+        "Racing Bulls": "RB",
+        "RB F1 Team": "RB",
+        "Kick Sauber": "Audi",
+        "Sauber": "Audi",
+        "Alfa Romeo": "Audi",
+        "Haas F1 Team": "Haas",
+        "Alpine F1 Team": "Alpine",
+        "Cadillac F1 Team": "Cadillac",
+        "Aston Martin Aramco": "Aston Martin",
+      };
+      const normalizeTeam = (name: string) => teamNameMap[name] || name;
+      const mapped = raceResults.map((r: any) => {
+        const driverNum = parseInt(r.number);
+        return {
+          position: r.positionText === "R" || r.positionText === "D" || r.positionText === "E" || r.positionText === "W" || r.positionText === "F" || r.positionText === "N" ? null : parseInt(r.position),
+          driverNumber: driverNum,
+          driverName: `${r.Driver.givenName} ${r.Driver.familyName}`,
+          teamName: normalizeTeam(r.Constructor.name),
+          points: parseFloat(r.points) || 0,
+          status: r.status,
+          time: r.Time?.time || null,
+          gap: r.position === "1" ? null : (r.Time?.time ? r.Time.time : r.status),
+          fastestLap: r.FastestLap?.rank === "1",
+          qualifyingPosition: qualMap[driverNum] || null,
+          positionText: r.positionText,
+        };
+      });
+      res.json(mapped);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch external race results" });
     }
   });
 
