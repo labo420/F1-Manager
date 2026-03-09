@@ -20,48 +20,82 @@ export default function Leaderboard() {
 
   if (!activeLobbyId || !activeMembership) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12">
-        <div className="text-center mb-10">
-          <Trophy className="w-12 h-12 text-primary mx-auto mb-4 opacity-50" />
-          <h2 className="text-xl font-bold text-white uppercase">Select a League Standings</h2>
-          <p className="text-muted-foreground mt-2 uppercase text-xs tracking-widest font-bold">Pick a league to view the championship</p>
+      <div className="max-w-3xl mx-auto px-4 py-12 pb-24">
+        <div className="text-center mb-12">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="inline-flex w-20 h-20 bg-primary/10 rounded-tr-3xl rounded-bl-3xl f1-slant items-center justify-center mb-6 border-2 border-primary/20 red-glow"
+          >
+            <Trophy className="w-10 h-10 text-primary f1-slant-reverse" />
+          </motion.div>
+          <h2 className="text-3xl md:text-4xl font-display font-black text-white uppercase tracking-tight">Select a League</h2>
+          <p className="text-muted-foreground mt-3 uppercase text-xs tracking-[0.2em] font-bold opacity-70">Championship Standings</p>
         </div>
 
         {adminLobbies.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
-              <Trophy className="w-4 h-4" /> Leagues I Manage
+          <div className="mb-10">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-6 flex items-center gap-3 px-2">
+              <div className="w-8 h-[1px] bg-primary/30" />
+              Leagues I Manage
             </h3>
-            <div className="space-y-3">
-              {adminLobbies.map((m: any) => (
-                <button
+            <div className="grid gap-4">
+              {adminLobbies.map((m: any, idx: number) => (
+                <motion.button
                   key={m.lobbyId}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
                   onClick={() => setActiveLobbyId(m.lobbyId)}
-                  className="w-full glass-panel rounded-xl p-5 flex items-center justify-between hover:border-primary/50 transition-all group text-left border-2 border-transparent"
+                  className="w-full glass-panel rounded-2xl p-6 flex items-center justify-between hover:bg-white/5 hover:border-primary/50 transition-all group text-left border-2 border-white/5 relative overflow-hidden"
                 >
-                  <div className="text-white font-bold text-lg">{m.lobbyName}</div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                </button>
+                  <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="flex items-center gap-5">
+                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                      <Shield className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                    <div>
+                      <div className="text-white font-display font-black text-xl uppercase tracking-tight group-hover:text-primary transition-colors">{m.lobbyName}</div>
+                      <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-0.5">Administrator Access</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">Enter League</span>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-all group-hover:translate-x-1" />
+                  </div>
+                </motion.button>
               ))}
             </div>
           </div>
         )}
 
         {playerLobbies.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
-              <Users className="w-4 h-4" /> Leagues I Joined
+          <div className="mb-10">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-6 flex items-center gap-3 px-2">
+              <div className="w-8 h-[1px] bg-white/10" />
+              Leagues I Joined
             </h3>
-            <div className="space-y-3">
-              {playerLobbies.map((m: any) => (
-                <button
+            <div className="grid gap-4">
+              {playerLobbies.map((m: any, idx: number) => (
+                <motion.button
                   key={m.lobbyId}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: (idx + adminLobbies.length) * 0.1 }}
                   onClick={() => setActiveLobbyId(m.lobbyId)}
-                  className="w-full glass-panel rounded-xl p-5 flex items-center justify-between hover:border-primary/50 transition-all group text-left border-2 border-transparent"
+                  className="w-full glass-panel rounded-2xl p-6 flex items-center justify-between hover:bg-white/5 hover:border-white/20 transition-all group text-left border-2 border-white/5 relative overflow-hidden"
                 >
-                  <div className="text-white font-bold text-lg">{m.lobbyName}</div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                </button>
+                  <div className="flex items-center gap-5">
+                    <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                      <Users className="w-6 h-6 text-muted-foreground group-hover:text-white transition-colors" />
+                    </div>
+                    <div>
+                      <div className="text-white font-display font-black text-xl uppercase tracking-tight group-hover:text-white transition-colors">{m.lobbyName}</div>
+                      <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-0.5">Competitor</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-white transition-all group-hover:translate-x-1" />
+                </motion.button>
               ))}
             </div>
           </div>
