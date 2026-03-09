@@ -798,11 +798,23 @@ async function seedDatabase() {
   const racesHaveItaTime = existingRaces.length > 0 && existingRaces[0]?.itaTime;
   const racesHaveCircuitData = existingRaces.length > 0 && existingRaces[0]?.circuitName;
 
-  if (existingDrivers.length >= 20 && existingRaces.length >= 24 && racesHaveCircuitData && racesHaveItaTime) return;
+  const driversNeedReseed = existingDrivers.length < 22 ||
+    existingDrivers.some(d => d.name === "Max Verstappen" && d.number !== 3) ||
+    existingDrivers.some(d => d.name === "Jack Doohan");
+
+  const needsRaceReseed = existingRaces.length < 24 ||
+    !racesHaveCircuitData ||
+    !racesHaveItaTime ||
+    existingRaces.some(r => r.name === "Australian Grand Prix" && r.circuitLength !== "5,278") ||
+    existingRaces.some(r => r.name === "Austrian Grand Prix" && r.circuitLength !== "4,326") ||
+    existingRaces.some(r => r.name === "Spanish Grand Prix (Madrid)" && r.circuitLength !== "5,416") ||
+    existingRaces.some(r => r.name === "Saudi Arabian Grand Prix" && r.circuitLength !== "6,175");
+
+  if (!driversNeedReseed && !needsRaceReseed) return;
 
   console.log("Seeding database with F1 2026 data...");
 
-  if (existingDrivers.length < 20) {
+  if (driversNeedReseed) {
     await db.delete(driverResults);
     await db.delete(constructorResults);
     await db.delete(selections);
@@ -825,30 +837,30 @@ async function seedDatabase() {
     ]);
 
     await db.insert(drivers).values([
-      { name: "Max Verstappen", team: "Red Bull Racing", number: 1 },
-      { name: "Liam Lawson", team: "Red Bull Racing", number: 30 },
+      { name: "Max Verstappen", team: "Red Bull Racing", number: 3 },
+      { name: "Isack Hadjar", team: "Red Bull Racing", number: 6 },
       { name: "Lewis Hamilton", team: "Ferrari", number: 44 },
       { name: "Charles Leclerc", team: "Ferrari", number: 16 },
-      { name: "Lando Norris", team: "McLaren", number: 4 },
+      { name: "Lando Norris", team: "McLaren", number: 1 },
       { name: "Oscar Piastri", team: "McLaren", number: 81 },
       { name: "George Russell", team: "Mercedes", number: 63 },
       { name: "Kimi Antonelli", team: "Mercedes", number: 12 },
       { name: "Fernando Alonso", team: "Aston Martin", number: 14 },
       { name: "Lance Stroll", team: "Aston Martin", number: 18 },
       { name: "Pierre Gasly", team: "Alpine", number: 10 },
-      { name: "Jack Doohan", team: "Alpine", number: 7 },
-      { name: "Yuki Tsunoda", team: "RB", number: 22 },
-      { name: "Isack Hadjar", team: "RB", number: 6 },
+      { name: "Franco Colapinto", team: "Alpine", number: 43 },
+      { name: "Liam Lawson", team: "RB", number: 30 },
+      { name: "Arvid Lindblad", team: "RB", number: 41 },
       { name: "Carlos Sainz", team: "Williams", number: 55 },
       { name: "Alex Albon", team: "Williams", number: 23 },
       { name: "Nico Hulkenberg", team: "Audi", number: 27 },
       { name: "Gabriel Bortoleto", team: "Audi", number: 5 },
       { name: "Oliver Bearman", team: "Haas", number: 87 },
       { name: "Esteban Ocon", team: "Haas", number: 31 },
+      { name: "Sergio Pérez", team: "Cadillac", number: 11 },
+      { name: "Valtteri Bottas", team: "Cadillac", number: 77 },
     ]);
   }
-
-  const needsRaceReseed = existingRaces.length < 24 || existingRaces.some(r => !r.circuitName) || !racesHaveItaTime || existingRaces.some(r => r.name === "Australian Grand Prix" && r.circuitLength !== "5,278");
   if (needsRaceReseed) {
     if (existingRaces.length > 0) {
       await db.delete(driverResults);
