@@ -76,6 +76,20 @@ export default function Leaderboard() {
     );
   }
 
+  const TEAM_COLORS: Record<string, string> = {
+    "Red Bull Racing": "#3671C6",
+    "Ferrari": "#E80020",
+    "Mercedes": "#27F4D2",
+    "McLaren": "#FF8000",
+    "Aston Martin": "#229971",
+    "Alpine": "#0093CC",
+    "Williams": "#64C4FF",
+    "RB": "#6692FF",
+    "Haas": "#B6BABD",
+    "Audi": "#52e6cf",
+    "Cadillac": "#FFD700",
+  };
+
   const leaderboard = tab === "drivers" ? (driverLeaderboard || []) : (constructorLeaderboard || []);
   const isLoading = tab === "drivers" ? dLoading : cLoading;
 
@@ -130,54 +144,81 @@ export default function Leaderboard() {
         </div>
       </div>
 
-      <div className="glass-panel rounded-3xl p-1 overflow-hidden">
-        <div className="bg-background rounded-[22px] overflow-hidden">
+      <div className="glass-panel rounded-3xl p-1 overflow-hidden shadow-2xl">
+        <div className="bg-background/40 backdrop-blur-sm rounded-[22px] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse" data-testid="table-leaderboard">
               <thead>
-                <tr className="border-b border-border bg-secondary/50">
-                  <th className="px-6 py-4 font-bold text-muted-foreground uppercase text-xs">Pos</th>
-                  <th className="px-6 py-4 font-bold text-muted-foreground uppercase text-xs">Scuderia</th>
-                  <th className="px-6 py-4 font-bold text-muted-foreground uppercase text-xs">Manager</th>
-                  <th className="px-6 py-4 font-bold text-primary uppercase text-xs text-right">
-                    {tab === "drivers" ? "Driver Pts" : "Constructor Pts"}
+                <tr className="border-b border-white/5 bg-white/5">
+                  <th className="px-6 py-5 font-display font-bold text-muted-foreground uppercase text-[10px] tracking-widest w-20">Pos</th>
+                  <th className="px-6 py-5 font-display font-bold text-muted-foreground uppercase text-[10px] tracking-widest">Team / Manager</th>
+                  <th className="px-6 py-5 font-display font-bold text-primary uppercase text-[10px] tracking-widest text-right">
+                    {tab === "drivers" ? "Championship Pts" : "Constructor Pts"}
                   </th>
                 </tr>
               </thead>
-              <tbody>
-                {leaderboard.map((entry, index) => (
-                  <motion.tr
-                    key={entry.userId}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    data-testid={`leaderboard-row-${entry.userId}`}
-                    className={`border-b border-border/50 hover:bg-white/5 transition-colors ${index === 0 ? "bg-primary/5" : ""}`}
-                  >
-                    <td className="px-6 py-6 font-display font-bold text-2xl w-24">
-                      {index === 0 ? (
-                        <span className="text-yellow-400 flex items-center gap-2"><Medal className="w-6 h-6" /> 1</span>
-                      ) : index === 1 ? (
-                        <span className="text-gray-300">2</span>
-                      ) : index === 2 ? (
-                        <span className="text-amber-600">3</span>
-                      ) : (
-                        <span className="text-muted-foreground">{index + 1}</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-6">
-                      <div className="flex items-center gap-3">
-                        <TeamAvatar name={entry.teamName} size="md" />
-                        <span className={`font-bold text-lg ${index === 0 ? "text-primary" : "text-white"}`}>{entry.teamName}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-6 text-muted-foreground">@{entry.username}</td>
-                    <td className="px-6 py-6 text-right font-display font-black text-2xl text-white">{entry.totalPoints}</td>
-                  </motion.tr>
-                ))}
+              <tbody className="divide-y divide-white/5">
+                {leaderboard.map((entry, index) => {
+                  const teamColor = TEAM_COLORS[entry.teamName] || "#444";
+                  return (
+                    <motion.tr
+                      key={entry.userId}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.03 }}
+                      data-testid={`leaderboard-row-${entry.userId}`}
+                      className={`group hover:bg-white/10 transition-all duration-300 ${index === 0 ? "bg-primary/10" : ""}`}
+                    >
+                      <td className="px-6 py-5">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors relative overflow-hidden">
+                          {index === 0 && (
+                            <div className="absolute inset-0 bg-yellow-400/10 animate-pulse" />
+                          )}
+                          <span className={`font-display font-black text-xl relative z-10 ${
+                            index === 0 ? "text-yellow-400" : 
+                            index === 1 ? "text-gray-300" : 
+                            index === 2 ? "text-amber-600" : 
+                            "text-muted-foreground"
+                          }`}>
+                            {index + 1}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-4">
+                          <div className="relative">
+                            <TeamAvatar name={entry.teamName} size="lg" />
+                            <div 
+                              className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background shadow-lg" 
+                              style={{ backgroundColor: teamColor }}
+                            />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-display font-black text-lg text-white uppercase tracking-tight leading-tight group-hover:text-primary transition-colors">
+                              {entry.teamName}
+                            </span>
+                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5">
+                              <Users className="w-3 h-3" /> @{entry.username}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex flex-col items-end">
+                          <span className="font-display font-black text-3xl text-white tracking-tighter tabular-nums">
+                            {entry.totalPoints}
+                          </span>
+                          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter -mt-1">
+                            Points
+                          </span>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
                 {leaderboard.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
+                    <td colSpan={3} className="px-6 py-12 text-center text-muted-foreground">
                       No points recorded yet. The season is young!
                     </td>
                   </tr>
