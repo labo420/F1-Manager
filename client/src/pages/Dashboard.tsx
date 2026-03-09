@@ -191,9 +191,9 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
     <div className="max-w-3xl mx-auto px-4 py-12 pb-24">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-display font-black text-white uppercase tracking-tighter italic">
-          Welcome, @{user.username}
+          @{user.username}
         </h1>
-        <p className="text-muted-foreground mt-2">Select a league or create a new one.</p>
+        <p className="text-muted-foreground mt-1 text-sm tracking-widest uppercase opacity-50 font-black">Driver Identity Verified</p>
       </div>
 
       {mode === "list" && (
@@ -398,12 +398,12 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
           <div className="flex items-center gap-3">
             {hasMultipleLobbies && (
               <button onClick={() => setActiveLobbyId(null)} className="text-muted-foreground hover:text-white transition-colors text-sm font-bold uppercase">
-                Switch
+                Switch League
               </button>
             )}
           </div>
           <p className="text-muted-foreground mt-1">
-            Welcome back, <span className="text-primary font-bold">{membership.teamName}</span>
+            Telemetry: <span className="text-primary font-bold">{membership.teamName}</span>
           </p>
         </div>
       </div>

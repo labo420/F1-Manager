@@ -35,7 +35,7 @@ export function useAuth() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/me"] });
-      toast({ title: "Welcome back", description: "Successfully logged in." });
+      toast({ title: "Identity Confirmed", description: "Telemetry link established." });
     },
     onError: (error: Error) => {
       toast({ title: "Login failed", description: error.message, variant: "destructive" });
