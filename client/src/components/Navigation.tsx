@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Trophy, LayoutDashboard, Settings, LogOut, Calendar, Home, UserCircle, Warehouse } from "lucide-react";
+import { Trophy, LayoutDashboard, Settings, LogOut, Calendar, Home, UserCircle, Warehouse, Activity } from "lucide-react";
+import { TelemetryPanel } from "@/components/TelemetryPanel";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -95,6 +96,14 @@ export function Navigation() {
           </div>
         </div>
       </div>
+
+      {location === "/f1-2026" && (
+        <div className="border-t border-white/10 bg-zinc-950/50 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-4">
+          <div className="max-w-7xl mx-auto">
+            <TelemetryPanel />
+          </div>
+        </div>
+      )}
 
       <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-zinc-950/95 backdrop-blur-xl z-50 safe-bottom">
         <div className="flex justify-around items-center h-14 px-2" style={{ paddingLeft: 'max(0.5rem, env(safe-area-inset-left))', paddingRight: 'max(0.5rem, env(safe-area-inset-right))' }}>
