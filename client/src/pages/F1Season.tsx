@@ -287,31 +287,33 @@ function SessionTimes({ race }: { race: RaceEntry }) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6" data-testid={`session-times-${race.id}`}>
-      {sessions.map(session => {
-        const dateStr = format(session.date, "MMM dd");
-        return (
-          <div key={session.label} className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-white/20 transition-colors">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-white">{session.label}</span>
+    <div className="mt-6" data-testid={`session-times-${race.id}`}>
+      <div className="space-y-2">
+        {sessions.map(session => {
+          const dateStr = format(session.date, "MMM dd");
+          return (
+            <div key={session.label} className="bg-white/5 rounded-lg p-2.5 border border-white/10 hover:border-white/20 transition-colors">
+              <div className="flex items-center gap-3">
+                <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-[9px] font-black uppercase tracking-widest text-white">{session.label} — {dateStr}</div>
+                  <div className="flex items-center gap-4 mt-1 text-[8px]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground font-black uppercase tracking-widest">ITA</span>
+                      <span className="font-mono font-black text-white">{session.ita}</span>
+                    </div>
+                    <div className="text-white/20">|</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground font-black uppercase tracking-widest">UTC</span>
+                      <span className="font-mono font-black text-white">{session.utc}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span className="text-[13px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1.5 rounded-md">{dateStr}</span>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">ITA</span>
-                <span className="font-mono text-sm font-black text-white">{session.ita}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">UTC</span>
-                <span className="font-mono text-sm font-black text-white">{session.utc}</span>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
