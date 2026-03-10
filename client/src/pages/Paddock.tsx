@@ -11,6 +11,13 @@ import { AvatarPicker } from "@/components/AvatarPicker";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
+function getInitials(text: string): string {
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+  if (words.length === 0) return "?";
+  if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
 export default function Paddock() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -217,7 +224,7 @@ export default function Paddock() {
                       />
                     ) : (
                       <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors shadow-inner">
-                        <Users className="w-7 h-7 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <span className="text-xs font-black text-white/60 group-hover:text-primary transition-colors">{getInitials(membership.lobbyName)}</span>
                       </div>
                     )}
                     {membership.role === "admin" && (
