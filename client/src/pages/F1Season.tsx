@@ -330,7 +330,7 @@ function CircuitInfo({ race }: { race: RaceEntry }) {
         <div className="bg-zinc-900 rounded-lg p-1.5 text-center border border-white/5">
           <MapPin className="w-3 h-3 text-primary mx-auto mb-1" />
           <div className="text-[8px] text-muted-foreground uppercase font-bold mb-0.25">Circuit</div>
-          <div className="text-white font-bold text-[8px] leading-tight">{getCircuitFlag(race.circuitName || "")} {race.circuitName}</div>
+          <div className="text-white font-bold text-[10px]">{getCircuitFlag(race.circuitName || "")} {race.circuitName}</div>
         </div>
       )}
       {race.circuitLength && (
