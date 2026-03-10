@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Flag, Calendar, ChevronDown, Zap, Timer, Award, Users, MapPin, Ruler, RotateCcw, Activity, Gauge } from "lucide-react";
-import { format } from "date-fns";
+import { Trophy, Flag, Calendar, ChevronDown, Zap, Timer, Award, Users, MapPin, Ruler, RotateCcw, Activity, Gauge, Clock } from "lucide-react";
+import { format, subDays } from "date-fns";
 import { DriverAvatar } from "@/components/DriverAvatar";
 import { TeamAvatar } from "@/components/TeamAvatar";
 
@@ -190,6 +190,64 @@ const TEAM_COLORS: Record<string, string> = {
   "Cadillac": "#d1d1d1",
 };
 
+
+function getUTCFromITATime(raceDate: string, itaTime: string | null): string {
+  if (!itaTime) return "TBD";
+  const [hours, mins] = itaTime.split(":").map(Number);
+  const raceDateTime = new Date(raceDate);
+  
+  // Determine CET/CEST based on race date (switch on last Sunday of March)
+  const year = raceDateTime.getFullYear();
+  const lastSundayMarch = new Date(year, 2, 31);
+  while (lastSundayMarch.getDay() !== 0) lastSundayMarch.setDate(lastSundayMarch.getDate() - 1);
+  const lastSundayOct = new Date(year, 9, 31);
+  while (lastSundayOct.getDay() !== 0) lastSundayOct.setDate(lastSundayOct.getDate() - 1);
+  
+  const isCEST = raceDateTime >= lastSundayMarch && raceDateTime < lastSundayOct;
+  const offset = isCEST ? 2 : 1; // CEST is UTC+2, CET is UTC+1
+  
+  const utcDate = new Date(year, raceDateTime.getMonth(), raceDateTime.getDate(), hours - offset, mins, 0);
+  return utcDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+function SessionTimes({ race }: { race: RaceEntry }) {
+  const raceDate = new Date(race.date);
+  const qualDate = subDays(raceDate, 1);
+  const sprintQualDate = subDays(raceDate, 2);
+  
+  const sessions = [
+    { label: "Qualifying", date: qualDate, time: "14:00", color: "yellow" },
+    { label: "Race", date: raceDate, time: race.itaTime || "15:00", color: "primary" },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6" data-testid={`session-times-${race.id}`}>
+      {sessions.map(session => {
+        const utcTime = getUTCFromITATime(session.date.toISOString(), session.time);
+        const dateStr = format(session.date, "MMM dd");
+        return (
+          <div key={session.label} className="bg-white/5 rounded-xl p-4 border border-white/10">
+            <div className="flex items-center gap-2 mb-3">
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{session.label}</span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">ITA</span>
+                <span className="font-mono text-sm font-black text-white">{session.time}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">UTC</span>
+                <span className="font-mono text-sm font-black text-white">{utcTime}</span>
+              </div>
+              <div className="text-[8px] text-muted-foreground font-black tracking-widest">{dateStr}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function CircuitInfo({ race }: { race: RaceEntry }) {
   const length = race.circuitLength ? parseFloat(race.circuitLength.replace(',', '.')) : null;
@@ -1008,6 +1066,7 @@ export default function F1Season() {
 
                               <div className="p-8">
                                 <CircuitInfo race={race} />
+                                <SessionTimes race={race} />
 
                                 <AnimatePresence mode="wait">
                                   {upcomingSessionTab === "race" && (
