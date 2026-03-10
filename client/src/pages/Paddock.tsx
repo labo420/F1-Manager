@@ -1,15 +1,13 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, Users, PlusCircle, LogIn, ChevronRight, Camera } from "lucide-react";
+import { Loader2, Users, PlusCircle, LogIn, ChevronRight } from "lucide-react";
 import { useCreateLobby, useJoinLobby } from "@/hooks/use-lobby";
 import { TeamAvatar } from "@/components/TeamAvatar";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Membership } from "@shared/schema";
-import { AvatarPicker } from "@/components/AvatarPicker";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 
 function getInitials(text: string): string {
   const words = text.trim().split(/\s+/).filter(w => w.length > 0);
@@ -21,46 +19,12 @@ function getInitials(text: string): string {
 export default function Paddock() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [mode, setMode] = useState<"list" | "create" | "join">("list");
   const [leagueName, setLeagueName] = useState("");
   const [teamName, setTeamName] = useState("");
   const [code, setCode] = useState("");
-  const [pickerLobbyId, setPickerLobbyId] = useState<number | null>(null);
   const createLobby = useCreateLobby();
   const joinLobby = useJoinLobby();
-
-  const presetLobbyImageMutation = useMutation({
-    mutationFn: async ({ lobbyId, url }: { lobbyId: number; url: string }) => {
-      return apiRequest("PATCH", `/api/lobby/${lobbyId}/image`, { url });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
-      setPickerLobbyId(null);
-      toast({ title: "League image updated" });
-    },
-    onError: () => {
-      toast({ title: "Failed to update image", variant: "destructive" });
-    },
-  });
-
-  const uploadLobbyImageMutation = useMutation({
-    mutationFn: async ({ lobbyId, file }: { lobbyId: number; file: File }) => {
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await fetch(`/api/lobby/${lobbyId}/image/upload`, { method: "POST", body: formData, credentials: "include" });
-      if (!res.ok) throw new Error("Upload failed");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
-      setPickerLobbyId(null);
-      toast({ title: "League image updated" });
-    },
-    onError: () => {
-      toast({ title: "Upload failed", variant: "destructive" });
-    },
-  });
 
   const { data: memberships, isLoading } = useQuery<Membership[]>({
     queryKey: ["/api/me"],
@@ -227,15 +191,6 @@ export default function Paddock() {
                         <span className="text-xs font-black text-white/60 group-hover:text-primary transition-colors">{getInitials(membership.lobbyName)}</span>
                       </div>
                     )}
-                    {membership.role === "admin" && (
-                      <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPickerLobbyId(membership.lobbyId); }}
-                        data-testid={`button-lobby-image-${membership.lobbyId}`}
-                        className="absolute -bottom-1.5 -right-1.5 w-6 h-6 bg-primary rounded-full flex items-center justify-center border-2 border-zinc-900 shadow-lg hover:scale-110 active:scale-95 transition-transform z-10"
-                      >
-                        <Camera className="w-3 h-3 text-white" />
-                      </button>
-                    )}
                   </div>
                 </div>
 
@@ -282,19 +237,6 @@ export default function Paddock() {
           </div>
         )}
       </div>
-
-      <AnimatePresence>
-        {pickerLobbyId !== null && (
-          <AvatarPicker
-            type="lobby"
-            currentUrl={memberships?.find(m => m.lobbyId === pickerLobbyId)?.lobbyImageUrl}
-            onSelectPreset={(url) => presetLobbyImageMutation.mutate({ lobbyId: pickerLobbyId!, url })}
-            onUploadFile={(file) => uploadLobbyImageMutation.mutate({ lobbyId: pickerLobbyId!, file })}
-            isLoading={uploadLobbyImageMutation.isPending}
-            onClose={() => setPickerLobbyId(null)}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
