@@ -4,12 +4,12 @@ import { useActiveLobby, useSetTeamName } from "@/hooks/use-lobby";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, User, Shield, Trophy } from "lucide-react";
+import { Camera, User, Shield, Trophy, LogOut } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { AvatarPicker } from "@/components/AvatarPicker";
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showPicker, setShowPicker] = useState(false);
@@ -155,6 +155,22 @@ export default function Profile() {
             </div>
           </div>
         )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="pt-8 border-t border-white/10 mt-8"
+        >
+          <button
+            onClick={() => logout()}
+            data-testid="button-logout-profile"
+            className="w-full md:w-auto px-6 py-3 bg-red-600/20 hover:bg-red-600/30 border border-red-500/30 hover:border-red-500/50 text-red-400 hover:text-red-300 rounded-lg font-semibold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-200 hover:shadow-lg hover:shadow-red-600/20"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </motion.div>
       </motion.div>
 
       <AnimatePresence>
