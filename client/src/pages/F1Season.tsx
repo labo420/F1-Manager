@@ -497,13 +497,12 @@ export default function F1Season() {
               <div className="flex items-center gap-3 flex-wrap justify-center md:justify-start">
                 <span className="px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-black text-muted-foreground uppercase tracking-widest">24 Races</span>
                 <span className="px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-black text-muted-foreground uppercase tracking-widest">22 Drivers</span>
-                <span className="px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-black text-muted-foreground uppercase tracking-widest">11 Constructors</span>
+                <span className="px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-black text-muted-foreground uppercase tracking-widest">11 teams</span>
               </div>
             </div>
           </div>
         </div>
       </motion.div>
-
       <div className="flex justify-center mb-8">
         <div className="glass-panel rounded-2xl p-1.5 inline-flex gap-1 border-2 border-white/5 shadow-2xl" data-testid="toggle-f1-tabs">
           {[
@@ -527,7 +526,6 @@ export default function F1Season() {
           ))}
         </div>
       </div>
-
       <AnimatePresence mode="wait">
         {tab === "drivers" && (
           <motion.div key="drivers" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
