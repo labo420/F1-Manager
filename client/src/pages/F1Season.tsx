@@ -501,23 +501,6 @@ export default function F1Season() {
               </div>
             </div>
           </div>
-
-          <div className="border-t border-white/5 px-4 sm:px-8 md:px-12 py-4 flex items-center gap-6 bg-white/[0.02] overflow-x-auto">
-            {[
-              { label: "Season", value: "2026" },
-              { label: "Status", value: "Active" },
-              { label: "Rounds", value: "24" },
-              { label: "Points System", value: "FIA Standard" },
-            ].map(item => (
-              <div key={item.label} className="flex items-center gap-3 shrink-0">
-                <div>
-                  <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{item.label}</div>
-                  <div className="text-xs font-black text-white">{item.value}</div>
-                </div>
-                <div className="h-6 w-px bg-white/10 last:hidden" />
-              </div>
-            ))}
-          </div>
         </div>
       </motion.div>
 
