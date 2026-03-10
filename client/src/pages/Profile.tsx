@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useActiveLobby, useSetTeamName } from "@/hooks/use-lobby";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, User, Shield, Trophy, LogOut } from "lucide-react";
+import { Camera, User, LogOut } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { AvatarPicker } from "@/components/AvatarPicker";
 
@@ -98,63 +97,6 @@ export default function Profile() {
             </div>
           </div>
         </div>
-
-        {user.memberships && user.memberships.length > 0 && (
-          <div className="space-y-6">
-            <h2 className="text-sm font-semibold text-white/50 uppercase tracking-widest flex items-center gap-3">
-              <Shield className="w-4 h-4 text-primary" /> Leagues
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {user.memberships.map((m: any, idx: number) => (
-                <motion.div
-                  key={m.lobbyId}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="glass-panel rounded-2xl p-6 border border-white/5 hover:border-primary/20 transition-all group relative overflow-hidden"
-                  data-testid={`profile-lobby-${m.lobbyId}`}
-                >
-                  <div className="flex items-start gap-4 mb-4">
-                    {m.lobbyImageUrl ? (
-                      <img
-                        src={m.lobbyImageUrl}
-                        alt={m.lobbyName}
-                        className="w-12 h-12 rounded-xl object-cover border border-white/10 shrink-0"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 shrink-0 group-hover:bg-primary/10 transition-colors">
-                        <Trophy className="w-6 h-6 text-white/30 group-hover:text-primary/70 transition-colors" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-display font-bold text-white text-lg uppercase tracking-tight leading-none mb-1 truncate group-hover:text-primary transition-colors">
-                        {m.lobbyName}
-                      </h3>
-                      <code className="text-primary font-mono font-bold bg-primary/10 px-2 py-0.5 rounded text-[10px] tracking-widest">
-                        {m.lobbyCode}
-                      </code>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-3 border-t border-white/5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-medium text-white/30 uppercase tracking-widest">Team</span>
-                      <span className="text-xs font-semibold text-white">{m.teamName}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-medium text-white/30 uppercase tracking-widest">Role</span>
-                      {m.role === "admin" ? (
-                        <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase border border-primary/20">Admin</span>
-                      ) : (
-                        <span className="bg-white/5 text-white/50 px-2 py-0.5 rounded-full text-[9px] font-semibold uppercase border border-white/10">Player</span>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
