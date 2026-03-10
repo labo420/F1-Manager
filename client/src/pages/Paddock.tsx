@@ -166,15 +166,15 @@ export default function Paddock() {
             transition={{ delay: idx * 0.1 }}
           >
             <Link href={`/lobby/${membership.lobbyId}`}>
-              <div className="glass-panel rounded-[2rem] p-5 hover:bg-white/5 hover:border-primary/50 transition-all group cursor-pointer border-2 border-white/5 relative overflow-hidden h-full flex flex-col shadow-xl">
+              <div className="glass-panel rounded-[2rem] p-3 hover:bg-white/5 hover:border-primary/50 transition-all group cursor-pointer border-2 border-white/5 relative overflow-hidden h-full flex flex-col shadow-xl">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/15 transition-colors" />
                 
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1 min-w-0 pr-3">
-                    <h3 className="text-2xl font-display font-black text-white uppercase tracking-tight group-hover:text-primary transition-colors line-clamp-1 mb-1 leading-none">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <h3 className="text-xl font-display font-black text-white uppercase tracking-tight group-hover:text-primary transition-colors line-clamp-1 mb-0.5 leading-none">
                       {membership.lobbyName}
                     </h3>
-                    <code className="text-[9px] font-mono font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-md uppercase tracking-widest">
+                    <code className="text-[8px] font-mono font-bold text-primary bg-primary/10 px-1 py-0.5 rounded-md uppercase tracking-widest">
                       {membership.lobbyCode}
                     </code>
                   </div>
@@ -183,28 +183,28 @@ export default function Paddock() {
                       <img
                         src={membership.lobbyImageUrl}
                         alt={membership.lobbyName}
-                        className="w-12 h-12 rounded-2xl object-cover border border-white/10 shadow-inner"
+                        className="w-10 h-10 rounded-2xl object-cover border border-white/10 shadow-inner"
                         data-testid={`img-lobby-${membership.lobbyId}`}
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors shadow-inner">
-                        <span className="text-[10px] font-black text-white/60 group-hover:text-primary transition-colors">{getInitials(membership.lobbyName)}</span>
+                      <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors shadow-inner">
+                        <span className="text-[9px] font-black text-white/60 group-hover:text-primary transition-colors">{getInitials(membership.lobbyName)}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="mt-auto space-y-3 pt-4 border-t border-white/5">
+                <div className="mt-auto space-y-2 pt-2 border-t border-white/5">
                   <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Scuderia</span>
-                    <div className="flex items-center gap-2">
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Scuderia</span>
+                    <div className="flex items-center gap-1.5">
                       <TeamAvatar name={membership.teamName} size="sm" />
-                      <span className="text-sm font-display font-black text-white uppercase tracking-tight">{membership.teamName}</span>
+                      <span className="text-xs font-display font-black text-white uppercase tracking-tight">{membership.teamName}</span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Role</span>
-                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-[0.1em] ${
+                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Role</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.1em] ${
                       membership.role === 'admin' ? 'bg-primary/20 text-primary border border-primary/30 shadow-[0_0_15px_-5px_hsl(var(--primary)/0.5)]' : 'bg-white/10 text-white border border-white/10'
                     }`}>
                       {membership.role}
@@ -212,9 +212,9 @@ export default function Paddock() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                  <div className="text-[9px] font-black text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 flex items-center gap-2">
-                    Enter Paddock <div className="w-4 h-[2px] bg-primary rounded-full" />
+                <div className="mt-2 flex items-center justify-end">
+                  <div className="text-[8px] font-black text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 flex items-center gap-1.5">
+                    Enter Paddock <div className="w-3 h-[2px] bg-primary rounded-full" />
                   </div>
                 </div>
               </div>
