@@ -709,10 +709,6 @@ export default function F1Season() {
                           </div>
                         </div>
                         <div className="flex items-center gap-6">
-                          <div className="hidden md:flex flex-col items-end">
-                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 opacity-40">Circuit</span>
-                            <span className="text-xs font-bold text-white uppercase tracking-tight">{race.circuitName || "TBA"}</span>
-                          </div>
                           <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                             expandedRace === race.id ? "bg-primary text-white rotate-180" : "bg-white/5 text-muted-foreground group-hover:text-white"
                           }`}>
