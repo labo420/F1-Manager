@@ -7,6 +7,9 @@ export async function runMigrations() {
       ALTER TABLE drivers ADD COLUMN IF NOT EXISTS is_reserve BOOLEAN NOT NULL DEFAULT FALSE;
     `);
     await client.query(`
+      ALTER TABLE drivers ADD COLUMN IF NOT EXISTS original_driver_id INTEGER;
+    `);
+    await client.query(`
       ALTER TABLE races ADD COLUMN IF NOT EXISTS fp1_date TEXT;
     `);
     await client.query(`
