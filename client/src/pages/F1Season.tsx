@@ -471,23 +471,50 @@ export default function F1Season() {
         animate={{ opacity: 1, y: 0 }}
         className="text-center mb-16"
       >
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="h-px w-8 bg-gradient-to-r from-transparent to-primary/40" />
+          <div className="px-4 py-2 bg-primary/10 rounded-full border border-primary/30 backdrop-blur-sm">
+            <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">FIA Official</p>
+          </div>
+          <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/40" />
+        </div>
+
         <div className="inline-flex items-center justify-center mb-8 relative">
           <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
-          <div className="w-24 h-24 bg-primary rounded-tr-[2rem] rounded-bl-[2rem] f1-slant flex items-center justify-center red-glow relative z-10 border-4 border-white/10 shadow-2xl">
-            <Flag className="w-12 h-12 text-white f1-slant-reverse" />
+          <svg className="w-24 h-24 relative z-10" viewBox="0 0 100 100" fill="none">
+            <defs>
+              <linearGradient id="fiaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ef4444" stopOpacity="1" />
+                <stop offset="100%" stopColor="#ff6b6b" stopOpacity="1" />
+              </linearGradient>
+            </defs>
+            <rect x="10" y="10" width="80" height="80" rx="16" fill="url(#fiaGrad)" className="drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]" />
+            <circle cx="50" cy="50" r="35" fill="none" stroke="white" strokeWidth="2" opacity="0.3" />
+            <text x="50" y="48" fontSize="32" fontWeight="900" textAnchor="middle" fill="white" fontFamily="monospace">F1</text>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="white" strokeWidth="1.5" opacity="0.15" />
+          </svg>
+        </div>
+
+        <h1 className="text-5xl md:text-7xl font-display font-black text-white uppercase tracking-tighter leading-none mb-2" data-testid="text-f1-title">
+          Formula 1<br className="sm:hidden" />
+          <span className="bg-gradient-to-r from-primary via-red-500 to-primary bg-clip-text text-transparent">2026 World Championship</span>
+        </h1>
+
+        <div className="flex items-center justify-center gap-8 mb-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Season Record</span>
+          </div>
+          <div className="h-4 w-px bg-white/10" />
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">FIA Sanctioned</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
           </div>
         </div>
-        <h1 className="text-5xl md:text-7xl font-display font-black text-white uppercase tracking-tighter leading-none mb-4" data-testid="text-f1-title">
-          F1 2026 <span className="text-primary italic">World</span> <br className="sm:hidden" />
-          <span className="text-white">Championship</span>
-        </h1>
-        <div className="flex items-center justify-center gap-4">
-          <div className="h-px w-12 bg-white/20" />
-          <p className="text-muted-foreground uppercase tracking-[0.4em] text-[10px] font-black opacity-80">
-            Official FIA Season Records
-          </p>
-          <div className="h-px w-12 bg-white/20" />
-        </div>
+
+        <p className="text-muted-foreground uppercase tracking-[0.4em] text-[10px] font-black opacity-60">
+          Official FIA Season Records & Statistics
+        </p>
       </motion.div>
 
       <div className="flex justify-center mb-12">
