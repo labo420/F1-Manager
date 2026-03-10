@@ -56,6 +56,7 @@ export const races = pgTable("races", {
   date: text("date").notNull(),
   fp1Date: text("fp1_date"), // Article 2 Deadline
   itaTime: text("ita_time"),
+  hasSprint: boolean("has_sprint").default(false).notNull(),
   isLocked: boolean("is_locked").default(false).notNull(),
   isCompleted: boolean("is_completed").default(false).notNull(),
 });

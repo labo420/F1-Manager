@@ -225,16 +225,24 @@ function SessionTimes({ race }: { race: RaceEntry }) {
 
   const raceDate = new Date(race.date);
   const qualDate = subDays(raceDate, 1);
+  const sprintDate = race.hasSprint ? subDays(raceDate, 1) : null;
   
   let qualData = { ita: "TBD", utc: "TBD" };
+  let sprintData = { ita: "TBD", utc: "TBD" };
   let raceData = { ita: "TBD", utc: "TBD" };
   
   if (sessionsStatus) {
     const qualSession = (sessionsStatus.qualSessions || []).find(s => {
       const sessionDate = new Date(s.date_start);
       const dateMatch = format(sessionDate, "yyyy-MM-dd") === format(qualDate, "yyyy-MM-dd");
-      return dateMatch && (s.session_name === "Qualifying" || s.session_name.includes("Qualifying"));
+      return dateMatch && (s.session_name === "Qualifying" || (s.session_name.includes("Qualifying") && !s.session_name.includes("Sprint")));
     });
+    
+    const sprintSession = race.hasSprint ? (sessionsStatus.raceSessions || []).find(s => {
+      const sessionDate = new Date(s.date_start);
+      const dateMatch = format(sessionDate, "yyyy-MM-dd") === format(sprintDate, "yyyy-MM-dd");
+      return dateMatch && s.session_name === "Sprint";
+    }) : null;
     
     const raceSession = (sessionsStatus.raceSessions || []).find(s => {
       const sessionDate = new Date(s.date_start);
@@ -246,6 +254,10 @@ function SessionTimes({ race }: { race: RaceEntry }) {
       qualData = getITAFromUTCTime(qualSession.date_start);
     }
     
+    if (sprintSession) {
+      sprintData = getITAFromUTCTime(sprintSession.date_start);
+    }
+    
     if (raceSession) {
       raceData = getITAFromUTCTime(raceSession.date_start);
     }
@@ -253,6 +265,7 @@ function SessionTimes({ race }: { race: RaceEntry }) {
   
   const sessions = [
     { label: "Qualifying", date: qualDate, ita: qualData.ita, utc: qualData.utc },
+    ...(race.hasSprint && sprintData.ita !== "TBD" ? [{ label: "Sprint", date: sprintDate!, ita: sprintData.ita, utc: sprintData.utc }] : []),
     { label: "Race", date: raceDate, ita: raceData.ita, utc: raceData.utc },
   ];
 
