@@ -70,10 +70,10 @@ export default function AdminPanel() {
       queryClient.invalidateQueries({ queryKey: ["/api/me"] });
       setSelectedLobbyId("");
       setShowDeleteConfirm(false);
-      toast({ title: "Lega eliminata", description: "La lega è stata eliminata permanentemente." });
+      toast({ title: "League deleted", description: "The league has been permanently deleted." });
     },
     onError: () => {
-      toast({ title: "Errore", description: "Impossibile eliminare la lega.", variant: "destructive" });
+      toast({ title: "Error", description: "Could not delete the league.", variant: "destructive" });
     },
   });
 
@@ -557,13 +557,13 @@ export default function AdminPanel() {
               <div className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <AlertTriangle className="w-6 h-6 text-red-500" />
-                  <h3 className="text-lg font-display font-black text-white uppercase tracking-tight">Elimina Lega</h3>
+                  <h3 className="text-lg font-display font-black text-white uppercase tracking-tight">Delete League</h3>
                 </div>
                 <p className="text-sm text-white/70 mb-6">
-                  Questa azione è irreversibile. Tutti i dati della lega, inclusi risultati e scelte dei giocatori, saranno eliminati permanentemente.
+                  This action is irreversible. All league data, including results and player selections, will be permanently deleted.
                 </p>
                 <div className="bg-red-900/10 border border-red-900/20 rounded-lg p-3 mb-6">
-                  <p className="text-xs text-red-200 font-mono font-semibold">Lega: {lobby?.name || "..."}</p>
+                  <p className="text-xs text-red-200 font-mono font-semibold">League: {lobby?.name || "..."}</p>
                 </div>
                 <div className="flex gap-3">
                   <button
@@ -571,7 +571,7 @@ export default function AdminPanel() {
                     disabled={deleteLobbyMutation.isPending}
                     className="flex-1 py-2.5 rounded-lg border border-white/10 text-white/60 text-xs font-semibold uppercase tracking-wider hover:text-white transition-colors disabled:opacity-50"
                   >
-                    Annulla
+                    Cancel
                   </button>
                   <button
                     onClick={() => deleteLobbyMutation.mutate(Number(selectedLobbyId))}
@@ -580,7 +580,7 @@ export default function AdminPanel() {
                     className="flex-1 py-2.5 rounded-lg bg-red-900/40 border border-red-900/60 text-red-300 text-xs font-semibold uppercase tracking-wider hover:bg-red-900/60 hover:text-red-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {deleteLobbyMutation.isPending ? <div className="w-3 h-3 border border-red-300/30 border-t-red-300 rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                    Elimina Permanentemente
+                    Delete Permanently
                   </button>
                 </div>
               </div>
