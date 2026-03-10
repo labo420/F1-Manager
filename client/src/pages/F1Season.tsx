@@ -472,7 +472,7 @@ export default function F1Season() {
         className="mb-16"
       >
         <div className="relative rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
           <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-primary/5 rounded-full -mr-64 -mt-32 blur-[100px] pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 p-8 md:p-12">

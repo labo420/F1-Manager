@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oxanium:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,38 +6,38 @@
 
 @layer base {
   :root {
-    --font-sans: 'Space Grotesk', sans-serif;
-    --font-display: 'Outfit', sans-serif;
+    --font-sans: 'Inter', sans-serif;
+    --font-display: 'Oxanium', sans-serif;
 
     /* Dark Mode F1 Theme */
     --background: 0 0% 7%;
-    --foreground: 0 0% 98%;
+    --foreground: 0 0% 96%;
 
-    --card: 0 0% 11%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 11%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 96%;
 
-    /* F1 Racing Red */
-    --primary: 358 100% 45%;
+    /* Official F1 Red #E8002D */
+    --primary: 349 100% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 58%;
 
-    --accent: 358 100% 45%;
+    --accent: 349 100% 45%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 358 100% 45%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 349 100% 45%;
 
     --radius: 0.5rem;
   }
@@ -47,18 +47,16 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased selection:bg-primary/30;
+    @apply bg-background text-foreground antialiased selection:bg-primary/20;
     font-family: var(--font-sans);
-    background-image: 
-      radial-gradient(circle at 50% 0%, rgba(225, 6, 0, 0.15), transparent 50%),
-      url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h10v10H0V0zm10 10h10v10H10V10zM0 10h10v10H0V10zm10-10h10v10H10V0z' fill='%231a1a1a' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-image:
+      radial-gradient(ellipse 80% 40% at 50% 0%, rgba(232, 0, 45, 0.10) 0%, transparent 70%);
     background-attachment: fixed;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    text-transform: uppercase;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 }
 
@@ -66,17 +64,17 @@
   .f1-slant {
     transform: skewX(-12deg);
   }
-  
+
   .f1-slant-reverse {
     transform: skewX(12deg);
   }
-  
+
   .glass-panel {
-    @apply bg-card/80 backdrop-blur-md border border-border/50 shadow-xl;
+    @apply bg-card/70 backdrop-blur-lg border border-white/10 shadow-lg;
   }
 
   .red-glow {
-    box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.4);
+    box-shadow: 0 0 24px -4px hsl(var(--primary) / 0.45);
   }
 
   .no-scrollbar::-webkit-scrollbar {
