@@ -105,7 +105,6 @@ export function LobbyImageEditor({ lobbyId, currentUrl, lobbyName }: LobbyImageE
             onUploadFile={(file) => uploadImageMutation.mutate(file)}
             isLoading={isLoading}
             onClose={() => setShowPicker(false)}
-            excludedTeamName={lobbyName}
           />
         )}
       </AnimatePresence>
