@@ -500,27 +500,6 @@ export default function F1Season() {
                 <span className="px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-black text-muted-foreground uppercase tracking-widest">11 Constructors</span>
               </div>
             </div>
-
-            <div className="flex flex-col items-center gap-3 shrink-0">
-              <div className="px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[9px] font-black text-muted-foreground uppercase tracking-widest text-center">Sanctioned by</div>
-              <img
-                src="https://upload.wikimedia.org/wikipedia/en/thumb/e/e8/F%C3%A9d%C3%A9ration_Internationale_de_l%27Automobile_%28logo%29.svg/200px-F%C3%A9d%C3%A9ration_Internationale_de_l%27Automobile_%28logo%29.svg.png"
-                alt="FIA"
-                className="h-20 w-auto object-contain opacity-90"
-                onError={(e) => {
-                  const el = e.target as HTMLImageElement;
-                  el.style.display = 'none';
-                  const fallback = el.nextSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-              <div className="hidden items-center justify-center w-20 h-20 rounded-2xl bg-white/5 border border-white/10">
-                <span className="text-white font-black text-xl">FIA</span>
-              </div>
-              <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] text-center">
-                Fédération Internationale<br />de l'Automobile
-              </p>
-            </div>
           </div>
 
           <div className="border-t border-white/5 px-8 md:px-12 py-4 flex items-center gap-6 bg-white/[0.02] overflow-x-auto">
