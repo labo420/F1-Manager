@@ -224,10 +224,14 @@ export default function F1Season() {
 
   const { data: driverStandings, isLoading: driversLoading } = useQuery<DriverStanding[]>({
     queryKey: ["/api/f1/driver-standings"],
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 
   const { data: constructorStandings, isLoading: constructorsLoading } = useQuery<ConstructorStanding[]>({
     queryKey: ["/api/f1/constructor-standings"],
+    staleTime: 5 * 60 * 1000,
+    retry: 2,
   });
 
   const { data: raceCalendar, isLoading: racesLoading } = useQuery<RaceEntry[]>({

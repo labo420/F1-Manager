@@ -440,17 +440,32 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       "Red Bull": "Red Bull Racing", "Racing Bulls": "RB", "RB F1 Team": "RB",
       "Haas F1 Team": "Haas", "Alpine F1 Team": "Alpine", "Cadillac F1 Team": "Cadillac",
     };
+    const buildFromDb = async () => {
+      try {
+        return await storage.getDriverStandings();
+      } catch {
+        return [];
+      }
+    };
     try {
       const year = new Date().getFullYear();
-      const [standingsRes, resultsRes] = await Promise.all([
-        fetch(`https://api.jolpi.ca/ergast/f1/${year}/driverStandings/?format=json&limit=100`),
-        fetch(`https://api.jolpi.ca/ergast/f1/${year}/results/?format=json&limit=500`),
-      ]);
-      if (!standingsRes.ok) throw new Error("Jolpica standings unavailable");
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      let standingsRes: Response | null = null;
+      let resultsRes: Response | null = null;
+      try {
+        [standingsRes, resultsRes] = await Promise.all([
+          fetch(`https://api.jolpi.ca/ergast/f1/${year}/driverStandings/?format=json&limit=100`, { signal: controller.signal }),
+          fetch(`https://api.jolpi.ca/ergast/f1/${year}/results/?format=json&limit=500`, { signal: controller.signal }),
+        ]);
+      } finally {
+        clearTimeout(timeout);
+      }
+      if (!standingsRes?.ok) return res.json(await buildFromDb());
       const standingsData = await standingsRes.json() as any;
-      const resultsData = resultsRes.ok ? await resultsRes.json() as any : null;
+      const resultsData = resultsRes?.ok ? await resultsRes.json() as any : null;
       const apiStandings = standingsData.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings ?? [];
-      if (apiStandings.length === 0) throw new Error("No standings data");
+      if (apiStandings.length === 0) return res.json(await buildFromDb());
 
       const podiumsByCode: Record<string, number> = {};
       if (resultsData) {
@@ -492,7 +507,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
       res.json(standings);
     } catch {
-      res.json(await storage.getDriverStandings());
+      res.json(await buildFromDb());
     }
   });
 
