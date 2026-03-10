@@ -16,7 +16,7 @@ const LOBBY_PRESET_SEEDS = [
 ];
 
 function getUserAvatarUrl(seed: string) {
-  return `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(seed)}&backgroundColor=1a1a2e,0d1117,161b22`;
+  return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(seed)}&backgroundColor=1a1a2e,0d1117,161b22&scale=80`;
 }
 
 function getLobbyAvatarUrl(seed: string) {
