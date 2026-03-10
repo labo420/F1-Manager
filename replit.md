@@ -4,20 +4,21 @@
 Private Fantasy F1 web application. Users register (username + password), create or join lobbies (max 10 players), pick a driver and constructor per Grand Prix, and earn points based on FIA scoring + overtakes + fastest lap bonuses. Includes a public F1 2026 World Championship section with official standings, race archive, and circuit details.
 
 ## Architecture
-- **Backend**: Express.js (TypeScript) + SQLite via Drizzle ORM (better-sqlite3)
+- **Backend**: Express.js (TypeScript) + PostgreSQL via Drizzle ORM (node-postgres / pg)
 - **Frontend**: React (Vite) + TanStack Query + Wouter routing + Tailwind CSS + shadcn/ui + Framer Motion
-- **Session**: express-session with better-sqlite3-session-store (stored in SQLite)
-- **Database File**: `database/fantaf1.db` (auto-created on first startup with all tables)
-- **Portability**: Download ZIP → Extract → `npm install` → `npm run dev` → Works
+- **Session**: express-session with connect-pg-simple (stored in PostgreSQL)
+- **Database**: PostgreSQL (Replit managed) — connection via `DATABASE_URL` env var
+- **Dev server**: `npm run dev` (Express + Vite on port 5000)
 
 ## Key Files
 | File | Purpose |
 |---|---|
-| `shared/schema.ts` | Drizzle SQLite tables (users, lobbies, lobbyMembers, drivers, constructors, races, selections, driverResults, constructorResults, draftState), insert schemas, TS types |
-| `server/db.ts` | SQLite connection (better-sqlite3), auto-creates all tables on startup |
+| `shared/schema.ts` | Drizzle PostgreSQL tables (users, lobbies, lobbyMembers, drivers, constructors, races, selections, driverResults, constructorResults, draftState), insert schemas, TS types |
+| `server/db.ts` | PostgreSQL connection (node-postgres Pool + Drizzle), reads DATABASE_URL |
+| `server/migrate.ts` | Runs Drizzle migrations on startup |
 | `server/routes.ts` | Express route handlers, seed data, middleware, auto-lock logic, ITA time conversion |
 | `server/storage.ts` | `IStorage` interface + `DatabaseStorage` class with lobby-scoped methods |
-| `drizzle.config.ts` | Drizzle Kit config for SQLite dialect |
+| `drizzle.config.ts` | Drizzle Kit config for PostgreSQL dialect |
 | `client/src/App.tsx` | Router with `ProtectedRoute` guards |
 | `client/src/pages/Auth.tsx` | Login/Register page |
 | `client/src/pages/Dashboard.tsx` | Lobby selection + race accordion homepage (Coming Soon / In Corso / Risultati) |
@@ -32,13 +33,11 @@ Private Fantasy F1 web application. Users register (username + password), create
 | `client/src/hooks/use-selections.ts` | Lobby-scoped selections, draft status, usage info |
 | `client/src/hooks/use-leaderboard.ts` | Dual driver/constructor leaderboard hooks |
 
-## Database (SQLite)
-- All data stored in `database/fantaf1.db` (local file)
-- Tables auto-created via raw SQL in `server/db.ts` on first startup
-- WAL mode enabled for better concurrent read performance
-- Foreign keys enforced
-- Dates stored as ISO 8601 text strings
-- Booleans stored as integers (0/1) with Drizzle `mode: "boolean"` mapping
+## Database (PostgreSQL)
+- Managed by Replit — connection string in `DATABASE_URL` secret
+- Schema synced via Drizzle (`npm run db:push`)
+- Migrations run automatically on server startup via `runMigrations()` in `server/index.ts`
+- Seed data auto-inserted on first startup (20 drivers, 10 constructors, 24 races)
 
 ## Multi-Lobby System
 - **lobbyMembers** junction table: userId, lobbyId, teamName, driverJokers, constructorJokers, jokerCount (legacy), role, createdAt
@@ -158,17 +157,14 @@ Private Fantasy F1 web application. Users register (username + password), create
 - All file paths are relative for portability.
 
 ## Environment
-- `SESSION_SECRET` — Session signing secret (set via env var)
+- `DATABASE_URL` — PostgreSQL connection string (Replit managed secret)
+- `SESSION_SECRET` — Session signing secret (Replit managed secret)
 - `PORT` — Server port (defaults to 5000)
-- Dev server: `npm run dev` (Express + Vite on port 5000)
 
-## Deployment (Render / Railway / Local)
+## Deployment
 - **Build command**: `npm install && npm run build`
 - **Start command**: `npm run start`
 - **Build output**: `dist/index.cjs` (server) + `dist/public/` (client static files)
-- **Native modules**: `better-sqlite3` is kept external during esbuild bundling (C++ addon)
-- **Replit plugins**: Conditionally loaded only when `REPL_ID` env var is present — no impact on external deployments
-- **Database**: Auto-created at `database/fantaf1.db` on first startup
-- **Seed data**: Reads from `attached_assets/` CSV — must be in the deployed repo
+- **Replit plugins**: Conditionally loaded only when `REPL_ID` env var is present
+- **Database**: Auto-migrated and seeded on first startup
 - **Uploads**: Stored in `uploads/avatars/` relative to CWD
-- **Environment variables**: Set `SESSION_SECRET` and optionally `PORT` on host platform
