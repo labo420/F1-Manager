@@ -218,7 +218,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     const now = new Date();
     const oneHourMs = 60 * 60 * 1000;
     for (const race of raceList) {
-      if (!race.isLocked && !race.isCompleted && new Date(race.date).getTime() - now.getTime() <= oneHourMs) {
+      const timeUntilRace = new Date(race.date).getTime() - now.getTime();
+      if (!race.isLocked && !race.isCompleted && timeUntilRace > 0 && timeUntilRace <= oneHourMs) {
         await storage.updateRaceStatus(race.id, true);
         race.isLocked = true;
       }
