@@ -53,7 +53,7 @@ export function Navigation() {
               </span>
             </Link>
 
-            <div className="flex items-center gap-0.5 overflow-x-auto no-scrollbar">
+            <div className="hidden md:flex items-center gap-0.5">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
