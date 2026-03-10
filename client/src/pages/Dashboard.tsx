@@ -509,7 +509,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
         transition={{ delay: 0.2 }}
         className="mb-10 mt-16"
       >
-        <div className="flex items-center gap-4 mb-10">
+        <div className="flex items-center gap-4 mb-10 text-[20px]">
           <Calendar className="w-5 h-5 text-primary" />
           <div>
             <h2 className="text-lg font-bold uppercase tracking-wide text-white">2026 FIA Formula 1 Race Calendar</h2>
