@@ -509,10 +509,10 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
         transition={{ delay: 0.2 }}
         className="mb-10 mt-16"
       >
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-10">
-          <Calendar className="w-5 h-5 text-primary shrink-0" />
-          <div className="min-w-0">
-            <h2 className="font-bold uppercase tracking-tight sm:tracking-wide text-white text-lg sm:text-xl md:text-[30px] leading-tight">2026 FIA Formula 1 Race Calendar</h2>
+        <div className="flex items-center gap-4 mb-10 text-[20px]">
+          <Calendar className="w-5 h-5 text-primary" />
+          <div>
+            <h2 className="font-bold uppercase tracking-wide text-white text-xl sm:text-[30px]">2026 FIA Formula 1 Race Calendar</h2>
             <p className="text-xs text-muted-foreground mt-1 tracking-wide">Session times in Italian (ITA) and Coordinated Universal (UTC)</p>
           </div>
         </div>
@@ -530,15 +530,15 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
               className="glass-panel rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-colors"
               data-testid={`calendar-race-${race.id}`}
             >
-              <div className="flex items-center justify-between px-3 sm:px-6 py-4 sm:py-5 border-b border-white/5">
-                <div className="flex items-center gap-2 sm:gap-5 min-w-0">
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
+                <div className="flex items-center gap-5 min-w-0">
                   <div className="flex flex-col items-center justify-center shrink-0">
-                    <span className="text-[9px] sm:text-[10px] font-bold text-muted-foreground uppercase leading-none">RND</span>
-                    <span className="text-xl sm:text-2xl font-bold text-primary leading-tight">{race.round}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase leading-none">RND</span>
+                    <span className="text-2xl font-bold text-primary leading-none">{race.round}</span>
                   </div>
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                      <span className="font-bold text-xs sm:text-sm text-white uppercase leading-tight">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-sm text-white uppercase leading-none">
                         {getCircuitFlag(race.name)}{race.name}
                       </span>
                       {race.hasSprint && (
@@ -547,7 +547,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                         </span>
                       )}
                     </div>
-                    <div className="text-[9px] sm:text-[11px] text-muted-foreground font-medium uppercase tracking-tight sm:tracking-wide mt-1">
+                    <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide mt-1.5">
                       {race.circuitName || race.country}
                     </div>
                   </div>
