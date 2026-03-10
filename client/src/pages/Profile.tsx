@@ -14,7 +14,7 @@ export default function Profile() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [showPicker, setShowPicker] = useState(false);
-  const [openPanel, setOpenPanel] = useState<"password" | null>(null);
+  const [openPanel, setOpenPanel] = useState<"password" | "leagues" | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -151,7 +151,7 @@ export default function Profile() {
 
           {leagues.length > 0 && (
             <button
-              onClick={() => setLocation("/leagues")}
+              onClick={() => setOpenPanel("leagues")}
               data-testid="button-settings-leagues"
               className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.03] transition-colors text-left group"
             >
@@ -215,69 +215,124 @@ export default function Profile() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-zinc-950 border-l border-white/10 z-50 overflow-y-auto flex flex-col"
             >
-              <div className="sticky top-0 px-6 py-4 border-b border-white/5 bg-zinc-950/80 backdrop-blur flex items-center justify-between">
-                <h2 className="font-display font-black text-white text-lg uppercase tracking-tight">Cambia password</h2>
-                <button
-                  onClick={() => setOpenPanel(null)}
-                  className="text-white/40 hover:text-white transition-colors p-1"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
+              {openPanel === "password" ? (
+                <>
+                  <div className="sticky top-0 px-6 py-4 border-b border-white/5 bg-zinc-950/80 backdrop-blur flex items-center justify-between">
+                    <h2 className="font-display font-black text-white text-lg uppercase tracking-tight">Cambia password</h2>
+                    <button
+                      onClick={() => setOpenPanel(null)}
+                      className="text-white/40 hover:text-white transition-colors p-1"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
 
-              <div className="flex-1 px-6 py-6 space-y-4">
-                <input
-                  type={showPwd ? "text" : "password"}
-                  placeholder="Password attuale"
-                  value={currentPassword}
-                  onChange={e => setCurrentPassword(e.target.value)}
-                  data-testid="input-current-password"
-                  className="w-full bg-zinc-900/80 border border-white/10 rounded-lg px-3 py-3 text-white text-sm font-medium focus:border-primary focus:outline-none placeholder:text-white/20"
-                />
-                <div className="relative">
-                  <input
-                    type={showPwd ? "text" : "password"}
-                    placeholder="Nuova password"
-                    value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
-                    data-testid="input-new-password"
-                    className="w-full bg-zinc-900/80 border border-white/10 rounded-lg px-3 py-3 text-white text-sm font-medium focus:border-primary focus:outline-none pr-10 placeholder:text-white/20"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPwd(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
-                  >
-                    {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <input
-                  type={showPwd ? "text" : "password"}
-                  placeholder="Conferma password"
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  data-testid="input-confirm-password"
-                  className="w-full bg-zinc-900/80 border border-white/10 rounded-lg px-3 py-3 text-white text-sm font-medium focus:border-primary focus:outline-none placeholder:text-white/20"
-                />
-              </div>
+                  <div className="flex-1 px-6 py-6 space-y-4">
+                    <input
+                      type={showPwd ? "text" : "password"}
+                      placeholder="Password attuale"
+                      value={currentPassword}
+                      onChange={e => setCurrentPassword(e.target.value)}
+                      data-testid="input-current-password"
+                      className="w-full bg-zinc-900/80 border border-white/10 rounded-lg px-3 py-3 text-white text-sm font-medium focus:border-primary focus:outline-none placeholder:text-white/20"
+                    />
+                    <div className="relative">
+                      <input
+                        type={showPwd ? "text" : "password"}
+                        placeholder="Nuova password"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        data-testid="input-new-password"
+                        className="w-full bg-zinc-900/80 border border-white/10 rounded-lg px-3 py-3 text-white text-sm font-medium focus:border-primary focus:outline-none pr-10 placeholder:text-white/20"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPwd(v => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
+                      >
+                        {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <input
+                      type={showPwd ? "text" : "password"}
+                      placeholder="Conferma password"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      data-testid="input-confirm-password"
+                      className="w-full bg-zinc-900/80 border border-white/10 rounded-lg px-3 py-3 text-white text-sm font-medium focus:border-primary focus:outline-none placeholder:text-white/20"
+                    />
+                  </div>
 
-              <div className="sticky bottom-0 px-6 py-4 border-t border-white/5 bg-zinc-950/80 backdrop-blur flex gap-3">
-                <button
-                  onClick={() => setOpenPanel(null)}
-                  className="flex-1 px-4 py-3 rounded-lg border border-white/10 text-white/40 text-sm font-semibold uppercase tracking-wider hover:text-white transition-colors"
-                >
-                  Annulla
-                </button>
-                <button
-                  onClick={handlePasswordSave}
-                  disabled={passwordMutation.isPending}
-                  data-testid="button-save-password"
-                  className="flex-1 px-4 py-3 rounded-lg bg-primary text-white text-sm font-black uppercase tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {passwordMutation.isPending && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                  Salva
-                </button>
-              </div>
+                  <div className="sticky bottom-0 px-6 py-4 border-t border-white/5 bg-zinc-950/80 backdrop-blur flex gap-3">
+                    <button
+                      onClick={() => setOpenPanel(null)}
+                      className="flex-1 px-4 py-3 rounded-lg border border-white/10 text-white/40 text-sm font-semibold uppercase tracking-wider hover:text-white transition-colors"
+                    >
+                      Annulla
+                    </button>
+                    <button
+                      onClick={handlePasswordSave}
+                      disabled={passwordMutation.isPending}
+                      data-testid="button-save-password"
+                      className="flex-1 px-4 py-3 rounded-lg bg-primary text-white text-sm font-black uppercase tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {passwordMutation.isPending && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                      Salva
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="sticky top-0 px-6 py-4 border-b border-white/5 bg-zinc-950/80 backdrop-blur flex items-center justify-between">
+                    <h2 className="font-display font-black text-white text-lg uppercase tracking-tight">Le mie leghe</h2>
+                    <button
+                      onClick={() => setOpenPanel(null)}
+                      className="text-white/40 hover:text-white transition-colors p-1"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="flex-1 px-6 py-6 space-y-3">
+                    {leagues.map((m: any) => (
+                      <div key={m.lobbyId} className="glass-panel rounded-xl p-4 border border-white/5 hover:border-primary/30 transition-all group" data-testid={`panel-league-item-${m.lobbyId}`}>
+                        <div className="flex items-start gap-3 mb-3">
+                          {m.lobbyImageUrl ? (
+                            <img src={m.lobbyImageUrl} alt={m.lobbyName} className="w-10 h-10 rounded-lg object-cover border border-white/10 shrink-0" />
+                          ) : (
+                            <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 shrink-0">
+                              <Trophy className="w-5 h-5 text-white/20" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-white text-sm uppercase tracking-tight truncate">{m.lobbyName}</p>
+                            <p className="text-[10px] text-white/30 font-medium">{m.teamName && m.teamName !== "TBD" ? m.teamName : "—"}</p>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5 pt-2 border-t border-white/5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-[9px] text-white/40 uppercase tracking-wider">Codice</span>
+                            <code className="text-primary font-mono font-bold text-[9px] tracking-widest">{m.lobbyCode}</code>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            {m.role === "admin" ? (
+                              <>
+                                <span className="text-[9px] text-white/40 uppercase tracking-wider">Ruolo</span>
+                                <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-[8px] font-black uppercase border border-primary/20">Admin</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-[9px] text-white/40 uppercase tracking-wider">Ruolo</span>
+                                <span className="bg-white/5 text-white/40 px-2 py-0.5 rounded text-[8px] font-black uppercase border border-white/10">Player</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </motion.div>
           </>
         )}
