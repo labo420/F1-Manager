@@ -201,7 +201,6 @@ export default function AdminPanel() {
             </p>
           </div>
         </motion.div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {adminLobbies.map((m, idx) => (
             <motion.button
@@ -238,7 +237,7 @@ export default function AdminPanel() {
                 <div className="space-y-1 pt-2 border-t border-white/5">
                   <div className="flex items-center justify-between gap-1">
                     <span className="text-[7px] text-muted-foreground font-black uppercase tracking-wider truncate">Key</span>
-                    <code className="text-red-500 font-mono font-black tracking-widest bg-zinc-900/50 px-1.5 py-0 rounded text-[7px] border border-white/5">
+                    <code className="text-red-500 font-mono font-black tracking-widest bg-zinc-900/50 px-1.5 py-0 rounded border border-white/5 text-[10px]">
                       {m.lobbyCode}
                     </code>
                   </div>
