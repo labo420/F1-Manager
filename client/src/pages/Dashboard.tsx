@@ -4,7 +4,7 @@ import { useActiveLobby, useCreateLobby, useJoinLobby, useSetTeamName, useLobbyI
 import { useRaces } from "@/hooks/use-races";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, Lock, PlusCircle, LogIn, Crown, ChevronRight, ChevronDown, Users, Star, Trophy, Car, Copy, Timer, Zap } from "lucide-react";
+import { Calendar, Lock, PlusCircle, LogIn, Crown, ChevronRight, ChevronDown, Users, Star, Trophy, Car, Copy, Timer, Zap, Gauge, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import type { RaceFantasyWinners } from "@shared/schema";
@@ -149,6 +149,68 @@ function getStatusColor(status: string) {
     case "risultati": return "bg-white/10 text-white border-white/20";
     default: return "";
   }
+}
+
+function getITAFromUTCTime(utcTimeString: string): { ita: string; utc: string } {
+  if (!utcTimeString) return { ita: "TBD", utc: "TBD" };
+  const d = new Date(utcTimeString);
+  const utcHours = d.getUTCHours();
+  const utcMins = d.getUTCMinutes();
+  const utcTime = `${String(utcHours).padStart(2, "0")}:${String(utcMins).padStart(2, "0")}`;
+  const year = d.getFullYear();
+  const lastSundayMarch = new Date(year, 2, 31);
+  while (lastSundayMarch.getDay() !== 0) lastSundayMarch.setDate(lastSundayMarch.getDate() - 1);
+  const lastSundayOct = new Date(year, 9, 31);
+  while (lastSundayOct.getDay() !== 0) lastSundayOct.setDate(lastSundayOct.getDate() - 1);
+  const isCEST = d >= lastSundayMarch && d < lastSundayOct;
+  const offset = isCEST ? 2 : 1;
+  const itaHours = (utcHours + offset) % 24;
+  const itaTime = `${String(itaHours).padStart(2, "0")}:${String(utcMins).padStart(2, "0")}`;
+  return { ita: itaTime, utc: utcTime };
+}
+
+function getSessionsForRace(race: any, sessionsStatus: any) {
+  const raceDate = new Date(race.date);
+  const qualDate = new Date(raceDate); qualDate.setDate(qualDate.getDate() - 1);
+  const sprintQualDate = race.hasSprint ? new Date(raceDate) : null;
+  if (sprintQualDate) sprintQualDate.setDate(sprintQualDate.getDate() - 2);
+  const sprintDate = race.hasSprint ? new Date(raceDate) : null;
+  if (sprintDate) sprintDate.setDate(sprintDate.getDate() - 1);
+
+  let sprintQualData = { ita: "TBD", utc: "TBD" };
+  let sprintData = { ita: "TBD", utc: "TBD" };
+  let qualData = { ita: "TBD", utc: "TBD" };
+  let raceData = { ita: "TBD", utc: "TBD" };
+
+  if (sessionsStatus) {
+    const fmtDate = (d: Date) => d.toISOString().slice(0, 10);
+    const sprintQualSession = race.hasSprint ? (sessionsStatus.qualSessions || []).find((s: any) =>
+      s.date_start.slice(0, 10) === fmtDate(sprintQualDate!) && s.session_name === "Sprint Qualifying"
+    ) : null;
+    const sprintSession = race.hasSprint ? (sessionsStatus.raceSessions || []).find((s: any) =>
+      s.date_start.slice(0, 10) === fmtDate(sprintDate!) && s.session_name === "Sprint"
+    ) : null;
+    const qualSession = (sessionsStatus.qualSessions || []).find((s: any) =>
+      s.date_start.slice(0, 10) === fmtDate(qualDate) && s.session_name === "Qualifying"
+    );
+    const raceSession = (sessionsStatus.raceSessions || []).find((s: any) =>
+      s.date_start.slice(0, 10) === fmtDate(raceDate) && s.session_name === "Race"
+    );
+    if (sprintQualSession) sprintQualData = getITAFromUTCTime(sprintQualSession.date_start);
+    if (sprintSession) sprintData = getITAFromUTCTime(sprintSession.date_start);
+    if (qualSession) qualData = getITAFromUTCTime(qualSession.date_start);
+    if (raceSession) raceData = getITAFromUTCTime(raceSession.date_start);
+    else if (race.date) raceData = getITAFromUTCTime(race.date);
+  }
+
+  const sessions = [];
+  if (race.hasSprint) {
+    sessions.push({ label: "Sprint Qual", shortLabel: "SQ", date: sprintQualDate!, data: sprintQualData, type: "sprint" });
+    sessions.push({ label: "Sprint", shortLabel: "S", date: sprintDate!, data: sprintData, type: "sprint" });
+  }
+  sessions.push({ label: "Qualifying", shortLabel: "Q", date: qualDate, data: qualData, type: "qual" });
+  sessions.push({ label: "Race", shortLabel: "R", date: raceDate, data: raceData, type: "race" });
+  return sessions;
 }
 
 export default function Dashboard() {
@@ -454,41 +516,99 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
               <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                 <Calendar className="text-primary w-5 h-5" />
               </div>
-              2026 Season
+              2026 Race Calendar
             </h2>
-            <p className="text-xs text-muted-foreground mt-3 tracking-[0.1em] uppercase font-bold">Official FIA/F1 Information</p>
+            <p className="text-xs text-muted-foreground mt-3 tracking-[0.1em] uppercase font-bold">All sessions · ITA & UTC times</p>
           </div>
         </div>
       </motion.div>
 
-      <div className="space-y-2">
-        {races.map((race) => {
+      <div className="space-y-4">
+        {races.map((race, idx) => {
           const status = getRaceStatusFromSessions(race, sessionsStatus?.raceSessions);
           const isExpanded = expandedRaceId === race.id;
+          const sessions = getSessionsForRace(race, sessionsStatus);
+          const canExpand = status === "risultati" || status === "in-corso";
 
           return (
-            <div key={race.id} className="glass-panel rounded-xl overflow-hidden">
-              <button
-                onClick={() => toggleAccordion(race.id)}
-                className="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-white/5 transition-all"
+            <motion.div
+              key={race.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.03 }}
+              className="glass-panel rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-colors"
+              data-testid={`calendar-race-${race.id}`}
+            >
+              <div
+                className={`flex items-center justify-between px-5 py-4 ${canExpand ? "cursor-pointer hover:bg-white/5 transition-colors" : ""} ${isExpanded ? "bg-white/5 border-b border-white/10" : ""}`}
+                onClick={() => canExpand && toggleAccordion(race.id)}
               >
-                <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                  <div className="text-xs font-black text-muted-foreground w-6 text-center shrink-0">R{race.round}</div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-bold text-white truncate">{getCircuitFlag(race.name)} {race.name}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {format(new Date(race.date), "MMM do, yyyy")}
-                      {race.itaTime && <span className="text-primary ml-2">{race.itaTime} ITA</span>}
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-11 h-11 bg-white/5 rounded-xl flex flex-col items-center justify-center border border-white/10 shrink-0">
+                    <span className="text-[8px] font-black text-muted-foreground uppercase leading-none">RND</span>
+                    <span className="text-base font-display font-black text-white leading-none">{race.round}</span>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-display font-black text-lg text-white uppercase tracking-tight leading-none">
+                        {getCircuitFlag(race.name)}{race.name}
+                      </span>
+                      {race.hasSprint && (
+                        <span className="text-[8px] bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-orange-500/30 shrink-0">
+                          ⚡ Sprint
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5 opacity-60">
+                      {race.circuitName || race.country}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className={`text-[10px] uppercase font-bold px-2.5 py-1 rounded-full border ${getStatusColor(status)}`}>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className={`text-[9px] uppercase font-black px-3 py-1 rounded-full border ${getStatusColor(status)}`}>
                     {getStatusLabel(status)}
                   </span>
-                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                  {canExpand && (
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${isExpanded ? "bg-primary/20 text-primary" : "bg-white/5 text-muted-foreground"}`}>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                    </div>
+                  )}
                 </div>
-              </button>
+              </div>
+
+              <div className={`grid gap-px bg-white/5 ${sessions.length === 4 ? "grid-cols-4" : "grid-cols-2"}`}>
+                {sessions.map((session) => {
+                  const isRace = session.type === "race";
+                  const isSprint = session.type === "sprint";
+                  return (
+                    <div
+                      key={session.label}
+                      className={`flex flex-col gap-1.5 px-3 py-3 text-center ${isRace ? "bg-background" : "bg-background/80"}`}
+                    >
+                      <div className={`text-[8px] font-black uppercase tracking-widest ${isSprint ? "text-orange-400" : isRace ? "text-primary" : "text-muted-foreground"}`}>
+                        {session.label}
+                      </div>
+                      <div className="text-white font-black text-[11px] font-mono">
+                        {format(session.date, "MMM d")}
+                      </div>
+                      <div className="space-y-0.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[8px] text-muted-foreground font-black uppercase">ITA</span>
+                          <span className={`font-mono text-[11px] font-black ${session.data.ita === "TBD" ? "text-muted-foreground" : "text-white"}`}>
+                            {session.data.ita}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[8px] text-muted-foreground font-black uppercase">UTC</span>
+                          <span className={`font-mono text-[11px] font-black ${session.data.utc === "TBD" ? "text-muted-foreground" : "text-muted-foreground"}`}>
+                            {session.data.utc}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
               <AnimatePresence>
                 {isExpanded && (
@@ -503,7 +623,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </motion.div>
           );
         })}
       </div>
