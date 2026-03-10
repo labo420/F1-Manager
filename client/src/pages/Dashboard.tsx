@@ -512,7 +512,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
         <div className="flex items-center gap-4 mb-10 text-[20px]">
           <Calendar className="w-5 h-5 text-primary" />
           <div>
-            <h2 className="text-lg font-bold uppercase tracking-wide text-white">2026 FIA Formula 1 Race Calendar</h2>
+            <h2 className="font-bold uppercase tracking-wide text-white text-[30px]">2026 FIA Formula 1 Race Calendar</h2>
             <p className="text-xs text-muted-foreground mt-1 tracking-wide">Session times in Italian (ITA) and Coordinated Universal (UTC)</p>
           </div>
         </div>
