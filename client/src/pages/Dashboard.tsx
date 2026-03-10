@@ -509,15 +509,11 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
         transition={{ delay: 0.2 }}
         className="mb-10 mt-16"
       >
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4 mb-10">
+          <Calendar className="w-5 h-5 text-primary" />
           <div>
-            <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                <Calendar className="text-primary w-5 h-5" />
-              </div>
-              2026 Race Calendar
-            </h2>
-            <p className="text-xs text-muted-foreground mt-3 tracking-[0.1em] uppercase font-bold">All sessions · ITA & UTC times</p>
+            <h2 className="text-lg font-bold uppercase tracking-wide text-white">2026 FIA Formula 1 Race Calendar</h2>
+            <p className="text-xs text-muted-foreground mt-1 tracking-wide">Session times in Italian (ITA) and Coordinated Universal (UTC)</p>
           </div>
         </div>
       </motion.div>
@@ -534,54 +530,54 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
               className="glass-panel rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-colors"
               data-testid={`calendar-race-${race.id}`}
             >
-              <div className="flex items-center justify-between px-5 py-4">
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-11 h-11 bg-white/5 rounded-xl flex flex-col items-center justify-center border border-white/10 shrink-0">
-                    <span className="text-[8px] font-black text-muted-foreground uppercase leading-none">RND</span>
-                    <span className="text-base font-display font-black text-white leading-none">{race.round}</span>
+              <div className="flex items-center justify-between px-6 py-5 border-b border-white/5">
+                <div className="flex items-center gap-5 min-w-0">
+                  <div className="flex flex-col items-center justify-center shrink-0">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase leading-none">RND</span>
+                    <span className="text-2xl font-bold text-primary leading-none">{race.round}</span>
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-display font-black text-lg text-white uppercase tracking-tight leading-none">
+                      <span className="font-bold text-sm text-white uppercase leading-none">
                         {getCircuitFlag(race.name)}{race.name}
                       </span>
                       {race.hasSprint && (
-                        <span className="text-[8px] bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full font-black uppercase tracking-widest border border-orange-500/30 shrink-0">
-                          ⚡ Sprint
+                        <span className="text-[9px] bg-orange-500/15 text-orange-400 px-2.5 py-1 rounded font-bold uppercase tracking-wide border border-orange-500/30 shrink-0">
+                          Sprint
                         </span>
                       )}
                     </div>
-                    <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5 opacity-60">
+                    <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide mt-1.5">
                       {race.circuitName || race.country}
                     </div>
                   </div>
                 </div>
               </div>
-              <div className={`grid gap-px bg-white/5 ${sessions.length === 4 ? "grid-cols-4" : "grid-cols-2"}`}>
-                {sessions.map((session) => {
+              <div className={`grid bg-white/[0.02] divide-white/5 ${sessions.length === 4 ? "grid-cols-4 divide-x" : "grid-cols-2 divide-x"}`}>
+                {sessions.map((session, sessionIdx) => {
                   const isRace = session.type === "race";
                   const isSprint = session.type === "sprint";
                   return (
                     <div
                       key={session.label}
-                      className={`flex flex-col gap-1.5 px-3 py-3 text-center ${isRace ? "bg-background" : "bg-background/80"}`}
+                      className="flex flex-col gap-2 px-4 py-4 text-center"
                     >
-                      <div className="font-black uppercase tracking-widest text-muted-foreground text-[10px]">
+                      <div className={`text-[9px] font-bold uppercase tracking-wide ${isSprint ? "text-orange-400" : isRace ? "text-primary" : "text-muted-foreground"}`}>
                         {session.label}
                       </div>
-                      <div className="text-white font-black text-[11px] font-mono">
+                      <div className="text-white font-semibold text-xs">
                         {format(session.date, "MMM d")}
                       </div>
-                      <div className="space-y-0.5">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[8px] text-muted-foreground font-black uppercase">ITA</span>
-                          <span className={`font-mono text-[11px] font-black ${session.data.ita === "TBD" ? "text-muted-foreground" : "text-white"}`}>
+                      <div className="space-y-1.5 mt-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[8px] text-muted-foreground font-medium uppercase tracking-wide">ITA</span>
+                          <span className={`font-mono text-xs font-semibold ${session.data.ita === "TBD" ? "text-muted-foreground" : "text-white"}`}>
                             {session.data.ita}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-[8px] text-muted-foreground font-black uppercase">UTC</span>
-                          <span className={`font-mono text-[11px] font-black ${session.data.utc === "TBD" ? "text-muted-foreground" : "text-muted-foreground"}`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[8px] text-muted-foreground font-medium uppercase tracking-wide">UTC</span>
+                          <span className={`font-mono text-xs font-semibold ${session.data.utc === "TBD" ? "text-muted-foreground" : "text-muted-foreground"}`}>
                             {session.data.utc}
                           </span>
                         </div>
