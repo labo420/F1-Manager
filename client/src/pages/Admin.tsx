@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useActiveLobby, useLobbyInfo, useLobbyMembers } from "@/hooks/use-lobby";
 import { useRaces, useUpdateRaceStatus } from "@/hooks/use-races";
 import { useDrivers, useConstructors } from "@/hooks/use-competitors";
-import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock, Trash2 } from "lucide-react";
+import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock, Trash2, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -282,14 +282,21 @@ export default function AdminPanel() {
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <div className="w-16 h-16 bg-primary rounded-tr-2xl rounded-bl-2xl f1-slant flex items-center justify-center red-glow shadow-2xl shadow-primary/20">
-            <Settings className="w-10 h-10 text-white f1-slant-reverse" />
-          </div>
+          {(() => {
+            const imgUrl = adminLobbies.find(m => m.lobbyId === Number(selectedLobbyId))?.lobbyImageUrl;
+            return imgUrl ? (
+              <img src={imgUrl} alt="" className="w-16 h-16 rounded-2xl object-cover border border-white/10 shadow-xl shrink-0" />
+            ) : (
+              <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0">
+                <Shield className="w-8 h-8 text-white/20" />
+              </div>
+            );
+          })()}
           <div>
-            <h1 className="md:text-5xl font-display font-black text-white italic uppercase tracking-tighter text-[25px]" data-testid="text-admin-title">
-              Race <span className="text-primary">Control</span>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Race Control</p>
+            <h1 className="font-display font-black text-white uppercase tracking-tighter text-3xl md:text-5xl leading-none mt-1" data-testid="text-admin-title">
+              {lobby?.name || "—"}
             </h1>
-            <p className="font-sans font-medium text-sm uppercase tracking-[0.25em] text-white/45 mt-2">{lobby?.name}</p>
           </div>
         </div>
 
