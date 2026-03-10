@@ -836,6 +836,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json(picks);
   });
 
+  app.get("/api/admin/lobby/:lobbyId/race/:raceId/picks", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    const lobbyId = Number(req.params.lobbyId);
+    const raceId = Number(req.params.raceId);
+    const isAdmin = await storage.isUserAdminOfLobby(req.session.userId, lobbyId);
+    if (!isAdmin) return res.status(403).json({ message: "Admin access required" });
+    const picks = await storage.getLobbyRaceSelections(lobbyId, raceId);
+    res.json(picks);
+  });
+
   app.post("/api/lobby/:lobbyId/use-jolly", async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     try {
