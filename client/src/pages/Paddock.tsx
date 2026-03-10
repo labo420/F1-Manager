@@ -203,7 +203,7 @@ export default function Paddock() {
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Status</span>
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Role</span>
                     <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.1em] ${
                       membership.role === 'admin' ? 'bg-primary/20 text-primary border border-primary/30 shadow-[0_0_15px_-5px_hsl(var(--primary)/0.5)]' : 'bg-white/10 text-white border border-white/10'
                     }`}>
