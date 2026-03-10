@@ -13,6 +13,7 @@ import Leaderboard from "@/pages/Leaderboard";
 import AdminPanel from "@/pages/Admin";
 import F1Season from "@/pages/F1Season";
 import Profile from "@/pages/Profile";
+import Leagues from "@/pages/Leagues";
 import Paddock from "@/pages/Paddock";
 import LobbyDetail from "@/pages/LobbyDetail";
 import DraftRoom from "@/pages/DraftRoom";
@@ -77,6 +78,9 @@ function Router() {
       </Route>
       <Route path="/profile">
         {() => <ProtectedRoute component={Profile} />}
+      </Route>
+      <Route path="/leagues">
+        {() => <ProtectedRoute component={Leagues} />}
       </Route>
       <Route component={NotFound} />
     </Switch>

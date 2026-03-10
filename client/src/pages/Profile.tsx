@@ -2,18 +2,19 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, User, LogOut, Lock, Shield, Trophy, Eye, EyeOff, ChevronDown } from "lucide-react";
+import { Camera, User, LogOut, Lock, Shield, Trophy, Eye, EyeOff, ChevronDown, ChevronRight } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { AvatarPicker } from "@/components/AvatarPicker";
 
 export default function Profile() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [showPicker, setShowPicker] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [showLeagues, setShowLeagues] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -204,59 +205,20 @@ export default function Profile() {
           </div>
 
           {leagues.length > 0 && (
-            <div>
-              <button
-                onClick={() => setShowLeagues(v => !v)}
-                data-testid="button-settings-leagues"
-                className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.03] transition-colors text-left group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-                  <Shield className="w-4 h-4 text-white/40 group-hover:text-primary transition-colors" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-white">Le mie leghe</p>
-                  <p className="text-[10px] text-white/30">{leagues.length} {leagues.length === 1 ? "lega" : "leghe"} attive</p>
-                </div>
-                <ChevronDown className={`w-4 h-4 text-white/20 group-hover:text-white/40 transition-all shrink-0 ${showLeagues ? "rotate-180" : ""}`} />
-              </button>
-
-              <AnimatePresence>
-                {showLeagues && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="bg-white/[0.02] divide-y divide-white/5">
-                      {leagues.map((m: any) => (
-                        <div key={m.lobbyId} className="flex items-center gap-3 px-4 py-3" data-testid={`profile-lobby-${m.lobbyId}`}>
-                          {m.lobbyImageUrl ? (
-                            <img src={m.lobbyImageUrl} alt={m.lobbyName} className="w-8 h-8 rounded-lg object-cover border border-white/10 shrink-0" />
-                          ) : (
-                            <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 shrink-0">
-                              <Trophy className="w-4 h-4 text-white/20" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-white uppercase tracking-tight truncate">{m.lobbyName}</p>
-                            <p className="text-[9px] text-white/30 font-medium">{m.teamName && m.teamName !== "TBD" ? m.teamName : "—"}</p>
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <code className="text-primary font-mono font-bold bg-primary/10 px-1.5 py-0.5 rounded text-[8px] tracking-widest">{m.lobbyCode}</code>
-                            {m.role === "admin" ? (
-                              <span className="bg-primary/20 text-primary px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase border border-primary/20">Admin</span>
-                            ) : (
-                              <span className="bg-white/5 text-white/40 px-1.5 py-0.5 rounded-full text-[8px] font-black uppercase border border-white/10">Player</span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <button
+              onClick={() => setLocation("/leagues")}
+              data-testid="button-settings-leagues"
+              className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.03] transition-colors text-left group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                <Shield className="w-4 h-4 text-white/40 group-hover:text-primary transition-colors" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-white">Le mie leghe</p>
+                <p className="text-[10px] text-white/30">{leagues.length} {leagues.length === 1 ? "lega" : "leghe"} attive</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors shrink-0" />
+            </button>
           )}
 
           <button
