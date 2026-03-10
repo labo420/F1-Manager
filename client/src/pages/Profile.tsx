@@ -15,6 +15,7 @@ export default function Profile() {
   const queryClient = useQueryClient();
   const [showPicker, setShowPicker] = useState(false);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -51,24 +52,26 @@ export default function Profile() {
   });
 
   const passwordMutation = useMutation({
-    mutationFn: async (pwd: string) => {
-      return apiRequest("PATCH", "/api/user/password", { newPassword: pwd });
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      return apiRequest("PATCH", "/api/user/password", data);
     },
     onSuccess: () => {
       setShowPasswordForm(false);
+      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       toast({ title: "Password updated", description: "Your password has been changed." });
     },
-    onError: () => {
-      toast({ title: "Failed", description: "Could not update password.", variant: "destructive" });
+    onError: (err: any) => {
+      toast({ title: "Failed", description: err.message || "Could not update password.", variant: "destructive" });
     },
   });
 
   const handlePasswordSave = () => {
+    if (!currentPassword.trim()) return toast({ title: "Error", description: "Enter your current password.", variant: "destructive" });
     if (!newPassword.trim()) return toast({ title: "Error", description: "Enter a new password.", variant: "destructive" });
     if (newPassword !== confirmPassword) return toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
-    passwordMutation.mutate(newPassword);
+    passwordMutation.mutate({ currentPassword, newPassword });
   };
 
   if (!user) return null;
@@ -133,7 +136,7 @@ export default function Profile() {
 
           <div>
             <button
-              onClick={() => { setShowPasswordForm(v => !v); setNewPassword(""); setConfirmPassword(""); }}
+              onClick={() => { setShowPasswordForm(v => !v); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }}
               data-testid="button-settings-password"
               className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.03] transition-colors text-left group"
             >
@@ -156,6 +159,14 @@ export default function Profile() {
                   className="overflow-hidden"
                 >
                   <div className="px-4 pb-4 pt-1 space-y-3 bg-white/[0.02]">
+                    <input
+                      type={showPwd ? "text" : "password"}
+                      placeholder="Password attuale"
+                      value={currentPassword}
+                      onChange={e => setCurrentPassword(e.target.value)}
+                      data-testid="input-current-password"
+                      className="w-full bg-zinc-900/80 border border-white/10 rounded-lg px-3 py-2.5 text-white text-xs font-medium focus:border-primary focus:outline-none placeholder:text-white/20"
+                    />
                     <div className="relative">
                       <input
                         type={showPwd ? "text" : "password"}
@@ -183,7 +194,7 @@ export default function Profile() {
                     />
                     <div className="flex gap-2 justify-end">
                       <button
-                        onClick={() => { setShowPasswordForm(false); setNewPassword(""); setConfirmPassword(""); }}
+                        onClick={() => { setShowPasswordForm(false); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }}
                         className="px-3 py-1.5 rounded-lg border border-white/10 text-white/40 text-[10px] font-semibold uppercase tracking-wider hover:text-white transition-colors"
                       >
                         Annulla

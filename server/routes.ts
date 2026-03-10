@@ -868,7 +868,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   app.patch("/api/user/password", async (req: any, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     try {
-      const { newPassword } = z.object({ newPassword: z.string().min(1) }).parse(req.body);
+      const { currentPassword, newPassword } = z.object({ currentPassword: z.string().min(1), newPassword: z.string().min(1) }).parse(req.body);
+      const user = await storage.getUser(req.session.userId);
+      if (!user || user.password !== currentPassword) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
       await storage.updateUserPassword(req.session.userId, newPassword);
       res.json({ message: "Password updated" });
     } catch {
