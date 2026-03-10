@@ -16,11 +16,11 @@ const LOBBY_PRESET_SEEDS = [
 ];
 
 function getUserAvatarUrl(seed: string) {
-  return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(seed)}&backgroundColor=1a1a2e,0d1117,161b22`;
+  return `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(seed)}&backgroundColor=1a1a2e,0d1117,161b22`;
 }
 
 function getLobbyAvatarUrl(seed: string) {
-  return `https://api.dicebear.com/7.x/shapes/svg?seed=${encodeURIComponent(seed)}&backgroundColor=1a1a2e,0d1117,161b22`;
+  return `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed)}&backgroundColor=1a1a2e,0d1117,161b22`;
 }
 
 async function compressImage(file: File, maxPx = 200, quality = 0.8): Promise<File> {
