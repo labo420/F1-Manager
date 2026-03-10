@@ -503,7 +503,6 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
           </div>
         </div>
       </div>
-
       <motion.div 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -522,7 +521,6 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
           </div>
         </div>
       </motion.div>
-
       <div className="space-y-4">
         {races.map((race, idx) => {
           const sessions = getSessionsForRace(race, sessionsStatus);
@@ -559,7 +557,6 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                   </div>
                 </div>
               </div>
-
               <div className={`grid gap-px bg-white/5 ${sessions.length === 4 ? "grid-cols-4" : "grid-cols-2"}`}>
                 {sessions.map((session) => {
                   const isRace = session.type === "race";
@@ -569,7 +566,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                       key={session.label}
                       className={`flex flex-col gap-1.5 px-3 py-3 text-center ${isRace ? "bg-background" : "bg-background/80"}`}
                     >
-                      <div className={`text-[8px] font-black uppercase tracking-widest ${isSprint ? "text-orange-400" : isRace ? "text-primary" : "text-muted-foreground"}`}>
+                      <div className="font-black uppercase tracking-widest text-muted-foreground text-[10px]">
                         {session.label}
                       </div>
                       <div className="text-white font-black text-[11px] font-mono">
