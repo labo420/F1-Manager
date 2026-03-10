@@ -325,33 +325,33 @@ function CircuitInfo({ race }: { race: RaceEntry }) {
   if (!race.circuitName && !length && !race.laps) return null;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3" data-testid={`circuit-info-${race.id}`}>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2" data-testid={`circuit-info-${race.id}`}>
       {race.circuitName && (
-        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
-          <MapPin className="w-4 h-4 text-primary mx-auto mb-1.5" />
-          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Circuit</div>
-          <div className="text-white font-bold text-xs leading-tight">{getCircuitFlag(race.circuitName || "")} {race.circuitName}</div>
+        <div className="bg-zinc-900 rounded-lg p-1.5 text-center border border-white/5">
+          <MapPin className="w-3 h-3 text-primary mx-auto mb-1" />
+          <div className="text-[8px] text-muted-foreground uppercase font-bold mb-0.25">Circuit</div>
+          <div className="text-white font-bold text-[8px] leading-tight">{getCircuitFlag(race.circuitName || "")} {race.circuitName}</div>
         </div>
       )}
       {race.circuitLength && (
-        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
-          <Ruler className="w-4 h-4 text-blue-400 mx-auto mb-1.5" />
-          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Length</div>
-          <div className="text-white font-bold text-sm">{race.circuitLength.replace(',', '.')} km</div>
+        <div className="bg-zinc-900 rounded-lg p-1.5 text-center border border-white/5">
+          <Ruler className="w-3 h-3 text-blue-400 mx-auto mb-1" />
+          <div className="text-[8px] text-muted-foreground uppercase font-bold mb-0.25">Length</div>
+          <div className="text-white font-bold text-[8px]">{race.circuitLength.replace(',', '.')} km</div>
         </div>
       )}
       {race.laps && (
-        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
-          <RotateCcw className="w-4 h-4 text-green-400 mx-auto mb-1.5" />
-          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Laps</div>
-          <div className="text-white font-bold text-sm">{race.laps}</div>
+        <div className="bg-zinc-900 rounded-lg p-1.5 text-center border border-white/5">
+          <RotateCcw className="w-3 h-3 text-green-400 mx-auto mb-1" />
+          <div className="text-[8px] text-muted-foreground uppercase font-bold mb-0.25">Laps</div>
+          <div className="text-white font-bold text-[8px]">{race.laps}</div>
         </div>
       )}
       {totalDistance && (
-        <div className="bg-zinc-900 rounded-xl p-3 text-center border border-white/5">
-          <Flag className="w-4 h-4 text-yellow-400 mx-auto mb-1.5" />
-          <div className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Total Distance</div>
-          <div className="text-white font-bold text-sm">{totalDistance} km</div>
+        <div className="bg-zinc-900 rounded-lg p-1.5 text-center border border-white/5">
+          <Flag className="w-3 h-3 text-yellow-400 mx-auto mb-1" />
+          <div className="text-[8px] text-muted-foreground uppercase font-bold mb-0.25">Total Distance</div>
+          <div className="text-white font-bold text-[8px]">{totalDistance} km</div>
         </div>
       )}
     </div>
