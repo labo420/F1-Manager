@@ -865,6 +865,17 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  app.patch("/api/user/password", async (req: any, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const { newPassword } = z.object({ newPassword: z.string().min(1) }).parse(req.body);
+      await storage.updateUserPassword(req.session.userId, newPassword);
+      res.json({ message: "Password updated" });
+    } catch {
+      res.status(400).json({ message: "Invalid input" });
+    }
+  });
+
   app.patch("/api/lobby/:id/image", async (req: any, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     const lobbyId = parseInt(req.params.id);

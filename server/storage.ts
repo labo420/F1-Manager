@@ -38,6 +38,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserAvatar(userId: number, avatarUrl: string): Promise<User>;
   updateUserBio(userId: number, bio: string): Promise<User>;
+  updateUserPassword(userId: number, newPassword: string): Promise<void>;
 
   createLobby(name: string, code: string, adminId: number): Promise<Lobby>;
   getLobbyByCode(code: string): Promise<Lobby | undefined>;
@@ -122,6 +123,10 @@ export class DatabaseStorage implements IStorage {
   async updateUserBio(userId: number, bio: string): Promise<User> {
     const [user] = await db.update(users).set({ bio }).where(eq(users.id, userId)).returning();
     return user;
+  }
+
+  async updateUserPassword(userId: number, newPassword: string): Promise<void> {
+    await db.update(users).set({ password: newPassword }).where(eq(users.id, userId));
   }
 
   async createLobby(name: string, code: string, adminId: number, teamName?: string): Promise<Lobby> {
