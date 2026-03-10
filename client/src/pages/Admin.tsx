@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { DriverAvatar } from "@/components/DriverAvatar";
+import { LobbyImageEditor } from "@/components/LobbyImageEditor";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDraftStatus } from "@/hooks/use-selections";
 
@@ -282,16 +283,13 @@ export default function AdminPanel() {
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
-          {(() => {
-            const imgUrl = adminLobbies.find(m => m.lobbyId === Number(selectedLobbyId))?.lobbyImageUrl;
-            return imgUrl ? (
-              <img src={imgUrl} alt="" className="w-16 h-16 rounded-2xl object-cover border border-white/10 shadow-xl shrink-0" />
-            ) : (
-              <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0">
-                <Shield className="w-8 h-8 text-white/20" />
-              </div>
-            );
-          })()}
+          {lobby && (
+            <LobbyImageEditor
+              lobbyId={Number(selectedLobbyId)}
+              currentUrl={lobby.imageUrl}
+              lobbyName={lobby.name}
+            />
+          )}
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Race Control</p>
             <h1 className="font-display font-black text-white uppercase tracking-tighter text-3xl md:text-5xl leading-none mt-1" data-testid="text-admin-title">
