@@ -552,12 +552,12 @@ export default function F1Season() {
                   <table className="w-full text-left border-collapse" data-testid="table-driver-standings">
                     <thead>
                       <tr className="border-b border-white/5 bg-white/5">
-                        <th className="px-3 py-2 font-black text-muted-foreground uppercase text-[8px] tracking-widest w-12">Pos</th>
-                        <th className="px-3 py-2 font-black text-muted-foreground uppercase text-[8px] tracking-widest">Driver</th>
-                        <th className="px-3 py-2 font-black text-muted-foreground uppercase text-[8px] tracking-widest hidden md:table-cell">Team</th>
-                        <th className="px-3 py-2 font-black text-muted-foreground uppercase text-[8px] tracking-widest text-center hidden sm:table-cell">Wins</th>
-                        <th className="px-3 py-2 font-black text-muted-foreground uppercase text-[8px] tracking-widest text-center hidden sm:table-cell">Podiums</th>
-                        <th className="px-3 py-2 font-black text-primary uppercase text-[8px] tracking-widest text-right">Pts</th>
+                        <th className="px-4 py-2.5 font-black text-muted-foreground uppercase text-[8.5px] tracking-widest w-14">Pos</th>
+                        <th className="px-4 py-2.5 font-black text-muted-foreground uppercase text-[8.5px] tracking-widest">Driver</th>
+                        <th className="px-4 py-2.5 font-black text-muted-foreground uppercase text-[8.5px] tracking-widest hidden md:table-cell">Team</th>
+                        <th className="px-4 py-2.5 font-black text-muted-foreground uppercase text-[8.5px] tracking-widest text-center hidden sm:table-cell">Wins</th>
+                        <th className="px-4 py-2.5 font-black text-muted-foreground uppercase text-[8.5px] tracking-widest text-center hidden sm:table-cell">Podiums</th>
+                        <th className="px-4 py-2.5 font-black text-primary uppercase text-[8.5px] tracking-widest text-right">Pts</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -570,8 +570,8 @@ export default function F1Season() {
                           data-testid={`row-driver-${d.driverId}`}
                           className={`group hover:bg-white/10 transition-all duration-300 ${i === 0 ? "bg-primary/10" : ""}`}
                         >
-                          <td className="px-3 py-3">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors">
+                          <td className="px-4 py-3.5">
+                            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors">
                               <span className={`font-display font-black text-base ${
                                 i === 0 ? "text-yellow-400" :
                                 i === 1 ? "text-gray-300" :
@@ -582,12 +582,12 @@ export default function F1Season() {
                               </span>
                             </div>
                           </td>
-                          <td className="px-3 py-3">
-                            <div className="flex items-center gap-2">
+                          <td className="px-4 py-3.5">
+                            <div className="flex items-center gap-2.5">
                               <div className="relative">
                                 <DriverAvatar number={d.number ?? undefined} name={d.name} teamColor={TEAM_COLORS[d.team]} />
                                 <div 
-                                  className="absolute -bottom-1 -right-1 w-2 h-2 rounded-full border-2 border-background shadow-lg" 
+                                  className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background shadow-lg" 
                                   style={{ backgroundColor: TEAM_COLORS[d.team] || "#444" }}
                                 />
                               </div>
@@ -599,18 +599,18 @@ export default function F1Season() {
                               {d.number && <span className="text-[8px] font-black text-primary bg-primary/10 px-1 py-0.5 rounded tracking-tighter hidden lg:inline-block">#{d.number}</span>}
                             </div>
                           </td>
-                          <td className="px-3 py-3 hidden md:table-cell">
-                            <div className="flex items-center gap-1.5">
+                          <td className="px-4 py-3.5 hidden md:table-cell">
+                            <div className="flex items-center gap-2">
                               <TeamAvatar name={d.team} size="sm" />
                               <span className="text-muted-foreground font-black uppercase text-[8px] tracking-widest">{d.team}</span>
                             </div>
                           </td>
-                          <td className="px-3 py-3 text-center text-white font-display font-black text-sm hidden sm:table-cell tabular-nums">{d.wins}</td>
-                          <td className="px-3 py-3 text-center text-muted-foreground font-display font-bold text-sm hidden sm:table-cell tabular-nums">{d.podiums}</td>
-                          <td className="px-3 py-3 text-right">
+                          <td className="px-4 py-3.5 text-center text-white font-display font-black text-sm hidden sm:table-cell tabular-nums">{d.wins}</td>
+                          <td className="px-4 py-3.5 text-center text-muted-foreground font-display font-bold text-sm hidden sm:table-cell tabular-nums">{d.podiums}</td>
+                          <td className="px-4 py-3.5 text-right">
                             <div className="flex flex-col items-end">
-                              <span className="font-display font-black text-white tracking-tighter tabular-nums text-[20px]">{d.totalPoints}</span>
-                              <span className="text-[6px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
+                              <span className="font-display font-black text-white tracking-tighter tabular-nums text-xl">{d.totalPoints}</span>
+                              <span className="text-[6.5px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
                             </div>
                           </td>
                         </motion.tr>
@@ -631,9 +631,9 @@ export default function F1Season() {
                   <table className="w-full text-left border-collapse" data-testid="table-constructor-standings">
                     <thead>
                       <tr className="border-b border-white/5 bg-white/5">
-                        <th className="px-3 py-2 font-black text-muted-foreground uppercase text-[8px] tracking-widest w-12">Pos</th>
-                        <th className="px-3 py-2 font-black text-muted-foreground uppercase text-[8px] tracking-widest">Constructor</th>
-                        <th className="px-3 py-2 font-black text-primary uppercase text-[8px] tracking-widest text-right">Pts</th>
+                        <th className="px-4 py-2.5 font-black text-muted-foreground uppercase text-[8.5px] tracking-widest w-14">Pos</th>
+                        <th className="px-4 py-2.5 font-black text-muted-foreground uppercase text-[8.5px] tracking-widest">Constructor</th>
+                        <th className="px-4 py-2.5 font-black text-primary uppercase text-[8.5px] tracking-widest text-right">Pts</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -646,8 +646,8 @@ export default function F1Season() {
                           data-testid={`row-constructor-${c.constructorId}`}
                           className={`group hover:bg-white/10 transition-all duration-300 ${i === 0 ? "bg-primary/10" : ""}`}
                         >
-                          <td className="px-3 py-3">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors">
+                          <td className="px-4 py-3.5">
+                            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors">
                               <span className={`font-display font-black text-base ${
                                 i === 0 ? "text-yellow-400" :
                                 i === 1 ? "text-gray-300" :
@@ -658,17 +658,17 @@ export default function F1Season() {
                               </span>
                             </div>
                           </td>
-                          <td className="px-3 py-3">
-                            <div className="flex items-center gap-2">
-                              <div className="w-1.5 h-8 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]" style={{ backgroundColor: c.color || "#666", boxShadow: `0 0 15px ${c.color}40` }}></div>
+                          <td className="px-4 py-3.5">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-1.5 h-9 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]" style={{ backgroundColor: c.color || "#666", boxShadow: `0 0 15px ${c.color}40` }}></div>
                               <TeamAvatar name={c.name} size="lg" />
                               <span className="font-display font-black text-sm text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none">{c.name}</span>
                             </div>
                           </td>
-                          <td className="px-3 py-3 text-right">
+                          <td className="px-4 py-3.5 text-right">
                             <div className="flex flex-col items-end">
-                              <span className="font-display font-black text-lg text-white tracking-tighter tabular-nums leading-none">{c.totalPoints}</span>
-                              <span className="text-[6px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
+                              <span className="font-display font-black text-xl text-white tracking-tighter tabular-nums leading-none">{c.totalPoints}</span>
+                              <span className="text-[6.5px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
                             </div>
                           </td>
                         </motion.tr>
