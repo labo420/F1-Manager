@@ -96,9 +96,14 @@ Private Fantasy F1 web application. Users register (username + password), create
 
 ## F1 2026 Public Section
 - Route: `/f1-2026` (accessible to all logged-in users, no lobby required)
-- **Driver Standings**: All 20 drivers with team color bars, positions, wins, podiums, points
-- **Constructor Standings**: All 10 constructors with team colors, sorted by points
-- **Race Archive**: 24-race calendar with expandable cards showing circuit details
+- **Driver Standings**: All 20 drivers with team color bars, positions, wins, podiums, points (from `/api/f1/driver-standings`)
+- **Constructor Standings**: All 10 constructors with team colors, sorted by points (from `/api/f1/constructor-standings`)
+- **Race Archive**: 24-race calendar with expandable cards showing:
+  - **Circuit Info**: Circuit name, length (km), lap count, total distance
+  - **Race Results Tab**: Driver positions, points, times, gaps, fastest lap (from `/api/f1/race/:id/external-results` — Jolpica API)
+  - **Qualifying Tab**: Grid order with Q1/Q2/Q3 times and gaps (from `/api/f1/race/:id/qualifying` — Jolpica API)
+  - **Sprint Tab**: Sprint results with points and gaps (if circuit has sprint format) (from `/api/f1/race/:id/sprint` — Jolpica API)
+- All race data sourced from free **Jolpica API** (Ergast F1 API wrapper)
 
 ## Dual Leaderboards
 - Per-lobby driver standings: FIA points + overtakes + fastest lap bonus from picked drivers

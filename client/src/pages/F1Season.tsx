@@ -84,6 +84,21 @@ type SprintResult = {
   fastestLap: boolean;
 };
 
+type ExternalRaceResult = {
+  position: number | null;
+  driverNumber: number;
+  driverCode: string | null;
+  driverName: string;
+  teamName: string;
+  points: number;
+  status: string;
+  time: string | null;
+  gap: string | null;
+  fastestLap: boolean;
+  qualifyingPosition: number | null;
+  positionText: string;
+};
+
 const CIRCUIT_FLAGS: Record<string, string> = {
   "Bahrain": "bh",
   "Jeddah": "sa",
@@ -266,6 +281,16 @@ export default function F1Season() {
       return res.json();
     },
     enabled: !!expandedRace,
+  });
+
+  const { data: externalRaceResults, isLoading: extRaceLoading } = useQuery<ExternalRaceResult[]>({
+    queryKey: ["/api/f1/race", expandedRace, "external-results"],
+    queryFn: async () => {
+      const res = await fetch(`/api/f1/race/${expandedRace}/external-results`, { credentials: "include" });
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!expandedRace && raceSessionTab === "race",
   });
 
   const isLoading = driversLoading || constructorsLoading || racesLoading;
@@ -578,67 +603,142 @@ export default function F1Season() {
                                 <CircuitInfo race={race} />
 
                                 <AnimatePresence mode="wait">
-                                  {raceSessionTab === "race" && raceDetail && (
+                                  {raceSessionTab === "race" && (
                                     <motion.div key="race-tab" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
-                                        <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
-                                          <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                            <Timer className="w-6 h-6 text-purple-400" />
-                                          </div>
-                                          <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Fastest Lap</div>
-                                          <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.fastestLapDriver || "N/A"}</div>
+                                      {extRaceLoading ? (
+                                        <div className="flex items-center justify-center py-16">
+                                          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
                                         </div>
-                                        <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-yellow-500/30 transition-colors">
-                                          <div className="w-12 h-12 bg-yellow-400/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                            <Zap className="w-6 h-6 text-yellow-400" />
-                                          </div>
-                                          <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Overtakes</div>
-                                          <div className="text-white font-display font-black text-3xl uppercase tracking-tighter leading-none">{raceDetail.totalOvertakes}</div>
-                                        </div>
-                                        <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-primary/30 transition-colors">
-                                          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                            <Trophy className="w-6 h-6 text-primary" />
-                                          </div>
-                                          <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Winner</div>
-                                          <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.driverResults[0]?.driverName || "N/A"}</div>
-                                        </div>
-                                      </div>
-                                      <div className="mt-10">
-                                        <div className="flex items-center mb-6">
-                                          <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em] shrink-0">Race Classification</h3>
-                                          <div className="h-px flex-1 bg-white/5 ml-4" />
-                                        </div>
-                                        <div className="space-y-2">
-                                          {raceDetail.driverResults.map((dr, idx) => (
-                                            <div key={dr.driverId} className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${idx < 3 ? "bg-white/5 border border-white/10 shadow-lg" : "hover:bg-white/5"}`}>
-                                              <div className="flex items-center gap-4">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border ${idx === 0 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" : idx === 1 ? "bg-gray-300/20 border-gray-300/40 text-gray-300" : idx === 2 ? "bg-amber-600/20 border-amber-600/40 text-amber-600" : "bg-white/5 border-white/10 text-muted-foreground"}`}>{dr.position ?? "-"}</div>
-                                                <div className="relative">
-                                                  <DriverAvatar name={dr.driverName} teamColor={TEAM_COLORS[dr.driverTeam]} />
-                                                  <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#444" }} />
-                                                </div>
-                                                <div>
-                                                  <div className="text-white font-display font-black text-base uppercase tracking-tight flex items-center gap-2">
-                                                    {dr.driverName}
-                                                    {dr.fastestLap && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black tracking-widest border border-purple-500/30">FL</span>}
-                                                  </div>
-                                                  <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{dr.driverTeam}</div>
-                                                </div>
+                                      ) : externalRaceResults && externalRaceResults.length > 0 ? (
+                                        <>
+                                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
+                                              <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                                <Timer className="w-6 h-6 text-purple-400" />
                                               </div>
-                                              <div className="flex items-center gap-6">
-                                                <div className="text-right tabular-nums hidden sm:block">
-                                                  <div className="text-sm font-display font-black text-white leading-none">{idx === 0 ? (dr.time || "WINNER") : (dr.gap || dr.status || "DNF")}</div>
-                                                  <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Interval</div>
-                                                </div>
-                                                <div className="w-12 text-right tabular-nums">
-                                                  <div className="text-lg font-display font-black text-primary leading-none">+{dr.points}</div>
-                                                  <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Pts</div>
-                                                </div>
-                                              </div>
+                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Fastest Lap</div>
+                                              <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{externalRaceResults.find(r => r.fastestLap)?.driverName || "N/A"}</div>
                                             </div>
-                                          ))}
+                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-yellow-500/30 transition-colors">
+                                              <div className="w-12 h-12 bg-yellow-400/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                                <Zap className="w-6 h-6 text-yellow-400" />
+                                              </div>
+                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Finishers</div>
+                                              <div className="text-white font-display font-black text-3xl uppercase tracking-tighter leading-none">{externalRaceResults.filter(r => r.position).length}</div>
+                                            </div>
+                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-primary/30 transition-colors">
+                                              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                                <Trophy className="w-6 h-6 text-primary" />
+                                              </div>
+                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Winner</div>
+                                              <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{externalRaceResults[0]?.driverName || "N/A"}</div>
+                                            </div>
+                                          </div>
+                                          <div className="mt-10">
+                                            <div className="flex items-center mb-6">
+                                              <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em] shrink-0">Race Classification</h3>
+                                              <div className="h-px flex-1 bg-white/5 ml-4" />
+                                            </div>
+                                            <div className="space-y-2">
+                                              {externalRaceResults.map((result, idx) => (
+                                                <div key={`${result.driverNumber}-${result.driverName}`} className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${idx < 3 ? "bg-white/5 border border-white/10 shadow-lg" : "hover:bg-white/5"}`}>
+                                                  <div className="flex items-center gap-4">
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border ${idx === 0 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" : idx === 1 ? "bg-gray-300/20 border-gray-300/40 text-gray-300" : idx === 2 ? "bg-amber-600/20 border-amber-600/40 text-amber-600" : "bg-white/5 border-white/10 text-muted-foreground"}`}>{result.position ?? (result.positionText || "-")}</div>
+                                                    <div className="relative">
+                                                      <DriverAvatar name={result.driverName} teamColor={TEAM_COLORS[result.teamName]} />
+                                                      <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" style={{ backgroundColor: TEAM_COLORS[result.teamName] || "#444" }} />
+                                                    </div>
+                                                    <div>
+                                                      <div className="text-white font-display font-black text-base uppercase tracking-tight flex items-center gap-2">
+                                                        {result.driverName}
+                                                        {result.fastestLap && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black tracking-widest border border-purple-500/30">FL</span>}
+                                                      </div>
+                                                      <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{result.teamName}</div>
+                                                    </div>
+                                                  </div>
+                                                  <div className="flex items-center gap-6">
+                                                    <div className="text-right tabular-nums hidden sm:block">
+                                                      <div className="text-sm font-display font-black text-white leading-none">{idx === 0 ? (result.time || "WINNER") : (result.gap || result.status || "DNF")}</div>
+                                                      <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Interval</div>
+                                                    </div>
+                                                    <div className="w-12 text-right tabular-nums">
+                                                      <div className="text-lg font-display font-black text-primary leading-none">+{Math.round(result.points)}</div>
+                                                      <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Pts</div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        </>
+                                      ) : raceDetail ? (
+                                        <>
+                                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
+                                              <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                                <Timer className="w-6 h-6 text-purple-400" />
+                                              </div>
+                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Fastest Lap</div>
+                                              <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.fastestLapDriver || "N/A"}</div>
+                                            </div>
+                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-yellow-500/30 transition-colors">
+                                              <div className="w-12 h-12 bg-yellow-400/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                                <Zap className="w-6 h-6 text-yellow-400" />
+                                              </div>
+                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Overtakes</div>
+                                              <div className="text-white font-display font-black text-3xl uppercase tracking-tighter leading-none">{raceDetail.totalOvertakes}</div>
+                                            </div>
+                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-primary/30 transition-colors">
+                                              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                                <Trophy className="w-6 h-6 text-primary" />
+                                              </div>
+                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Winner</div>
+                                              <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.driverResults[0]?.driverName || "N/A"}</div>
+                                            </div>
+                                          </div>
+                                          <div className="mt-10">
+                                            <div className="flex items-center mb-6">
+                                              <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em] shrink-0">Race Classification</h3>
+                                              <div className="h-px flex-1 bg-white/5 ml-4" />
+                                            </div>
+                                            <div className="space-y-2">
+                                              {raceDetail.driverResults.map((dr, idx) => (
+                                                <div key={dr.driverId} className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${idx < 3 ? "bg-white/5 border border-white/10 shadow-lg" : "hover:bg-white/5"}`}>
+                                                  <div className="flex items-center gap-4">
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border ${idx === 0 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" : idx === 1 ? "bg-gray-300/20 border-gray-300/40 text-gray-300" : idx === 2 ? "bg-amber-600/20 border-amber-600/40 text-amber-600" : "bg-white/5 border-white/10 text-muted-foreground"}`}>{dr.position ?? "-"}</div>
+                                                    <div className="relative">
+                                                      <DriverAvatar name={dr.driverName} teamColor={TEAM_COLORS[dr.driverTeam]} />
+                                                      <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#444" }} />
+                                                    </div>
+                                                    <div>
+                                                      <div className="text-white font-display font-black text-base uppercase tracking-tight flex items-center gap-2">
+                                                        {dr.driverName}
+                                                        {dr.fastestLap && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black tracking-widest border border-purple-500/30">FL</span>}
+                                                      </div>
+                                                      <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{dr.driverTeam}</div>
+                                                    </div>
+                                                  </div>
+                                                  <div className="flex items-center gap-6">
+                                                    <div className="text-right tabular-nums hidden sm:block">
+                                                      <div className="text-sm font-display font-black text-white leading-none">{idx === 0 ? (dr.time || "WINNER") : (dr.gap || dr.status || "DNF")}</div>
+                                                      <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Interval</div>
+                                                    </div>
+                                                    <div className="w-12 text-right tabular-nums">
+                                                      <div className="text-lg font-display font-black text-primary leading-none">+{dr.points}</div>
+                                                      <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Pts</div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                                          <Trophy className="w-12 h-12 mb-4 opacity-20" />
+                                          <p className="font-display font-black uppercase tracking-widest text-sm">Race Data Unavailable</p>
                                         </div>
-                                      </div>
+                                      )}
                                     </motion.div>
                                   )}
 
