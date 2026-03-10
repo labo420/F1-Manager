@@ -296,7 +296,7 @@ function SessionTimes({ race }: { race: RaceEntry }) {
               <div className="flex items-center gap-3">
                 <Clock className="w-3.5 h-3.5 text-primary shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-[9px] font-black uppercase tracking-widest text-white">{session.label} — {dateStr}</div>
+                  <div className="font-black uppercase tracking-widest text-white text-[10px]">{session.label} — {dateStr}</div>
                   <div className="flex items-center gap-4 mt-1 text-[8px]">
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground font-black uppercase tracking-widest">ITA</span>
