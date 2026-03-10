@@ -184,9 +184,9 @@ export default function Leaderboard() {
             <table className="w-full text-left border-collapse" data-testid="table-leaderboard">
               <thead>
                 <tr className="border-b border-white/5 bg-white/5">
-                  <th className="px-3 sm:px-6 py-3 sm:py-5 font-display font-bold text-muted-foreground uppercase text-[10px] tracking-widest w-16 sm:w-20">Pos</th>
-                  <th className="px-3 sm:px-6 py-3 sm:py-5 font-display font-bold text-muted-foreground uppercase text-[10px] tracking-widest">Team / Manager</th>
-                  <th className="px-3 sm:px-6 py-3 sm:py-5 font-display font-bold text-primary uppercase text-[10px] tracking-widest text-right">
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 font-display font-bold text-muted-foreground uppercase text-[9px] tracking-widest w-14 sm:w-16">Pos</th>
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 font-display font-bold text-muted-foreground uppercase text-[9px] tracking-widest">Team / Manager</th>
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 font-display font-bold text-primary uppercase text-[9px] tracking-widest text-right">
                     {tab === "drivers" ? "Championship Pts" : "Constructor Pts"}
                   </th>
                 </tr>
@@ -203,12 +203,12 @@ export default function Leaderboard() {
                       data-testid={`leaderboard-row-${entry.userId}`}
                       className={`group hover:bg-white/10 transition-all duration-300 ${index === 0 ? "bg-primary/10" : ""}`}
                     >
-                      <td className="px-3 sm:px-6 py-3 sm:py-5">
-                        <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors relative overflow-hidden">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3">
+                        <div className="flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors relative overflow-hidden">
                           {index === 0 && (
                             <div className="absolute inset-0 bg-yellow-400/10 animate-pulse" />
                           )}
-                          <span className={`font-display font-black text-base sm:text-xl relative z-10 ${
+                          <span className={`font-display font-black text-sm sm:text-lg relative z-10 ${
                             index === 0 ? "text-yellow-400" : 
                             index === 1 ? "text-gray-300" : 
                             index === 2 ? "text-amber-600" : 
@@ -218,8 +218,8 @@ export default function Leaderboard() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-5">
-                        <div className="flex items-center gap-3 sm:gap-4">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
                           <div className="relative">
                             <TeamAvatar name={entry.teamName} size="lg" />
                             <div 
@@ -228,21 +228,21 @@ export default function Leaderboard() {
                             />
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-display font-black text-lg text-white uppercase tracking-tight leading-tight group-hover:text-primary transition-colors">
+                            <span className="font-display font-black text-base text-white uppercase tracking-tight leading-tight group-hover:text-primary transition-colors">
                               {entry.teamName}
                             </span>
-                            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider flex items-center gap-1">
                               <Users className="w-3 h-3" /> @{entry.username}
                             </span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-3 sm:px-6 py-3 sm:py-5 text-right">
+                      <td className="px-2 sm:px-4 py-2 sm:py-3 text-right">
                         <div className="flex flex-col items-end">
-                          <span className="font-display font-black text-2xl sm:text-3xl text-white tracking-tighter tabular-nums">
+                          <span className="font-display font-black text-xl sm:text-2xl text-white tracking-tighter tabular-nums">
                             {entry.totalPoints}
                           </span>
-                          <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter -mt-1">
+                          <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter -mt-0.5">
                             Points
                           </span>
                         </div>
