@@ -282,15 +282,6 @@ export default function AdminPanel() {
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <button 
-            onClick={() => setShowDeleteConfirm(true)}
-            disabled={deleteLobbyMutation.isPending}
-            className="w-12 h-12 flex items-center justify-center bg-red-900/20 hover:bg-red-900/40 rounded-2xl text-red-500/60 hover:text-red-500 transition-all border border-red-900/30 disabled:opacity-50"
-            data-testid="button-delete-lobby"
-            title="Delete This League"
-          >
-            <Trash2 className="w-5 h-5" />
-          </button>
           <div className="w-16 h-16 bg-primary rounded-tr-2xl rounded-bl-2xl f1-slant flex items-center justify-center red-glow shadow-2xl shadow-primary/20">
             <Settings className="w-10 h-10 text-white f1-slant-reverse" />
           </div>
@@ -543,6 +534,49 @@ export default function AdminPanel() {
         </div>
 
       </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mt-16 max-w-2xl mx-auto"
+      >
+        <div className="glass-panel rounded-3xl p-8 border-2 border-red-900/20 bg-gradient-to-br from-red-950/30 to-transparent shadow-2xl relative overflow-hidden group hover:border-red-900/40 transition-all">
+          <div className="absolute inset-0 bg-red-900/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute top-0 right-0 w-40 h-40 bg-red-500/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-red-500/20 transition-colors" />
+          
+          <div className="relative z-10">
+            <div className="flex items-start gap-4 mb-4">
+              <AlertTriangle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="text-lg font-display font-black text-white uppercase tracking-tight mb-2">Danger Zone</h3>
+                <p className="text-sm text-white/60 leading-relaxed">
+                  Permanently delete this league and all associated data. This action cannot be undone.
+                </p>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => setShowDeleteConfirm(true)}
+              disabled={deleteLobbyMutation.isPending}
+              className="w-full mt-6 py-3.5 rounded-xl bg-red-900/40 border-2 border-red-900/50 text-red-300 font-semibold uppercase tracking-widest text-sm hover:bg-red-900/60 hover:border-red-900/70 hover:text-red-200 transition-all disabled:opacity-50 flex items-center justify-center gap-3 group/btn"
+              data-testid="button-delete-lobby"
+            >
+              {deleteLobbyMutation.isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-red-300/30 border-t-red-300 rounded-full animate-spin" />
+                  Deleting League...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                  Delete League
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </motion.div>
 
       <AnimatePresence>
         {showDeleteConfirm && (
