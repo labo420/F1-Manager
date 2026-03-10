@@ -520,7 +520,6 @@ export default function F1Season() {
           </div>
         </div>
       </motion.div>
-
       <div className="flex justify-center mb-8">
         <div className="glass-panel rounded-2xl p-1.5 inline-flex gap-1 border-2 border-white/5 shadow-2xl" data-testid="toggle-f1-tabs">
           {[
@@ -544,7 +543,6 @@ export default function F1Season() {
           ))}
         </div>
       </div>
-
       <AnimatePresence mode="wait">
         {tab === "drivers" && (
           <motion.div key="drivers" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
@@ -611,7 +609,7 @@ export default function F1Season() {
                           <td className="px-3 py-3 text-center text-muted-foreground font-display font-bold text-sm hidden sm:table-cell tabular-nums">{d.podiums}</td>
                           <td className="px-3 py-3 text-right">
                             <div className="flex flex-col items-end">
-                              <span className="font-display font-black text-lg text-white tracking-tighter tabular-nums leading-none">{d.totalPoints}</span>
+                              <span className="font-display font-black text-white tracking-tighter tabular-nums text-[20px]">{d.totalPoints}</span>
                               <span className="text-[6px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
                             </div>
                           </td>
