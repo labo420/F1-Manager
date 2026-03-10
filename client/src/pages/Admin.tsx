@@ -247,9 +247,14 @@ export default function AdminPanel() {
           </div>
           <div>
             <h1 className="text-4xl md:text-5xl font-display font-black text-white italic uppercase tracking-tighter leading-none" data-testid="text-admin-title">
-              {selectedRace ? selectedRace.name : "Race"} <span className="text-primary">{selectedRace ? "Control" : "Selection"}</span>
+              {selectedRace ? (
+                <>
+                  <span className="text-primary">{lobby?.name}</span> • {selectedRace.name} <span className="text-primary">Control</span>
+                </>
+              ) : (
+                <>Race <span className="text-primary">Selection</span></>
+              )}
             </h1>
-            <p className="text-primary font-black uppercase tracking-[0.2em] text-[10px] mt-2 opacity-80">{lobby?.name}</p>
           </div>
         </div>
 
