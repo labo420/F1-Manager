@@ -191,39 +191,70 @@ const TEAM_COLORS: Record<string, string> = {
 };
 
 
-function getUTCFromITATime(raceDate: string, itaTime: string | null): string {
-  if (!itaTime) return "TBD";
-  const [hours, mins] = itaTime.split(":").map(Number);
-  const raceDateTime = new Date(raceDate);
+function getITAFromUTCTime(utcTimeString: string): { ita: string; utc: string } {
+  if (!utcTimeString) return { ita: "TBD", utc: "TBD" };
+  const d = new Date(utcTimeString);
   
-  // Determine CET/CEST based on race date (switch on last Sunday of March)
-  const year = raceDateTime.getFullYear();
+  // Determine CET/CEST offset
+  const year = d.getFullYear();
   const lastSundayMarch = new Date(year, 2, 31);
   while (lastSundayMarch.getDay() !== 0) lastSundayMarch.setDate(lastSundayMarch.getDate() - 1);
   const lastSundayOct = new Date(year, 9, 31);
   while (lastSundayOct.getDay() !== 0) lastSundayOct.setDate(lastSundayOct.getDate() - 1);
   
-  const isCEST = raceDateTime >= lastSundayMarch && raceDateTime < lastSundayOct;
-  const offset = isCEST ? 2 : 1; // CEST is UTC+2, CET is UTC+1
+  const isCEST = d >= lastSundayMarch && d < lastSundayOct;
+  const offset = isCEST ? 2 : 1;
   
-  const utcDate = new Date(year, raceDateTime.getMonth(), raceDateTime.getDate(), hours - offset, mins, 0);
-  return utcDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const itaHours = (d.getUTCHours() + offset) % 24;
+  const itaMins = d.getUTCMinutes();
+  const itaTime = `${String(itaHours).padStart(2, "0")}:${String(itaMins).padStart(2, "0")}`;
+  const utcTime = format(d, "HH:mm");
+  
+  return { ita: itaTime, utc: utcTime };
 }
 
 function SessionTimes({ race }: { race: RaceEntry }) {
+  const { data: sessionsStatus } = useQuery({
+    queryKey: ["/api/f1/sessions-status"],
+    staleTime: 60 * 60 * 1000,
+  });
+
   const raceDate = new Date(race.date);
   const qualDate = subDays(raceDate, 1);
-  const sprintQualDate = subDays(raceDate, 2);
+  
+  let qualData = { ita: "TBD", utc: "TBD" };
+  let raceData = { ita: "TBD", utc: "TBD" };
+  
+  if (sessionsStatus) {
+    const qualSession = (sessionsStatus.qualSessions || []).find(s => {
+      const sessionDate = new Date(s.date_start);
+      const dateMatch = format(sessionDate, "yyyy-MM-dd") === format(qualDate, "yyyy-MM-dd");
+      return dateMatch && (s.session_name === "Qualifying" || s.session_name.includes("Qualifying"));
+    });
+    
+    const raceSession = (sessionsStatus.raceSessions || []).find(s => {
+      const sessionDate = new Date(s.date_start);
+      const dateMatch = format(sessionDate, "yyyy-MM-dd") === format(raceDate, "yyyy-MM-dd");
+      return dateMatch && s.session_name === "Race";
+    });
+    
+    if (qualSession) {
+      qualData = getITAFromUTCTime(qualSession.date_start);
+    }
+    
+    if (raceSession) {
+      raceData = getITAFromUTCTime(raceSession.date_start);
+    }
+  }
   
   const sessions = [
-    { label: "Qualifying", date: qualDate, time: "14:00", color: "yellow" },
-    { label: "Race", date: raceDate, time: race.itaTime || "15:00", color: "primary" },
+    { label: "Qualifying", date: qualDate, ita: qualData.ita, utc: qualData.utc },
+    { label: "Race", date: raceDate, ita: raceData.ita, utc: raceData.utc },
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6" data-testid={`session-times-${race.id}`}>
       {sessions.map(session => {
-        const utcTime = getUTCFromITATime(session.date.toISOString(), session.time);
         const dateStr = format(session.date, "MMM dd");
         return (
           <div key={session.label} className="bg-white/5 rounded-xl p-4 border border-white/10">
@@ -234,11 +265,11 @@ function SessionTimes({ race }: { race: RaceEntry }) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">ITA</span>
-                <span className="font-mono text-sm font-black text-white">{session.time}</span>
+                <span className="font-mono text-sm font-black text-white">{session.ita}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">UTC</span>
-                <span className="font-mono text-sm font-black text-white">{utcTime}</span>
+                <span className="font-mono text-sm font-black text-white">{session.utc}</span>
               </div>
               <div className="text-[8px] text-muted-foreground font-black tracking-widest">{dateStr}</div>
             </div>
