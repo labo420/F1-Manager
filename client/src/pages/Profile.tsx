@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Camera, User, LogOut, Lock, ChevronRight, Shield, Trophy, Eye, EyeOff, ChevronDown } from "lucide-react";
+import { Camera, User, LogOut, Lock, Shield, Trophy, Eye, EyeOff, ChevronDown } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { AvatarPicker } from "@/components/AvatarPicker";
 
@@ -129,21 +129,6 @@ export default function Profile() {
           <div className="px-4 py-2.5">
             <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30">Impostazioni</p>
           </div>
-
-          <button
-            onClick={() => setShowPicker(true)}
-            data-testid="button-settings-avatar"
-            className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.03] transition-colors text-left group"
-          >
-            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-              <Camera className="w-4 h-4 text-white/40 group-hover:text-primary transition-colors" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white">Cambia avatar</p>
-              <p className="text-[10px] text-white/30">Scegli un avatar o carica una foto</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors shrink-0" />
-          </button>
 
           <div>
             <button
