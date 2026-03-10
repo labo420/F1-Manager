@@ -1116,32 +1116,32 @@ export default function F1Season() {
                             <div className="glass-panel rounded-3xl mt-3 border-2 border-white/10 shadow-2xl relative overflow-hidden">
                               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
 
-                              <div className="flex items-center gap-1 p-4 pb-0 border-b border-white/5">
-                                {[
-                                  { key: "race" as const, label: "Race", icon: Trophy },
-                                  { key: "qualifying" as const, label: "Qualifying", icon: Gauge },
-                                  ...(upcomingSprintResults && upcomingSprintResults.length > 0 ? [{ key: "sprint" as const, label: "Sprint", icon: Activity }] : []),
-                                ].map(st => (
-                                  <button
-                                    key={st.key}
-                                    onClick={() => setUpcomingSessionTab(st.key)}
-                                    data-testid={`tab-session-upcoming-${st.key}-${race.id}`}
-                                    className={`flex items-center gap-2 px-5 py-3 text-[10px] font-black uppercase tracking-[0.15em] rounded-t-xl transition-all border-b-2 -mb-px ${
-                                      upcomingSessionTab === st.key
-                                        ? "text-white border-primary bg-primary/10"
-                                        : "text-muted-foreground border-transparent hover:text-white hover:bg-white/5"
-                                    }`}
-                                  >
-                                    <st.icon className="w-3.5 h-3.5" />
-                                    <span>{st.label}</span>
-                                    {st.key === "sprint" && <span className="text-[8px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded-full border border-orange-500/30 ml-1">Sprint</span>}
-                                  </button>
-                                ))}
-                              </div>
-
                               <div className="p-4 sm:p-8">
                                 <CircuitInfo race={race} />
                                 <SessionTimes race={race} />
+
+                                <div className="flex items-center gap-1 -mx-4 -ms-8 px-4 sm:px-8 py-3 mb-4 border-b border-white/5">
+                                  {[
+                                    { key: "race" as const, label: "Race", icon: Trophy },
+                                    { key: "qualifying" as const, label: "Qualifying", icon: Gauge },
+                                    ...(upcomingSprintResults && upcomingSprintResults.length > 0 ? [{ key: "sprint" as const, label: "Sprint", icon: Activity }] : []),
+                                  ].map(st => (
+                                    <button
+                                      key={st.key}
+                                      onClick={() => setUpcomingSessionTab(st.key)}
+                                      data-testid={`tab-session-upcoming-${st.key}-${race.id}`}
+                                      className={`flex items-center gap-2 px-5 py-3 text-[10px] font-black uppercase tracking-[0.15em] rounded-t-xl transition-all border-b-2 -mb-px ${
+                                        upcomingSessionTab === st.key
+                                          ? "text-white border-primary bg-primary/10"
+                                          : "text-muted-foreground border-transparent hover:text-white hover:bg-white/5"
+                                      }`}
+                                    >
+                                      <st.icon className="w-3.5 h-3.5" />
+                                      <span>{st.label}</span>
+                                      {st.key === "sprint" && <span className="text-[8px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded-full border border-orange-500/30 ml-1">Sprint</span>}
+                                    </button>
+                                  ))}
+                                </div>
 
                                 <AnimatePresence mode="wait">
                                   {upcomingSessionTab === "race" && (
