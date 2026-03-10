@@ -525,10 +525,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
 
       <div className="space-y-4">
         {races.map((race, idx) => {
-          const status = getRaceStatusFromSessions(race, sessionsStatus?.raceSessions);
-          const isExpanded = expandedRaceId === race.id;
           const sessions = getSessionsForRace(race, sessionsStatus);
-          const canExpand = status === "risultati" || status === "in-corso";
 
           return (
             <motion.div
@@ -539,10 +536,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
               className="glass-panel rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-colors"
               data-testid={`calendar-race-${race.id}`}
             >
-              <div
-                className={`flex items-center justify-between px-5 py-4 ${canExpand ? "cursor-pointer hover:bg-white/5 transition-colors" : ""} ${isExpanded ? "bg-white/5 border-b border-white/10" : ""}`}
-                onClick={() => canExpand && toggleAccordion(race.id)}
-              >
+              <div className="flex items-center justify-between px-5 py-4">
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="w-11 h-11 bg-white/5 rounded-xl flex flex-col items-center justify-center border border-white/10 shrink-0">
                     <span className="text-[8px] font-black text-muted-foreground uppercase leading-none">RND</span>
@@ -563,16 +557,6 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                       {race.circuitName || race.country}
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className={`text-[9px] uppercase font-black px-3 py-1 rounded-full border ${getStatusColor(status)}`}>
-                    {getStatusLabel(status)}
-                  </span>
-                  {canExpand && (
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${isExpanded ? "bg-primary/20 text-primary" : "bg-white/5 text-muted-foreground"}`}>
-                      <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -609,20 +593,6 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                   );
                 })}
               </div>
-
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <RaceAccordionContent race={race} status={status} lobbyId={lobbyId} qualSessions={sessionsStatus?.qualSessions} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
             </motion.div>
           );
         })}
