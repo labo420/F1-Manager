@@ -30,7 +30,7 @@ function ProtectedRoute({ component: Component, requireAuth = true }: { componen
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center min-h-[100dvh] bg-background">
         <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -87,7 +87,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <div className="min-h-[100dvh] bg-background text-foreground flex flex-col">
           <Navigation />
           <main className="flex-1">
             <Router />

@@ -96,8 +96,8 @@ export function Navigation() {
         </div>
       </div>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-zinc-950/95 backdrop-blur-xl z-50">
-        <div className="flex justify-around items-center h-14 px-2">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-zinc-950/95 backdrop-blur-xl z-50 safe-bottom">
+        <div className="flex justify-around items-center h-14 px-2" style={{ paddingLeft: 'max(0.5rem, env(safe-area-inset-left))', paddingRight: 'max(0.5rem, env(safe-area-inset-right))' }}>
           {navItems.map((item) => (
             <Link
               key={item.href}
