@@ -359,7 +359,7 @@ export default function AdminPanel() {
           >
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white flex items-center gap-3">
-                <Users className="text-primary w-4 h-4" /> Personnel
+                <Users className="text-primary w-4 h-4" /> Players
               </h2>
               <span className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-black text-muted-foreground tracking-widest border border-white/5">
                 {members?.length || 0} / 10
