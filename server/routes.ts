@@ -813,6 +813,44 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json(user);
   });
 
+  app.patch("/api/user/avatar-url", async (req: any, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const { url } = z.object({ url: z.string().url() }).parse(req.body);
+      const user = await storage.updateUserAvatar(req.session.userId, url);
+      res.json(user);
+    } catch {
+      res.status(400).json({ message: "Invalid URL" });
+    }
+  });
+
+  app.patch("/api/lobby/:id/image", async (req: any, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    const lobbyId = parseInt(req.params.id);
+    if (isNaN(lobbyId)) return res.status(400).json({ message: "Invalid lobby ID" });
+    try {
+      const { url } = z.object({ url: z.string().url() }).parse(req.body);
+      const isAdmin = await storage.isUserAdminOfLobby(req.session.userId, lobbyId);
+      if (!isAdmin) return res.status(403).json({ message: "Admin access required" });
+      const lobby = await storage.updateLobbyImage(lobbyId, url);
+      res.json(lobby);
+    } catch {
+      res.status(400).json({ message: "Invalid URL" });
+    }
+  });
+
+  app.post("/api/lobby/:id/image/upload", upload.single("image"), async (req: any, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    const lobbyId = parseInt(req.params.id);
+    if (isNaN(lobbyId)) return res.status(400).json({ message: "Invalid lobby ID" });
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    const isAdmin = await storage.isUserAdminOfLobby(req.session.userId, lobbyId);
+    if (!isAdmin) return res.status(403).json({ message: "Admin access required" });
+    const imageUrl = `/uploads/avatars/${req.file.filename}`;
+    const lobby = await storage.updateLobbyImage(lobbyId, imageUrl);
+    res.json(lobby);
+  });
+
   app.get("/api/lobby/:lobbyId/race/:raceId/fantasy-winners", async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     const lobbyId = Number(req.params.lobbyId);

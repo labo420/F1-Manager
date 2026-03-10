@@ -18,6 +18,18 @@ export async function runMigrations() {
     await client.query(`
       ALTER TABLE races ADD COLUMN IF NOT EXISTS has_sprint BOOLEAN NOT NULL DEFAULT FALSE;
     `);
+    await client.query(`
+      ALTER TABLE lobbies ADD COLUMN IF NOT EXISTS image_url TEXT;
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "session" (
+        "sid" varchar NOT NULL COLLATE "default",
+        "sess" json NOT NULL,
+        "expire" timestamp(6) NOT NULL,
+        CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
+      );
+      CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
+    `);
     
     // Mark races with sprint sessions: Chinese GP (2), Miami GP (6), Canadian GP (7), British GP (11), Dutch GP (14), Singapore GP (18)
     await client.query(`

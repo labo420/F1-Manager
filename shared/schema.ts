@@ -7,6 +7,7 @@ export const lobbies = pgTable("lobbies", {
   name: text("name").notNull(),
   code: text("code").notNull().unique(),
   adminId: integer("admin_id").notNull(),
+  imageUrl: text("image_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -141,6 +142,7 @@ export type Membership = {
   lobbyId: number;
   lobbyName: string;
   lobbyCode: string;
+  lobbyImageUrl: string | null;
   teamName: string;
   driverJollies: number;
   constructorJollies: number;

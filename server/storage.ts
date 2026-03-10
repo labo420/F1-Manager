@@ -41,7 +41,9 @@ export interface IStorage {
 
   createLobby(name: string, code: string, adminId: number): Promise<Lobby>;
   getLobbyByCode(code: string): Promise<Lobby | undefined>;
+  getLobbyById(lobbyId: number): Promise<Lobby | undefined>;
   getLobbyPlayerCount(lobbyId: number): Promise<number>;
+  updateLobbyImage(lobbyId: number, imageUrl: string): Promise<Lobby>;
 
   addLobbyMember(userId: number, lobbyId: number, role: string, teamName?: string): Promise<LobbyMember>;
   getLobbyMember(userId: number, lobbyId: number): Promise<LobbyMember | undefined>;
@@ -145,6 +147,16 @@ export class DatabaseStorage implements IStorage {
     return result.count;
   }
 
+  async getLobbyById(lobbyId: number): Promise<Lobby | undefined> {
+    const [lobby] = await db.select().from(lobbies).where(eq(lobbies.id, lobbyId));
+    return lobby;
+  }
+
+  async updateLobbyImage(lobbyId: number, imageUrl: string): Promise<Lobby> {
+    const [lobby] = await db.update(lobbies).set({ imageUrl }).where(eq(lobbies.id, lobbyId)).returning();
+    return lobby;
+  }
+
   async addLobbyMember(userId: number, lobbyId: number, role: string, teamName?: string): Promise<LobbyMember> {
     const existing = await this.getLobbyMember(userId, lobbyId);
     if (existing) return existing;
@@ -174,6 +186,7 @@ export class DatabaseStorage implements IStorage {
         lobbyId: m.lobbyId,
         lobbyName: lobby?.name || "Unknown",
         lobbyCode: lobby?.code || "",
+        lobbyImageUrl: lobby?.imageUrl || null,
         teamName: m.teamName,
         driverJollies: m.driverJollies,
         constructorJollies: m.constructorJollies,
