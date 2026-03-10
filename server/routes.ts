@@ -443,7 +443,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     try {
       const year = new Date().getFullYear();
       const [standingsRes, resultsRes] = await Promise.all([
-        fetch(`https://api.jolpi.ca/ergast/f1/${year}/driverStandings/?format=json`),
+        fetch(`https://api.jolpi.ca/ergast/f1/${year}/driverStandings/?format=json&limit=100`),
         fetch(`https://api.jolpi.ca/ergast/f1/${year}/results/?format=json&limit=500`),
       ]);
       if (!standingsRes.ok) throw new Error("Jolpica standings unavailable");
