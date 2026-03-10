@@ -593,9 +593,12 @@ export default function F1Season() {
                                   style={{ backgroundColor: TEAM_COLORS[d.team] || "#444" }}
                                 />
                               </div>
-                              <div>
+                              <div className="flex-1">
                                 <div className="font-display font-black text-sm text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none mb-0.5">{d.name}</div>
-                                <div className="text-[8px] text-muted-foreground font-black uppercase tracking-widest md:hidden">{d.team}</div>
+                                <div className="flex items-center gap-1 md:hidden">
+                                  <TeamAvatar name={d.team} size="sm" />
+                                  <span className="text-[7px] text-muted-foreground font-black uppercase tracking-widest">{d.team}</span>
+                                </div>
                                 {d.number && <span className="text-[7px] font-black text-primary bg-primary/10 px-0.5 py-0.5 rounded tracking-tighter lg:hidden">#{d.number}</span>}
                               </div>
                               {d.number && <span className="text-[8px] font-black text-primary bg-primary/10 px-1 py-0.5 rounded tracking-tighter hidden lg:inline-block">#{d.number}</span>}
