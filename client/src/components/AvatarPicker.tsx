@@ -20,15 +20,23 @@ const USER_PRESET_AVATARS = [
   "/avatars/driver_f7.png",
 ];
 
-const LOBBY_PRESET_SEEDS = [
-  "Ferrari", "Mercedes", "RedBull", "McLaren", "Alpine",
-  "AstonMartin", "Williams", "Haas", "AlphaTauri", "Sauber",
-  "Cadillac", "Paddock", "GrandPrix", "Championship", "Fantasy",
+const LOBBY_PRESET_AVATARS = [
+  "/avatars/league_1.png",
+  "/avatars/league_2.png",
+  "/avatars/league_3.png",
+  "/avatars/league_4.png",
+  "/avatars/league_5.png",
+  "/avatars/league_6.png",
+  "/avatars/league_7.png",
+  "/avatars/league_8.png",
+  "/avatars/league_9.png",
+  "/avatars/league_10.png",
+  "/avatars/league_11.png",
+  "/avatars/league_12.png",
+  "/avatars/league_13.png",
+  "/avatars/league_14.png",
+  "/avatars/league_15.png",
 ];
-
-function getLobbyAvatarUrl(seed: string) {
-  return `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed)}&backgroundColor=1a1a2e,0d1117,161b22`;
-}
 
 async function compressImage(file: File, maxPx = 200, quality = 0.8): Promise<File> {
   return new Promise((resolve) => {
@@ -74,8 +82,7 @@ export function AvatarPicker({ type, currentUrl, onSelectPreset, onUploadFile, i
     onSelectPreset(url);
   };
 
-  const handlePresetLobbyClick = (seed: string) => {
-    const url = getLobbyAvatarUrl(seed);
+  const handlePresetLobbyClick = (url: string) => {
     setSelected(url);
     onSelectPreset(url);
   };
@@ -158,21 +165,20 @@ export function AvatarPicker({ type, currentUrl, onSelectPreset, onUploadFile, i
                     );
                   })
                 ) : (
-                  LOBBY_PRESET_SEEDS.map((seed) => {
-                    const url = getLobbyAvatarUrl(seed);
+                  LOBBY_PRESET_AVATARS.map((url, i) => {
                     const isActive = selected === url || (!selected && currentUrl === url);
                     return (
                       <button
-                        key={seed}
-                        onClick={() => handlePresetLobbyClick(seed)}
-                        data-testid={`avatar-preset-${seed}`}
+                        key={url}
+                        onClick={() => handlePresetLobbyClick(url)}
+                        data-testid={`avatar-preset-league-${i}`}
                         className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-105 ${
                           isActive ? "border-primary shadow-lg shadow-primary/30" : "border-white/10 hover:border-white/30"
                         }`}
                       >
                         <img
                           src={url}
-                          alt={seed}
+                          alt={`League crest ${i + 1}`}
                           className="w-full h-full object-cover bg-zinc-800"
                           loading="lazy"
                         />
