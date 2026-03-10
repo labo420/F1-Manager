@@ -21,22 +21,43 @@ const USER_PRESET_AVATARS = [
 ];
 
 const LOBBY_PRESET_AVATARS = [
-  "/avatars/league_1.png",
-  "/avatars/league_2.png",
-  "/avatars/league_3.png",
-  "/avatars/league_4.png",
-  "/avatars/league_5.png",
-  "/avatars/league_6.png",
-  "/avatars/league_7.png",
-  "/avatars/league_8.png",
-  "/avatars/league_9.png",
-  "/avatars/league_10.png",
-  "/avatars/league_11.png",
-  "/avatars/league_12.png",
-  "/avatars/league_13.png",
-  "/avatars/league_14.png",
-  "/avatars/league_15.png",
+  "/avatars/league_1.png",   // Ferrari
+  "/avatars/league_2.png",   // Mercedes
+  "/avatars/league_3.png",   // Red Bull
+  "/avatars/league_4.png",   // McLaren
+  "/avatars/league_5.png",   // Alpine
+  "/avatars/league_6.png",   // Aston Martin
+  "/avatars/league_7.png",   // Williams
+  "/avatars/league_8.png",   // Haas
+  "/avatars/league_9.png",   // AlphaTauri
+  "/avatars/league_10.png",  // Sauber
+  "/avatars/league_11.png",  // Cadillac
+  "/avatars/league_12.png",  // Paddock
+  "/avatars/league_13.png",  // GrandPrix
+  "/avatars/league_14.png",  // Championship
+  "/avatars/league_15.png",  // Fantasy
 ];
+
+// Map F1 real teams to disabled league avatar indices
+const F1_TEAMS_MAPPING: Record<string, number> = {
+  "ferrari": 0,
+  "mercedes": 1,
+  "red bull": 2,
+  "redbull": 2,
+  "redBull": 2,
+  "mclaren": 3,
+  "alpine": 4,
+  "aston martin": 5,
+  "astonmartin": 5,
+  "williams": 6,
+  "haas": 7,
+  "alphatauri": 8,
+  "alpha tauri": 8,
+  "sauber": 9,
+  "audi": 9,
+  "cadillac": 10,
+  "rb": 2,
+};
 
 async function compressImage(file: File, maxPx = 200, quality = 0.8): Promise<File> {
   return new Promise((resolve) => {
@@ -68,9 +89,17 @@ interface AvatarPickerProps {
   onUploadFile: (file: File) => void;
   isLoading?: boolean;
   onClose: () => void;
+  excludedTeamName?: string;
 }
 
-export function AvatarPicker({ type, currentUrl, onSelectPreset, onUploadFile, isLoading, onClose }: AvatarPickerProps) {
+export function AvatarPicker({ type, currentUrl, onSelectPreset, onUploadFile, isLoading, onClose, excludedTeamName }: AvatarPickerProps) {
+  const getDisabledAvatarIndex = (): number | null => {
+    if (!excludedTeamName || type !== "lobby") return null;
+    const normalizedName = excludedTeamName.toLowerCase().trim();
+    return F1_TEAMS_MAPPING[normalizedName] ?? null;
+  };
+  
+  const disabledIndex = getDisabledAvatarIndex();
   const [tab, setTab] = useState<"preset" | "upload">("preset");
   const [selected, setSelected] = useState<string | null>(null);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
@@ -167,14 +196,21 @@ export function AvatarPicker({ type, currentUrl, onSelectPreset, onUploadFile, i
                 ) : (
                   LOBBY_PRESET_AVATARS.map((url, i) => {
                     const isActive = selected === url || (!selected && currentUrl === url);
+                    const isDisabled = disabledIndex === i;
                     return (
                       <button
                         key={url}
-                        onClick={() => handlePresetLobbyClick(url)}
+                        onClick={() => !isDisabled && handlePresetLobbyClick(url)}
+                        disabled={isDisabled}
                         data-testid={`avatar-preset-league-${i}`}
-                        className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-105 ${
-                          isActive ? "border-primary shadow-lg shadow-primary/30" : "border-white/10 hover:border-white/30"
+                        className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${
+                          isDisabled
+                            ? "border-white/5 opacity-40 cursor-not-allowed"
+                            : isActive
+                            ? "border-primary shadow-lg shadow-primary/30 hover:scale-105"
+                            : "border-white/10 hover:border-white/30 hover:scale-105"
                         }`}
+                        title={isDisabled ? "This crest is reserved for the team name you chose" : undefined}
                       >
                         <img
                           src={url}
@@ -185,6 +221,11 @@ export function AvatarPicker({ type, currentUrl, onSelectPreset, onUploadFile, i
                         {isActive && (
                           <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                             <Check className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                        {isDisabled && (
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                            <span className="text-[10px] font-bold text-white text-center px-2">Reserved</span>
                           </div>
                         )}
                       </button>
