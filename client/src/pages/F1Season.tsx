@@ -1054,38 +1054,34 @@ export default function F1Season() {
                     >
                       <button
                         onClick={() => setExpandedUpcoming(expandedUpcoming === race.id ? null : race.id)}
-                        className={`w-full glass-panel rounded-[2rem] p-6 flex items-center justify-between transition-all duration-300 group border-2 ${
+                        className={`w-full glass-panel rounded-xl p-3 flex items-center justify-between transition-all duration-300 group border ${
                           expandedUpcoming === race.id ? "bg-white/10 border-white/20" : "hover:bg-white/5 border-white/5"
                         }`}
                         data-testid={`button-expand-upcoming-${race.id}`}
                       >
-                        <div className="flex items-center gap-6">
-                          <div className="w-14 h-14 bg-white/5 rounded-2xl flex flex-col items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors">
-                            <span className="text-[10px] font-black text-muted-foreground uppercase leading-none mb-1">RND</span>
-                            <span className="text-xl font-display font-black text-white leading-none">{race.round}</span>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-white/5 rounded-lg flex flex-col items-center justify-center border border-white/10 group-hover:bg-white/10 transition-colors shrink-0">
+                            <span className="text-[7px] font-black text-muted-foreground uppercase leading-none">RND</span>
+                            <span className="text-xs font-display font-black text-white leading-none">{race.round}</span>
                           </div>
-                          <div className="text-left">
-                            <div className="font-display font-black text-2xl text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none mb-1">
+                          <div className="text-left min-w-0">
+                            <div className="font-display font-black text-sm text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none">
                               {race.name}
                             </div>
-                            <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-muted-foreground opacity-60">
-                              <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                              <div className="flex items-center gap-0.5">
                                 {getCircuitFlag(race.name)}
                                 <span>{race.country}</span>
                               </div>
-                              <span className="w-1 h-1 rounded-full bg-white/20" />
-                              <span>{format(new Date(race.date), "MMM do, yyyy")}</span>
+                              <span className="w-px h-px rounded-full bg-white/20" />
+                              <span>{format(new Date(race.date), "MMM do")}</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-6">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                              expandedUpcoming === race.id ? "bg-white/20 text-white rotate-180" : "bg-white/5 text-muted-foreground group-hover:text-white"
-                            }`}>
-                              <ChevronDown className="w-6 h-6" />
-                            </div>
-                          </div>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-all shrink-0 ${
+                          expandedUpcoming === race.id ? "bg-white/20 text-white rotate-180" : "bg-white/5 text-muted-foreground group-hover:text-white"
+                        }`}>
+                          <ChevronDown className="w-4 h-4" />
                         </div>
                       </button>
 
