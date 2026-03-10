@@ -521,7 +521,7 @@ export default function F1Season() {
         </div>
       </motion.div>
 
-      <div className="flex justify-center mb-12">
+      <div className="flex justify-center mb-8">
         <div className="glass-panel rounded-2xl p-1.5 inline-flex gap-1 border-2 border-white/5 shadow-2xl" data-testid="toggle-f1-tabs">
           {[
             { key: "drivers" as const, label: "Drivers", icon: Trophy },
@@ -532,13 +532,13 @@ export default function F1Season() {
               key={t.key}
               onClick={() => setTab(t.key)}
               data-testid={`tab-${t.key}`}
-              className={`flex items-center gap-3 px-8 py-4 text-[11px] font-black uppercase tracking-[0.15em] rounded-xl transition-all duration-300 ${
+              className={`flex items-center gap-2 px-5 py-2 text-[9px] font-black uppercase tracking-[0.15em] rounded-xl transition-all duration-300 ${
                 tab === t.key 
                   ? "bg-primary text-white shadow-xl shadow-primary/20 scale-105 z-10" 
                   : "text-muted-foreground hover:text-white hover:bg-white/5"
               }`}
             >
-              <t.icon className={`w-4 h-4 transition-transform ${tab === t.key ? "scale-110" : ""}`} />
+              <t.icon className={`w-3.5 h-3.5 transition-transform ${tab === t.key ? "scale-110" : ""}`} />
               <span>{t.label}</span>
             </button>
           ))}
