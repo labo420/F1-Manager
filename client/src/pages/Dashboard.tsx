@@ -402,9 +402,6 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
               </button>
             )}
           </div>
-          <p className="text-muted-foreground mt-1">
-            Telemetry: <span className="text-primary font-bold">{membership.teamName}</span>
-          </p>
         </div>
       </div>
 
