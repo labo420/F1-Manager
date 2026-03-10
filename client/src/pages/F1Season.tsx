@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Flag, Calendar, ChevronDown, Zap, Timer, Award, Users, MapPin, Ruler, RotateCcw, Activity, Gauge, Clock } from "lucide-react";
+import { TelemetryPanel } from "@/components/TelemetryPanel";
 import { format, subDays } from "date-fns";
 import { DriverAvatar } from "@/components/DriverAvatar";
 import { TeamAvatar } from "@/components/TeamAvatar";
@@ -357,7 +358,7 @@ function CircuitInfo({ race }: { race: RaceEntry }) {
 }
 
 export default function F1Season() {
-  const [tab, setTab] = useState<"drivers" | "constructors" | "archive">("drivers");
+  const [tab, setTab] = useState<"drivers" | "constructors" | "archive" | "telemetry">("drivers");
   const [expandedRace, setExpandedRace] = useState<number | null>(null);
   const [expandedUpcoming, setExpandedUpcoming] = useState<number | null>(null);
   const [raceSessionTab, setRaceSessionTab] = useState<"race" | "qualifying" | "sprint">("race");
@@ -509,6 +510,7 @@ export default function F1Season() {
             { key: "drivers" as const, label: "Drivers", icon: Trophy },
             { key: "constructors" as const, label: "Teams", icon: Users },
             { key: "archive" as const, label: "Races", icon: Calendar },
+            { key: "telemetry" as const, label: "Telemetria", icon: Activity },
           ].map(t => (
             <button
               key={t.key}
@@ -1340,6 +1342,12 @@ export default function F1Season() {
                 <p className="text-muted-foreground">Official race results will appear here once the Admin enters them.</p>
               </div>
             )}
+          </motion.div>
+        )}
+
+        {tab === "telemetry" && (
+          <motion.div key="telemetry" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <TelemetryPanel />
           </motion.div>
         )}
       </AnimatePresence>
