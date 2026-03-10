@@ -297,7 +297,7 @@ function SessionTimes({ race }: { race: RaceEntry }) {
                 <Clock className="w-4 h-4 text-muted-foreground" />
                 <span className="text-[10px] font-black uppercase tracking-widest text-white">{session.label}</span>
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-1 rounded-md">{dateStr}</span>
+              <span className="text-[13px] font-black uppercase tracking-widest text-primary bg-primary/10 px-3 py-1.5 rounded-md">{dateStr}</span>
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
