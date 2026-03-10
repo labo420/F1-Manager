@@ -289,7 +289,7 @@ export default function AdminPanel() {
             <h1 className="md:text-5xl font-display font-black text-white italic uppercase tracking-tighter text-[25px]" data-testid="text-admin-title">
               Race <span className="text-primary">Control</span>
             </h1>
-            <p className="font-sans font-semibold tracking-[0.05em] mt-2 text-[26px] text-left text-white/90">{lobby?.name}</p>
+            <p className="font-sans font-medium text-sm uppercase tracking-[0.25em] text-white/45 mt-2">{lobby?.name}</p>
           </div>
         </div>
 
