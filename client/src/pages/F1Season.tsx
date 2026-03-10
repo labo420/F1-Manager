@@ -767,7 +767,7 @@ export default function F1Season() {
                                         </div>
                                       ) : externalRaceResults && externalRaceResults.length > 0 ? (
                                         <>
-                                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8 max-w-2xl mx-auto">
                                             <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
                                               <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                                                 <Timer className="w-6 h-6 text-purple-400" />
@@ -822,7 +822,7 @@ export default function F1Season() {
                                         </>
                                       ) : raceDetail ? (
                                         <>
-                                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8 max-w-2xl mx-auto">
                                             <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
                                               <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                                                 <Timer className="w-6 h-6 text-purple-400" />
@@ -1124,7 +1124,7 @@ export default function F1Season() {
                                         </div>
                                       ) : upcomingRaceResults && upcomingRaceResults.length > 0 ? (
                                         <>
-                                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8 max-w-2xl mx-auto">
                                             <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
                                               <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                                                 <Timer className="w-6 h-6 text-purple-400" />
