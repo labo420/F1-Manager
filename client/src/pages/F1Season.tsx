@@ -1102,7 +1102,7 @@ export default function F1Season() {
                                 <CircuitInfo race={race} />
                                 <SessionTimes race={race} />
 
-                                <div className="flex items-center gap-0.5 -mx-2 -ms-3 px-2 sm:px-3 py-1.5 mb-2 border-b border-white/5">
+                                <div className="flex items-center justify-center gap-0.5 -mx-2 -ms-3 px-2 sm:px-3 py-1.5 mb-2 border-b border-white/5">
                                   {[
                                     { key: "race" as const, label: "Race", icon: Trophy },
                                     { key: "qualifying" as const, label: "Qualifying", icon: Gauge },
