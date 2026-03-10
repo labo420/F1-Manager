@@ -465,17 +465,17 @@ export default function F1Season() {
   const displayDriverStandings = driverStandings ?? [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 pb-24">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-16"
+        className="mb-8 sm:mb-16"
       >
         <div className="relative rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
           <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-primary/5 rounded-full -mr-64 -mt-32 blur-[100px] pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 p-8 md:p-12">
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 p-5 sm:p-8 md:p-12">
             <div className="flex flex-col items-center md:items-start gap-6 text-center md:text-left">
               <div className="flex items-center gap-4">
                 <div className="h-8 w-px bg-white/10 hidden md:block" />
@@ -487,7 +487,7 @@ export default function F1Season() {
                 />
               </div>
               <div>
-                <h1 className="text-4xl md:text-6xl font-display font-black text-white uppercase tracking-tighter leading-none mb-2" data-testid="text-f1-title">
+                <h1 className="text-2xl sm:text-4xl md:text-6xl font-display font-black text-white uppercase tracking-tighter leading-none mb-2" data-testid="text-f1-title">
                   World Championship
                 </h1>
                 <p className="text-primary font-black uppercase tracking-[0.3em] text-sm">
@@ -502,7 +502,7 @@ export default function F1Season() {
             </div>
           </div>
 
-          <div className="border-t border-white/5 px-8 md:px-12 py-4 flex items-center gap-6 bg-white/[0.02] overflow-x-auto">
+          <div className="border-t border-white/5 px-4 sm:px-8 md:px-12 py-4 flex items-center gap-6 bg-white/[0.02] overflow-x-auto">
             {[
               { label: "Season", value: "2026" },
               { label: "Status", value: "Active" },

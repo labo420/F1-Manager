@@ -250,16 +250,16 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
   const playerLobbies = user.memberships?.filter((m: any) => m.role === "player") || [];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-16 pb-24">
+    <div className="max-w-4xl mx-auto px-4 py-8 sm:py-16 pb-24">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-16"
+        className="text-center mb-8 sm:mb-16"
       >
         <div className="mb-8">
           <div className="inline-flex items-center justify-center relative">
             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" style={{ opacity: 0.5 }} />
-            <h1 className="text-5xl md:text-6xl font-display font-black text-white uppercase tracking-tighter italic relative z-10">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-display font-black text-white uppercase tracking-tighter italic relative z-10">
               @{user.username}
             </h1>
           </div>
@@ -277,9 +277,9 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-12"
+              className="mb-6 sm:mb-12"
             >
-              <h2 className="text-xs font-black uppercase tracking-[0.15em] text-primary mb-6 flex items-center gap-3">
+              <h2 className="text-xs font-black uppercase tracking-[0.15em] text-primary mb-3 sm:mb-6 flex items-center gap-3">
                 <Crown className="w-5 h-5" /> Leagues I Manage
               </h2>
               <div className="space-y-3">
@@ -309,9 +309,9 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="mb-12"
+              className="mb-6 sm:mb-12"
             >
-              <h2 className="text-xs font-black uppercase tracking-[0.15em] text-muted-foreground mb-6 flex items-center gap-3">
+              <h2 className="text-xs font-black uppercase tracking-[0.15em] text-muted-foreground mb-3 sm:mb-6 flex items-center gap-3">
                 <Users className="w-5 h-5" /> Leagues I Joined
               </h2>
               <div className="space-y-3">

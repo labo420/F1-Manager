@@ -40,10 +40,10 @@ export default function Paddock() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 pb-24">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-16">
+    <div className="max-w-7xl mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8 pb-24">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-8 mb-8 sm:mb-16">
         <div>
-          <h1 className="text-6xl md:text-8xl font-display font-black text-white uppercase tracking-tighter italic leading-none mb-2">
+          <h1 className="text-4xl sm:text-6xl md:text-8xl font-display font-black text-white uppercase tracking-tighter italic leading-none mb-2">
             Paddock
           </h1>
           <div className="h-1.5 w-24 bg-primary rounded-full ml-1" />
@@ -53,14 +53,14 @@ export default function Paddock() {
           <button
             onClick={() => setMode("create")}
             data-testid="button-create-league"
-            className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-white px-10 py-5 rounded-2xl font-display font-black uppercase tracking-tight flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] red-glow shadow-2xl shadow-primary/40"
+            className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-white px-5 sm:px-10 py-4 sm:py-5 rounded-2xl font-display font-black uppercase tracking-tight flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] red-glow shadow-2xl shadow-primary/40"
           >
             <PlusCircle className="w-6 h-6" /> Create League
           </button>
           <button
             onClick={() => setMode("join")}
             data-testid="button-join-league"
-            className="flex-1 md:flex-none glass-panel hover:bg-white/10 text-white px-10 py-5 rounded-2xl font-display font-black uppercase tracking-tight flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] border-2 border-white/10"
+            className="flex-1 md:flex-none glass-panel hover:bg-white/10 text-white px-5 sm:px-10 py-4 sm:py-5 rounded-2xl font-display font-black uppercase tracking-tight flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] border-2 border-white/10"
           >
             <LogIn className="w-6 h-6 text-primary" /> Join League
           </button>
