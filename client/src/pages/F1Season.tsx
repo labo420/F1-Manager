@@ -757,6 +757,7 @@ export default function F1Season() {
 
                               <div className="p-8">
                                 <CircuitInfo race={race} />
+                                <SessionTimes race={race} />
 
                                 <AnimatePresence mode="wait">
                                   {raceSessionTab === "race" && (
