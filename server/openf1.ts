@@ -1,5 +1,7 @@
 const OPENF1_BASE = "https://api.openf1.org/v1";
-const FETCH_TIMEOUT_MS = 10000;
+const FETCH_TIMEOUT_MS = 15000;
+const PIT_BUFFER_MS = 30_000;
+const SKIP_LAPS = 3;
 
 interface OpenF1Session {
   session_key: number;
@@ -25,6 +27,20 @@ interface OpenF1Lap {
   lap_number: number;
   date_start: string;
   lap_duration: number | null;
+}
+
+interface OpenF1Pit {
+  session_key: number;
+  driver_number: number;
+  date: string;
+  lap_number: number;
+  pit_duration: number;
+}
+
+interface PitWindow {
+  driverNumber: number;
+  start: number;
+  end: number;
 }
 
 export interface OvertakeData {
@@ -56,7 +72,6 @@ export async function findOpenF1Session(
   );
 
   const wantedName = isSprint ? "Sprint" : "Race";
-
   const raceDay = targetDate.toISOString().slice(0, 10);
 
   const match = sessions.find((s) => {
@@ -71,105 +86,109 @@ export async function findOpenF1Session(
   return match ?? null;
 }
 
+function isInPit(
+  driverNumber: number,
+  timestampMs: number,
+  pitWindows: PitWindow[]
+): boolean {
+  for (const w of pitWindows) {
+    if (w.driverNumber === driverNumber && timestampMs >= w.start && timestampMs <= w.end) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function getLapAtTime(
+  driverNumber: number,
+  timestampMs: number,
+  lapStartMap: Record<string, number>
+): number {
+  let lap = 0;
+  for (const key of Object.keys(lapStartMap)) {
+    const [dn, ln] = key.split("_").map(Number);
+    if (dn !== driverNumber) continue;
+    if (lapStartMap[key] <= timestampMs) {
+      lap = Math.max(lap, ln);
+    }
+  }
+  return lap;
+}
+
 export async function calculateOvertakesFromSession(
   sessionKey: number
 ): Promise<Record<number, OvertakeData>> {
-  const laps: OpenF1Lap[] = await fetchWithTimeout(
-    `${OPENF1_BASE}/laps?session_key=${sessionKey}`
-  );
+  const [laps, allPositions, allPits] = await Promise.all([
+    fetchWithTimeout(`${OPENF1_BASE}/laps?session_key=${sessionKey}`),
+    fetchWithTimeout(`${OPENF1_BASE}/position?session_key=${sessionKey}`),
+    fetchWithTimeout(`${OPENF1_BASE}/pit?session_key=${sessionKey}`),
+  ]) as [OpenF1Lap[], OpenF1PositionEntry[], OpenF1Pit[]];
 
   if (!laps || laps.length === 0) return {};
-
-  const driverNumbers = [...new Set(laps.map((l) => l.driver_number))];
-  const maxLap = Math.max(...laps.map((l) => l.lap_number));
-
-  const lapStartTimes: Record<string, Date> = {};
-  for (const lap of laps) {
-    if (lap.date_start) {
-      lapStartTimes[`${lap.driver_number}_${lap.lap_number}`] = new Date(
-        lap.date_start
-      );
-    }
-  }
-
-  const positionByDriverByLap: Record<number, Record<number, number>> = {};
-  for (const dn of driverNumbers) {
-    positionByDriverByLap[dn] = {};
-  }
-
-  const allPositions: OpenF1PositionEntry[] = await fetchWithTimeout(
-    `${OPENF1_BASE}/position?session_key=${sessionKey}`
-  );
-
   if (!allPositions || allPositions.length === 0) return {};
 
-  const positionByDriver: Record<number, OpenF1PositionEntry[]> = {};
-  for (const entry of allPositions) {
-    if (!positionByDriver[entry.driver_number]) {
-      positionByDriver[entry.driver_number] = [];
-    }
-    positionByDriver[entry.driver_number].push(entry);
-  }
+  const driverNumbers = [...new Set(laps.map((l) => l.driver_number))];
 
-  for (const dn of driverNumbers) {
-    const entries = positionByDriver[dn] ?? [];
-    entries.sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-
-    for (let lapNum = 1; lapNum <= maxLap; lapNum++) {
-      const lapStartKey = `${dn}_${lapNum}`;
-      const nextLapStartKey = `${dn}_${lapNum + 1}`;
-
-      const lapStart = lapStartTimes[lapStartKey];
-      const lapEnd = lapStartTimes[nextLapStartKey];
-
-      if (!lapStart) continue;
-
-      let lastPositionInLap: number | null = null;
-
-      for (const entry of entries) {
-        const entryDate = new Date(entry.date);
-        if (entryDate < lapStart) continue;
-        if (lapEnd && entryDate >= lapEnd) break;
-        lastPositionInLap = entry.position;
-      }
-
-      if (lastPositionInLap !== null) {
-        positionByDriverByLap[dn][lapNum] = lastPositionInLap;
-      }
+  const lapStartMap: Record<string, number> = {};
+  for (const lap of laps) {
+    if (lap.date_start) {
+      lapStartMap[`${lap.driver_number}_${lap.lap_number}`] = new Date(lap.date_start).getTime();
     }
   }
+
+  const pitWindows: PitWindow[] = [];
+  for (const pit of (allPits || [])) {
+    if (!pit.date || !pit.pit_duration) continue;
+    const start = new Date(pit.date).getTime() - PIT_BUFFER_MS;
+    const end = new Date(pit.date).getTime() + (pit.pit_duration * 1000) + PIT_BUFFER_MS;
+    pitWindows.push({ driverNumber: pit.driver_number, start, end });
+  }
+
+  allPositions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const result: Record<number, OvertakeData> = {};
   for (const dn of driverNumbers) {
     result[dn] = { overtakes: 0, overtakesConceded: 0 };
   }
 
-  for (const dn of driverNumbers) {
-    const lapPositions = positionByDriverByLap[dn];
-    const lapNums = Object.keys(lapPositions)
-      .map(Number)
-      .sort((a, b) => a - b);
+  const currentPos: Record<number, number> = {};
+  const posToDriver: Record<number, number> = {};
 
-    for (let i = 1; i < lapNums.length; i++) {
-      const prevLap = lapNums[i - 1];
-      const currLap = lapNums[i];
+  for (const entry of allPositions) {
+    const { driver_number: dn, position: newPos } = entry;
+    const entryMs = new Date(entry.date).getTime();
 
-      if (currLap - prevLap > 2) continue;
+    if (!(dn in currentPos)) {
+      currentPos[dn] = newPos;
+      posToDriver[newPos] = dn;
+      if (!result[dn]) result[dn] = { overtakes: 0, overtakesConceded: 0 };
+      continue;
+    }
 
-      const prevPos = lapPositions[prevLap];
-      const currPos = lapPositions[currLap];
-      const delta = prevPos - currPos;
+    const oldPos = currentPos[dn];
+    if (oldPos === newPos) continue;
 
-      if (Math.abs(delta) > 5) continue;
+    const delta = oldPos - newPos;
 
-      if (delta > 0) {
-        result[dn].overtakes += delta;
-      } else if (delta < 0) {
-        result[dn].overtakesConceded += Math.abs(delta);
+    if (delta === 1) {
+      const lap = getLapAtTime(dn, entryMs, lapStartMap);
+      if (lap > SKIP_LAPS) {
+        if (!isInPit(dn, entryMs, pitWindows)) {
+          const loser = posToDriver[newPos];
+          if (loser !== undefined && loser !== dn && !isInPit(loser, entryMs, pitWindows)) {
+            result[dn].overtakes += 1;
+            if (!result[loser]) result[loser] = { overtakes: 0, overtakesConceded: 0 };
+            result[loser].overtakesConceded += 1;
+          }
+        }
       }
     }
+
+    posToDriver[newPos] = dn;
+    if (posToDriver[oldPos] === dn) {
+      delete posToDriver[oldPos];
+    }
+    currentPos[dn] = newPos;
   }
 
   return result;
