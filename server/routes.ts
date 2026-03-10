@@ -8,6 +8,7 @@ import { eq, sql } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
 import multer from "multer";
+import { findOpenF1Session, calculateOvertakesFromSession } from "./openf1";
 
 declare module "express-session" {
   interface SessionData {
@@ -423,6 +424,46 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });
       console.error("Bulk results error:", err);
       res.status(500).json({ message: "Failed to save results" });
+    }
+  });
+
+  app.get("/api/admin/race/:id/openf1-overtakes", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const memberships = await storage.getUserMemberships(req.session.userId);
+      const isAnyAdmin = memberships.some(m => m.role === "admin");
+      if (!isAnyAdmin) return res.status(403).json({ message: "Admin access required" });
+
+      const raceId = Number(req.params.id);
+      const race = await storage.getRace(raceId);
+      if (!race) return res.status(404).json({ message: "Race not found" });
+
+      const session = await findOpenF1Session(race.date, race.hasSprint && !!req.query.sprint);
+      if (!session) {
+        return res.status(404).json({ message: "Sessione OpenF1 non trovata. La gara potrebbe non essere ancora disponibile." });
+      }
+
+      const overtakesData = await calculateOvertakesFromSession(session.session_key);
+
+      const allDrivers = await storage.getDrivers();
+
+      const result = allDrivers
+        .filter(d => d.number !== null && d.number !== undefined)
+        .map(d => {
+          const data = overtakesData[d.number!] ?? { overtakes: 0, overtakesConceded: 0 };
+          return {
+            driverId: d.id,
+            driverName: d.name,
+            driverNumber: d.number,
+            overtakes: data.overtakes,
+            overtakesConceded: data.overtakesConceded,
+          };
+        });
+
+      res.json({ sessionKey: session.session_key, sessionName: session.session_name, circuit: session.circuit_short_name, results: result });
+    } catch (err: any) {
+      console.error("OpenF1 overtakes error:", err);
+      res.status(500).json({ message: err?.message || "Errore nel recupero dati OpenF1" });
     }
   });
 

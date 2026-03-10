@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useActiveLobby, useLobbyInfo, useLobbyMembers } from "@/hooks/use-lobby";
 import { useRaces, useUpdateRaceStatus } from "@/hooks/use-races";
 import { useDrivers, useConstructors } from "@/hooks/use-competitors";
-import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock, Trash2, Shield } from "lucide-react";
+import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock, Trash2, Shield, Download, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -548,6 +548,133 @@ export default function AdminPanel() {
             </motion.div>
           )}
         </div>
+
+        {selectedRace && driverEntries.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
+          >
+            <div className="px-8 py-5 flex items-center justify-between border-b border-white/5">
+              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+                <Flag className="w-4 h-4 text-primary" /> Race Results
+              </h2>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`/api/admin/race/${selectedRaceId}/openf1-overtakes`, { credentials: "include" });
+                    if (!res.ok) {
+                      const err = await res.json();
+                      toast({ title: "OpenF1 Import Failed", description: err.message, variant: "destructive" });
+                      return;
+                    }
+                    const data = await res.json();
+                    let updated = 0;
+                    setDriverEntries(prev => prev.map(entry => {
+                      const match = data.results.find((r: any) => r.driverId === entry.driverId);
+                      if (match) { updated++; return { ...entry, overtakes: match.overtakes }; }
+                      return entry;
+                    }));
+                    toast({ title: "OpenF1 Import OK", description: `Aggiornati ${updated} piloti · ${data.sessionName} @ ${data.circuit}` });
+                  } catch {
+                    toast({ title: "Errore di rete", description: "Impossibile contattare OpenF1.", variant: "destructive" });
+                  }
+                }}
+                disabled={!selectedRaceId}
+                data-testid="button-import-openf1"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500/10 border-2 border-sky-500/20 text-sky-400 text-[10px] font-black uppercase tracking-widest hover:bg-sky-500/20 hover:border-sky-500/40 transition-all disabled:opacity-40"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Importa da OpenF1
+              </button>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/5">
+                    <th className="text-left px-6 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pilota</th>
+                    <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pos</th>
+                    <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pt FIA</th>
+                    <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Sorpassi</th>
+                    <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">FL</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {driverEntries.map((entry, idx) => {
+                    const driver = drivers?.find(d => d.id === entry.driverId);
+                    const teamColor = driver ? TEAM_COLORS[driver.team] : undefined;
+                    return (
+                      <tr key={entry.driverId} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                        <td className="px-6 py-3">
+                          <div className="flex items-center gap-3">
+                            {teamColor && <div className="w-1 h-8 rounded-full shrink-0" style={{ background: teamColor }} />}
+                            <div>
+                              <div className="font-bold text-white text-xs">{driver?.name ?? `Driver #${entry.driverId}`}</div>
+                              <div className="text-[9px] text-muted-foreground font-medium">{driver?.team}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-3 py-3">
+                          <input
+                            type="number"
+                            min={1}
+                            max={20}
+                            value={entry.position}
+                            onChange={e => updateEntry(entry.driverId, "position", Number(e.target.value))}
+                            data-testid={`input-position-${entry.driverId}`}
+                            className="w-14 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                          />
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <span className="text-white font-black text-xs">{entry.points}</span>
+                        </td>
+                        <td className="px-3 py-3">
+                          <input
+                            type="number"
+                            min={0}
+                            value={entry.overtakes}
+                            onChange={e => updateEntry(entry.driverId, "overtakes", Number(e.target.value))}
+                            data-testid={`input-overtakes-${entry.driverId}`}
+                            className="w-14 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                          />
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={entry.fastestLap}
+                            onChange={e => updateEntry(entry.driverId, "fastestLap", e.target.checked)}
+                            data-testid={`input-fastestlap-${entry.driverId}`}
+                            className="w-4 h-4 accent-primary cursor-pointer"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="px-8 py-5 border-t border-white/5 flex justify-end">
+              <button
+                onClick={() => {
+                  if (!selectedRaceId || !selectedLobbyId) return;
+                  bulkSaveMutation.mutate({ raceId: Number(selectedRaceId), results: driverEntries, lobbyId: Number(selectedLobbyId) });
+                }}
+                disabled={bulkSaveMutation.isPending || !selectedRaceId}
+                data-testid="button-save-results"
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary border-2 border-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-40 red-glow shadow-xl shadow-primary/20"
+              >
+                {bulkSaveMutation.isPending ? (
+                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Salvataggio...</>
+                ) : (
+                  <><Save className="w-4 h-4" /> Salva Risultati</>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        )}
 
       </div>
 
