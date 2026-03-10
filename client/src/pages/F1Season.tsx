@@ -1082,12 +1082,6 @@ export default function F1Season() {
                         </div>
                         <div className="flex items-center gap-6">
                           <div className="flex items-center gap-3">
-                            {race.isLocked && (
-                              <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-400 px-3 py-1.5 rounded-full border border-amber-500/20">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Locked</span>
-                              </div>
-                            )}
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                               expandedUpcoming === race.id ? "bg-white/20 text-white rotate-180" : "bg-white/5 text-muted-foreground group-hover:text-white"
                             }`}>
