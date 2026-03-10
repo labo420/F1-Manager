@@ -121,8 +121,8 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
   };
 
   return (
-    <div className="container mx-auto py-4 md:py-8 px-4 max-w-6xl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-8 gap-3 md:gap-4">
+    <div className="container mx-auto py-8 px-4 max-w-6xl">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold">Draft Room</h1>
           <p className="text-muted-foreground">Select your Driver and Constructor for this race</p>
@@ -156,9 +156,9 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 md:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Sidebar: Draft Order */}
-        <div className="lg:col-span-1 space-y-2 md:space-y-4">
+        <div className="lg:col-span-1 space-y-4">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
@@ -224,7 +224,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
         </div>
 
         {/* Main Area: Selection */}
-        <div className="lg:col-span-3 space-y-3 md:space-y-6">
+        <div className="lg:col-span-3 space-y-6">
           {!isComplete ? (
             <Card className={cn("border-2", isMyTurn ? "border-primary shadow-lg" : "border-muted opacity-80")}>
               <CardHeader>

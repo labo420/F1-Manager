@@ -64,8 +64,8 @@ export default function LobbyDetail({ id }: { id: number }) {
   if (!lobby) return <div>Lobby not found</div>;
 
   return (
-    <div className="container mx-auto py-4 md:py-8 px-4">
-      <div className="mb-4 md:mb-8 flex items-center gap-3 md:gap-4">
+    <div className="container mx-auto py-8 px-4">
+      <div className="mb-8 flex items-center gap-4">
         <button 
           onClick={() => setLocation("/paddock")}
           className="p-2 hover:bg-white/10 rounded-lg text-muted-foreground hover:text-white transition-colors"
@@ -75,7 +75,7 @@ export default function LobbyDetail({ id }: { id: number }) {
         </button>
       </div>
       
-      <div className="mb-6 md:mb-12 flex items-center gap-3 md:gap-6">
+      <div className="mb-12 flex items-center gap-6">
         {lobby.imageUrl ? (
           <img src={lobby.imageUrl} alt="" className="w-20 h-20 rounded-2xl object-cover border border-white/10 shadow-xl shrink-0" />
         ) : (
