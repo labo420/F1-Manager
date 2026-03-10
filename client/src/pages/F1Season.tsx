@@ -718,14 +718,14 @@ export default function F1Season() {
                         {expandedRace === race.id && (
                           <div className="absolute top-0 left-0 w-1.5 h-full bg-primary" />
                         )}
-                        <div className="flex items-center gap-6">
-                          <div className="w-14 h-14 bg-white/5 rounded-2xl flex flex-col items-center justify-center border border-white/10 group-hover:bg-primary/10 group-hover:border-primary/20 transition-colors">
+                        <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+                          <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/5 rounded-2xl flex flex-col items-center justify-center border border-white/10 group-hover:bg-primary/10 group-hover:border-primary/20 transition-colors shrink-0">
                             <span className="text-[10px] font-black text-muted-foreground uppercase leading-none mb-1">RND</span>
                             <span className="text-xl font-display font-black text-white leading-none">{race.round}</span>
                           </div>
-                          <div className="text-left">
-                            <div className="flex items-center gap-3 mb-1">
-                              <span className="font-display font-black text-2xl text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none">
+                          <div className="text-left min-w-0">
+                            <div className="flex items-center gap-3 mb-1 min-w-0">
+                              <span className="font-display font-black text-base sm:text-2xl text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none truncate">
                                 {race.name}
                               </span>
                             </div>
@@ -782,7 +782,7 @@ export default function F1Season() {
                                 ))}
                               </div>
 
-                              <div className="p-8">
+                              <div className="p-4 sm:p-8">
                                 <CircuitInfo race={race} />
                                 <SessionTimes race={race} />
 
@@ -1054,7 +1054,7 @@ export default function F1Season() {
                 <div className="h-px flex-1 bg-white/5" />
               </h2>
               {upcomingRaces.length === 0 ? (
-                <div className="glass-panel rounded-3xl p-12 text-center text-muted-foreground border-2 border-dashed border-white/10">
+                <div className="glass-panel rounded-3xl p-6 sm:p-12 text-center text-muted-foreground border-2 border-dashed border-white/10">
                   <Flag className="w-12 h-12 text-primary mx-auto mb-4 opacity-20" />
                   <p className="font-display font-bold uppercase tracking-widest text-sm">Season Grid Complete</p>
                 </div>
@@ -1139,7 +1139,7 @@ export default function F1Season() {
                                 ))}
                               </div>
 
-                              <div className="p-8">
+                              <div className="p-4 sm:p-8">
                                 <CircuitInfo race={race} />
                                 <SessionTimes race={race} />
 
@@ -1350,7 +1350,7 @@ export default function F1Season() {
             </div>
 
             {completedRaces.length === 0 && (
-              <div className="glass-panel rounded-2xl p-12 text-center mt-8">
+              <div className="glass-panel rounded-2xl p-6 sm:p-12 text-center mt-8">
                 <Flag className="w-12 h-12 text-primary mx-auto mb-4 opacity-50" />
                 <h3 className="text-xl font-bold text-white mb-2">Season Not Yet Underway</h3>
                 <p className="text-muted-foreground">Official race results will appear here once the Admin enters them.</p>

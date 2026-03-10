@@ -512,7 +512,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
         <div className="flex items-center gap-4 mb-10 text-[20px]">
           <Calendar className="w-5 h-5 text-primary" />
           <div>
-            <h2 className="font-bold uppercase tracking-wide text-white text-[30px]">2026 FIA Formula 1 Race Calendar</h2>
+            <h2 className="font-bold uppercase tracking-wide text-white text-xl sm:text-[30px]">2026 FIA Formula 1 Race Calendar</h2>
             <p className="text-xs text-muted-foreground mt-1 tracking-wide">Session times in Italian (ITA) and Coordinated Universal (UTC)</p>
           </div>
         </div>
@@ -553,7 +553,7 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                   </div>
                 </div>
               </div>
-              <div className={`grid bg-white/[0.02] divide-white/5 ${sessions.length === 4 ? "grid-cols-4 divide-x" : "grid-cols-2 divide-x"}`}>
+              <div className={`grid bg-white/[0.02] divide-white/5 ${sessions.length === 4 ? "grid-cols-2 sm:grid-cols-4 divide-x" : "grid-cols-2 divide-x"}`}>
                 {sessions.map((session, sessionIdx) => {
                   const isRace = session.type === "race";
                   const isSprint = session.type === "sprint";

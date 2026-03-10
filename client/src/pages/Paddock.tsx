@@ -71,7 +71,7 @@ export default function Paddock() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-xl mx-auto mb-16 glass-panel rounded-3xl p-10 border-2 border-primary/30 shadow-2xl relative overflow-hidden"
+          className="max-w-xl mx-auto mb-16 glass-panel rounded-3xl p-6 sm:p-10 border-2 border-primary/30 shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl" />
           <h2 className="text-3xl font-display font-black text-white uppercase tracking-tight mb-8 flex items-center gap-3">
@@ -116,7 +116,7 @@ export default function Paddock() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-xl mx-auto mb-16 glass-panel rounded-3xl p-10 border-2 border-primary/30 shadow-2xl relative overflow-hidden"
+          className="max-w-xl mx-auto mb-16 glass-panel rounded-3xl p-6 sm:p-10 border-2 border-primary/30 shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl" />
           <h2 className="text-3xl font-display font-black text-white uppercase tracking-tight mb-8 flex items-center gap-3">
