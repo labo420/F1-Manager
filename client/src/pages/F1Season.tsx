@@ -195,6 +195,11 @@ function getITAFromUTCTime(utcTimeString: string): { ita: string; utc: string } 
   if (!utcTimeString) return { ita: "TBD", utc: "TBD" };
   const d = new Date(utcTimeString);
   
+  // Get UTC time
+  const utcHours = d.getUTCHours();
+  const utcMins = d.getUTCMinutes();
+  const utcTime = `${String(utcHours).padStart(2, "0")}:${String(utcMins).padStart(2, "0")}`;
+  
   // Determine CET/CEST offset
   const year = d.getFullYear();
   const lastSundayMarch = new Date(year, 2, 31);
@@ -205,10 +210,9 @@ function getITAFromUTCTime(utcTimeString: string): { ita: string; utc: string } 
   const isCEST = d >= lastSundayMarch && d < lastSundayOct;
   const offset = isCEST ? 2 : 1;
   
-  const itaHours = (d.getUTCHours() + offset) % 24;
-  const itaMins = d.getUTCMinutes();
+  const itaHours = (utcHours + offset) % 24;
+  const itaMins = utcMins;
   const itaTime = `${String(itaHours).padStart(2, "0")}:${String(itaMins).padStart(2, "0")}`;
-  const utcTime = format(d, "HH:mm");
   
   return { ita: itaTime, utc: utcTime };
 }
