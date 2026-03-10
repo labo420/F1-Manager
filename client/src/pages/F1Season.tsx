@@ -1112,7 +1112,11 @@ export default function F1Season() {
                                       key={st.key}
                                       onClick={() => setUpcomingSessionTab(st.key)}
                                       data-testid={`tab-session-upcoming-${st.key}-${race.id}`}
-                                      className="flex items-center gap-1 px-2.5 py-1.5 font-black uppercase tracking-[0.1em] rounded transition-all border-b -mb-px text-muted-foreground border-transparent hover:text-white hover:bg-white/5 text-[13px]"
+                                      className={`flex items-center gap-2 px-3 py-2 font-black uppercase tracking-[0.15em] rounded-lg transition-all border-b-2 -mb-px text-xs ${
+                                        upcomingSessionTab === st.key
+                                          ? "text-white bg-primary/20 border-primary text-primary"
+                                          : "text-muted-foreground border-transparent hover:text-white hover:bg-white/10"
+                                      }`}
                                     >
                                       <st.icon className="w-2.5 h-2.5" />
                                       <span>{st.label}</span>
