@@ -202,7 +202,7 @@ export default function AdminPanel() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {adminLobbies.map((m, idx) => (
             <motion.button
               key={m.lobbyId}
@@ -210,48 +210,44 @@ export default function AdminPanel() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.1 }}
               onClick={() => setSelectedLobbyId(m.lobbyId)}
-              className="glass-panel p-5 rounded-2xl text-left border-2 border-white/5 hover:border-primary/50 transition-all group relative overflow-hidden"
+              className="glass-panel p-3 rounded-xl text-left border border-white/5 hover:border-primary/50 transition-all group relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 blur-3xl group-hover:bg-primary/10 transition-colors" />
+              <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-full -mr-8 -mt-8 blur-2xl group-hover:bg-primary/10 transition-colors" />
               
-              <div className="flex justify-between items-start mb-4 relative z-10">
+              <div className="flex justify-between items-start mb-2 relative z-10">
                 {m.lobbyImageUrl ? (
-                  <img src={m.lobbyImageUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-white/10 group-hover:scale-110 transition-transform" />
+                  <img src={m.lobbyImageUrl} alt="" className="w-8 h-8 rounded object-cover border border-white/10 group-hover:scale-110 transition-transform" />
                 ) : (
-                  <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-                    <span className="text-[9px] font-black text-primary">{getInitials(m.lobbyName)}</span>
+                  <div className="w-8 h-8 bg-white/5 rounded flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
+                    <span className="text-[8px] font-black text-primary">{getInitials(m.lobbyName)}</span>
                   </div>
                 )}
                 <div className="flex flex-col items-end">
-                  <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Status</span>
-                  <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[9px] font-black uppercase border border-primary/20">
-                    Active Admin
+                  <span className="text-[8px] font-black text-muted-foreground uppercase tracking-wider mb-0 leading-none">Status</span>
+                  <span className="px-1.5 py-0 rounded-full bg-primary/10 text-primary text-[7px] font-black uppercase border border-primary/20 mt-0.5">
+                    Admin
                   </span>
                 </div>
               </div>
 
               <div className="relative z-10">
-                <h2 className="text-lg font-display font-black text-white group-hover:text-primary transition-colors uppercase tracking-tight mb-3">
+                <h2 className="text-xs font-display font-black text-white group-hover:text-primary transition-colors uppercase tracking-tight mb-2">
                   {m.lobbyName}
                 </h2>
                 
-                <div className="space-y-2 pt-3 border-t border-white/5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">Access Key</span>
-                    <code className="text-red-500 font-mono font-black tracking-widest bg-zinc-900/50 px-2 py-0.5 rounded text-[9px] border border-white/5">
+                <div className="space-y-1 pt-2 border-t border-white/5">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[7px] text-muted-foreground font-black uppercase tracking-wider truncate">Key</span>
+                    <code className="text-red-500 font-mono font-black tracking-widest bg-zinc-900/50 px-1.5 py-0 rounded text-[7px] border border-white/5">
                       {m.lobbyCode}
                     </code>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">Role</span>
-                    <span className="text-white text-[9px] font-bold italic uppercase tracking-tighter">Admin</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 flex items-center justify-center">
-                <div className="text-[9px] font-black text-primary uppercase tracking-[0.15em] opacity-0 group-hover:opacity-100 transition-opacity">
-                  Enter Control Room →
+              <div className="mt-2 pt-2 flex items-center justify-center">
+                <div className="text-[7px] font-black text-primary uppercase tracking-[0.1em] opacity-0 group-hover:opacity-100 transition-opacity">
+                  Enter →
                 </div>
               </div>
             </motion.button>
