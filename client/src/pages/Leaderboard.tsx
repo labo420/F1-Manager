@@ -155,25 +155,25 @@ export default function Leaderboard() {
         <p className="text-muted-foreground mt-4 text-lg italic uppercase tracking-widest font-bold">League Standings</p>
       </div>
 
-      <div className="flex justify-center mb-8">
+      <div className="flex justify-center mb-6">
         <div className="glass-panel rounded-xl p-1 inline-flex gap-1" data-testid="toggle-leaderboard-type">
           <button
             onClick={() => setTab("drivers")}
             data-testid="tab-driver-standings"
-            className={`px-6 py-3 rounded-lg font-bold uppercase text-sm flex items-center gap-2 transition-all ${
+            className={`px-4 py-2 rounded-lg font-bold uppercase text-xs flex items-center gap-1.5 transition-all ${
               tab === "drivers" ? "bg-primary text-white shadow-lg" : "text-muted-foreground hover:text-white"
             }`}
           >
-            <Car className="w-4 h-4" /> Driver Standings
+            <Car className="w-3.5 h-3.5" /> Driver Standings
           </button>
           <button
             onClick={() => setTab("constructors")}
             data-testid="tab-constructor-standings"
-            className={`px-6 py-3 rounded-lg font-bold uppercase text-sm flex items-center gap-2 transition-all ${
+            className={`px-4 py-2 rounded-lg font-bold uppercase text-xs flex items-center gap-1.5 transition-all ${
               tab === "constructors" ? "bg-primary text-white shadow-lg" : "text-muted-foreground hover:text-white"
             }`}
           >
-            <Shield className="w-4 h-4" /> Constructor Standings
+            <Shield className="w-3.5 h-3.5" /> Constructor Standings
           </button>
         </div>
       </div>
