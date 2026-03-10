@@ -399,6 +399,115 @@ export default function AdminPanel() {
               ))}
             </div>
           </motion.div>
+
+          {selectedRace && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
+            >
+              <div className="px-8 py-5 flex items-center gap-3 border-b border-white/5">
+                <Eye className="w-4 h-4 text-primary shrink-0" />
+                <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex-1 min-w-0">Draft Monitor</h2>
+                {draftStatus?.isComplete ? (
+                  <span className="px-2.5 py-1 bg-green-500/10 text-green-400 text-[9px] font-black uppercase tracking-widest rounded-full border border-green-500/20 shrink-0">
+                    Complete
+                  </span>
+                ) : draftStatus && !draftStatus.isComplete && draftStatus.draftOrder.length > 0 ? (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest rounded-full border border-primary/20 shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    Live
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="p-4">
+                {draftLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : !draftStatus || draftStatus.draftOrder.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-2">
+                    <Clock className="w-7 h-7 opacity-20" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-center">Draft not started</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
+                    {draftStatus.draftOrder.map((player, index) => {
+                      const isCurrent = !draftStatus.isComplete && index === draftStatus.currentDrafterIndex;
+                      const isNext = !draftStatus.isComplete && index === draftStatus.currentDrafterIndex + 1;
+                      const pick = adminPicks?.find(p => p.userId === player.userId);
+
+                      return (
+                        <div
+                          key={player.userId}
+                          className={`flex items-start gap-3 p-3 rounded-xl transition-all border ${
+                            isCurrent
+                              ? "bg-primary/10 border-primary/30"
+                              : player.hasPicked
+                              ? "bg-green-500/5 border-green-500/10"
+                              : isNext
+                              ? "bg-white/5 border-white/10"
+                              : "border-transparent"
+                          }`}
+                        >
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border shrink-0 mt-0.5 ${
+                            isCurrent
+                              ? "bg-primary/20 border-primary/40 text-primary"
+                              : player.hasPicked
+                              ? "bg-green-500/10 border-green-500/20 text-green-400"
+                              : "bg-white/5 border-white/10 text-muted-foreground"
+                          }`}>
+                            {index + 1}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-bold text-xs text-white truncate">
+                                {player.teamName && player.teamName !== "TBD" ? player.teamName : player.username}
+                              </span>
+                              {isCurrent && (
+                                <span className="flex items-center gap-1 px-1.5 py-0.5 bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest rounded-full border border-primary/30 shrink-0">
+                                  <span className="w-1 h-1 rounded-full bg-primary animate-ping inline-block" />
+                                  Now
+                                </span>
+                              )}
+                              {isNext && (
+                                <span className="px-1.5 py-0.5 bg-white/5 text-muted-foreground text-[8px] font-black uppercase tracking-widest rounded-full border border-white/10 shrink-0">
+                                  Next
+                                </span>
+                              )}
+                            </div>
+                            {pick ? (
+                              <div className="mt-0.5 space-y-0.5">
+                                <div className="text-[10px] text-green-400 font-bold truncate">{pick.driverName}</div>
+                                <div className="text-[9px] text-green-400/60 font-medium truncate">{pick.constructorName}</div>
+                              </div>
+                            ) : player.hasPicked ? (
+                              <div className="text-[9px] text-muted-foreground mt-0.5">Pick recorded</div>
+                            ) : (
+                              <div className="text-[9px] text-muted-foreground opacity-40 mt-0.5">Awaiting pick</div>
+                            )}
+                          </div>
+
+                          <div className="shrink-0 mt-0.5">
+                            {player.hasPicked ? (
+                              <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                            ) : isCurrent ? (
+                              <Activity className="w-3.5 h-3.5 text-primary" />
+                            ) : (
+                              <Clock className="w-3.5 h-3.5 text-muted-foreground opacity-20" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
         </div>
 
         <div className="lg:col-span-3 space-y-6">
@@ -573,132 +682,6 @@ export default function AdminPanel() {
               </motion.div>
             )}
           </AnimatePresence>
-
-          {selectedRace && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
-            >
-              <div className="bg-zinc-900/80 backdrop-blur-md px-8 py-6 flex items-center gap-4 border-b border-white/5">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
-                  <Eye className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-sm font-black text-white uppercase tracking-[0.2em]">Draft Monitor</h2>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60 mt-0.5">
-                    Live pick status · {selectedRace.name}
-                  </p>
-                </div>
-                {draftStatus?.isComplete ? (
-                  <span className="px-4 py-1.5 bg-green-500/10 text-green-400 text-[10px] font-black uppercase tracking-widest rounded-full border border-green-500/20 shrink-0">
-                    Draft Complete
-                  </span>
-                ) : draftStatus && !draftStatus.isComplete ? (
-                  <span className="flex items-center gap-2 px-4 py-1.5 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full border border-primary/20 shrink-0 animate-pulse">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    Live
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="p-6">
-                {draftLoading ? (
-                  <div className="flex items-center justify-center py-10">
-                    <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : !draftStatus || draftStatus.draftOrder.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-3">
-                    <Clock className="w-8 h-8 opacity-20" />
-                    <p className="text-xs font-bold uppercase tracking-widest">Draft not started for this session</p>
-                    <p className="text-[10px] opacity-50">The draft queue will appear here once players begin picking</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {draftStatus.draftOrder.map((player, index) => {
-                      const isCurrent = !draftStatus.isComplete && index === draftStatus.currentDrafterIndex;
-                      const isNext = !draftStatus.isComplete && index === draftStatus.currentDrafterIndex + 1;
-                      const pick = adminPicks?.find(p => p.userId === player.userId);
-
-                      return (
-                        <motion.div
-                          key={player.userId}
-                          initial={{ opacity: 0, x: 10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.04 }}
-                          className={`flex items-center gap-4 p-4 rounded-2xl transition-all border-2 ${
-                            isCurrent
-                              ? "bg-primary/10 border-primary/30 shadow-lg shadow-primary/5"
-                              : player.hasPicked
-                              ? "bg-green-500/5 border-green-500/10"
-                              : isNext
-                              ? "bg-white/5 border-white/10"
-                              : "border-transparent"
-                          }`}
-                        >
-                          <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-black border shrink-0 ${
-                            isCurrent
-                              ? "bg-primary/20 border-primary/40 text-primary"
-                              : player.hasPicked
-                              ? "bg-green-500/10 border-green-500/20 text-green-400"
-                              : "bg-white/5 border-white/10 text-muted-foreground"
-                          }`}>
-                            {index + 1}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-bold text-sm text-white">{player.teamName && player.teamName !== "TBD" ? player.teamName : player.username}</span>
-                              <span className="text-[9px] text-muted-foreground opacity-50">@{player.username}</span>
-                              {isCurrent && (
-                                <span className="flex items-center gap-1 px-2 py-0.5 bg-primary/20 text-primary text-[9px] font-black uppercase tracking-widest rounded-full border border-primary/30">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse inline-block" />
-                                  On The Clock
-                                </span>
-                              )}
-                              {isNext && (
-                                <span className="px-2 py-0.5 bg-white/5 text-muted-foreground text-[9px] font-black uppercase tracking-widest rounded-full border border-white/10">
-                                  Next
-                                </span>
-                              )}
-                            </div>
-                            {pick ? (
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[10px] text-green-400 font-bold">{pick.driverName}</span>
-                                <span className="w-1 h-1 rounded-full bg-white/20" />
-                                <span className="text-[10px] text-green-400/70 font-medium">{pick.constructorName}</span>
-                              </div>
-                            ) : player.hasPicked ? (
-                              <span className="text-[10px] text-muted-foreground mt-1 block">Pick recorded</span>
-                            ) : (
-                              <span className="text-[10px] text-muted-foreground opacity-40 mt-1 block">Awaiting pick</span>
-                            )}
-                          </div>
-
-                          <div className="shrink-0">
-                            {player.hasPicked ? (
-                              <div className="w-7 h-7 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center">
-                                <CheckCircle className="w-4 h-4 text-green-400" />
-                              </div>
-                            ) : isCurrent ? (
-                              <div className="w-7 h-7 rounded-full bg-primary/15 border border-primary/30 flex items-center justify-center">
-                                <Activity className="w-3.5 h-3.5 text-primary" />
-                              </div>
-                            ) : (
-                              <div className="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                                <Clock className="w-3.5 h-3.5 text-muted-foreground opacity-30" />
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
         </div>
       </div>
     </div>
