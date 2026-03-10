@@ -775,13 +775,6 @@ export default function F1Season() {
                                               <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Fastest Lap</div>
                                               <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{externalRaceResults.find(r => r.fastestLap)?.driverName || "N/A"}</div>
                                             </div>
-                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-yellow-500/30 transition-colors">
-                                              <div className="w-12 h-12 bg-yellow-400/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                                <Zap className="w-6 h-6 text-yellow-400" />
-                                              </div>
-                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Finishers</div>
-                                              <div className="text-white font-display font-black text-3xl uppercase tracking-tighter leading-none">{externalRaceResults.filter(r => r.position).length}</div>
-                                            </div>
                                             <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-primary/30 transition-colors">
                                               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                                                 <Trophy className="w-6 h-6 text-primary" />
@@ -836,13 +829,6 @@ export default function F1Season() {
                                               </div>
                                               <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Fastest Lap</div>
                                               <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{raceDetail.fastestLapDriver || "N/A"}</div>
-                                            </div>
-                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-yellow-500/30 transition-colors">
-                                              <div className="w-12 h-12 bg-yellow-400/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                                <Zap className="w-6 h-6 text-yellow-400" />
-                                              </div>
-                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Overtakes</div>
-                                              <div className="text-white font-display font-black text-3xl uppercase tracking-tighter leading-none">{raceDetail.totalOvertakes}</div>
                                             </div>
                                             <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-primary/30 transition-colors">
                                               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -1145,13 +1131,6 @@ export default function F1Season() {
                                               </div>
                                               <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Fastest Lap</div>
                                               <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{upcomingRaceResults.find(r => r.fastestLap)?.driverName || "N/A"}</div>
-                                            </div>
-                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-yellow-500/30 transition-colors">
-                                              <div className="w-12 h-12 bg-yellow-400/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                                <Zap className="w-6 h-6 text-yellow-400" />
-                                              </div>
-                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Finishers</div>
-                                              <div className="text-white font-display font-black text-3xl uppercase tracking-tighter leading-none">{upcomingRaceResults.filter(r => r.position).length}</div>
                                             </div>
                                             <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-primary/30 transition-colors">
                                               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
