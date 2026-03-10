@@ -325,7 +325,7 @@ export default function AdminPanel() {
                 <div className="grid grid-cols-1 gap-3">
                   <button
                     onClick={() => updateStatus({ id: selectedRace.id, updates: { isLocked: !selectedRace.isLocked } })}
-                    disabled={updatingStatus || selectedRace.isCompleted}
+                    disabled={updatingStatus}
                     className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] transition-all border-2 ${
                       selectedRace.isLocked 
                         ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/5" 
