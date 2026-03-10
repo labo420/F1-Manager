@@ -1093,14 +1093,14 @@ export default function F1Season() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className="glass-panel rounded-3xl mt-3 border-2 border-white/10 shadow-2xl relative overflow-hidden">
-                              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
+                            <div className="glass-panel rounded-xl mt-2 border border-white/10 shadow-lg relative overflow-hidden">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none" />
 
-                              <div className="p-4 sm:p-8">
+                              <div className="p-2 sm:p-3">
                                 <CircuitInfo race={race} />
                                 <SessionTimes race={race} />
 
-                                <div className="flex items-center gap-1 -mx-4 -ms-8 px-4 sm:px-8 py-3 mb-4 border-b border-white/5">
+                                <div className="flex items-center gap-0.5 -mx-2 -ms-3 px-2 sm:px-3 py-1.5 mb-2 border-b border-white/5">
                                   {[
                                     { key: "race" as const, label: "Race", icon: Trophy },
                                     { key: "qualifying" as const, label: "Qualifying", icon: Gauge },
@@ -1110,15 +1110,15 @@ export default function F1Season() {
                                       key={st.key}
                                       onClick={() => setUpcomingSessionTab(st.key)}
                                       data-testid={`tab-session-upcoming-${st.key}-${race.id}`}
-                                      className={`flex items-center gap-2 px-5 py-3 text-[10px] font-black uppercase tracking-[0.15em] rounded-t-xl transition-all border-b-2 -mb-px ${
+                                      className={`flex items-center gap-1 px-2.5 py-1.5 text-[8px] font-black uppercase tracking-[0.1em] rounded transition-all border-b -mb-px ${
                                         upcomingSessionTab === st.key
                                           ? "text-white border-primary bg-primary/10"
                                           : "text-muted-foreground border-transparent hover:text-white hover:bg-white/5"
                                       }`}
                                     >
-                                      <st.icon className="w-3.5 h-3.5" />
+                                      <st.icon className="w-2.5 h-2.5" />
                                       <span>{st.label}</span>
-                                      {st.key === "sprint" && <span className="text-[8px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded-full border border-orange-500/30 ml-1">Sprint</span>}
+                                      {st.key === "sprint" && <span className="text-[6px] bg-orange-500/20 text-orange-400 px-1 py-0.25 rounded-full border border-orange-500/30 ml-0.5">Sprint</span>}
                                     </button>
                                   ))}
                                 </div>
@@ -1132,52 +1132,52 @@ export default function F1Season() {
                                         </div>
                                       ) : upcomingRaceResults && upcomingRaceResults.length > 0 ? (
                                         <>
-                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8 max-w-2xl mx-auto">
-                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
-                                              <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                                <Timer className="w-6 h-6 text-purple-400" />
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                                            <div className="bg-white/5 rounded-lg p-2.5 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
+                                              <div className="w-7 h-7 bg-purple-500/10 rounded flex items-center justify-center mx-auto mb-1.5">
+                                                <Timer className="w-3.5 h-3.5 text-purple-400" />
                                               </div>
-                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Fastest Lap</div>
-                                              <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{upcomingRaceResults.find(r => r.fastestLap)?.driverName || "N/A"}</div>
+                                              <div className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.15em] mb-1">Fastest Lap</div>
+                                              <div className="text-white font-display font-black text-xs uppercase tracking-tight leading-tight">{upcomingRaceResults.find(r => r.fastestLap)?.driverName || "N/A"}</div>
                                             </div>
-                                            <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10 hover:border-primary/30 transition-colors">
-                                              <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4">
-                                                <Trophy className="w-6 h-6 text-primary" />
+                                            <div className="bg-white/5 rounded-lg p-2.5 text-center border border-white/10 hover:border-primary/30 transition-colors">
+                                              <div className="w-7 h-7 bg-primary/10 rounded flex items-center justify-center mx-auto mb-1.5">
+                                                <Trophy className="w-3.5 h-3.5 text-primary" />
                                               </div>
-                                              <div className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mb-2">Winner</div>
-                                              <div className="text-white font-display font-black text-xl uppercase tracking-tight leading-tight">{upcomingRaceResults[0]?.driverName || "N/A"}</div>
+                                              <div className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.15em] mb-1">Winner</div>
+                                              <div className="text-white font-display font-black text-xs uppercase tracking-tight leading-tight">{upcomingRaceResults[0]?.driverName || "N/A"}</div>
                                             </div>
                                           </div>
-                                          <div className="mt-10">
-                                            <div className="flex items-center mb-6">
-                                              <h3 className="text-xs font-black text-muted-foreground uppercase tracking-[0.3em] shrink-0">Race Classification</h3>
-                                              <div className="h-px flex-1 bg-white/5 ml-4" />
+                                          <div className="mt-3">
+                                            <div className="flex items-center mb-2">
+                                              <h3 className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] shrink-0">Race Classification</h3>
+                                              <div className="h-px flex-1 bg-white/5 ml-2" />
                                             </div>
-                                            <div className="space-y-2">
+                                            <div className="space-y-1">
                                               {upcomingRaceResults.map((result, idx) => (
-                                                <div key={`${result.driverNumber}-${result.driverName}`} className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 ${idx < 3 ? "bg-white/5 border border-white/10 shadow-lg" : "hover:bg-white/5"}`}>
-                                                  <div className="flex items-center gap-4">
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black border ${idx === 0 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" : idx === 1 ? "bg-gray-300/20 border-gray-300/40 text-gray-300" : idx === 2 ? "bg-amber-600/20 border-amber-600/40 text-amber-600" : "bg-white/5 border-white/10 text-muted-foreground"}`}>{result.position ?? (result.positionText || "-")}</div>
-                                                    <div className="relative">
+                                                <div key={`${result.driverNumber}-${result.driverName}`} className={`flex items-center justify-between p-2 rounded-lg transition-all duration-300 ${idx < 3 ? "bg-white/5 border border-white/10 shadow-lg" : "hover:bg-white/5"}`}>
+                                                  <div className="flex items-center gap-2 min-w-0">
+                                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-black border shrink-0 ${idx === 0 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" : idx === 1 ? "bg-gray-300/20 border-gray-300/40 text-gray-300" : idx === 2 ? "bg-amber-600/20 border-amber-600/40 text-amber-600" : "bg-white/5 border-white/10 text-muted-foreground"}`}>{result.position ?? (result.positionText || "-")}</div>
+                                                    <div className="relative shrink-0">
                                                       <DriverAvatar name={result.driverName} teamColor={TEAM_COLORS[result.teamName]} />
-                                                      <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" style={{ backgroundColor: TEAM_COLORS[result.teamName] || "#444" }} />
+                                                      <div className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full border border-background" style={{ backgroundColor: TEAM_COLORS[result.teamName] || "#444" }} />
                                                     </div>
-                                                    <div>
-                                                      <div className="text-white font-display font-black text-base uppercase tracking-tight flex items-center gap-2">
-                                                        {result.driverName}
-                                                        {result.fastestLap && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black tracking-widest border border-purple-500/30">FL</span>}
+                                                    <div className="min-w-0">
+                                                      <div className="text-white font-display font-black text-xs uppercase tracking-tight flex items-center gap-1">
+                                                        <span className="truncate">{result.driverName}</span>
+                                                        {result.fastestLap && <span className="text-[6px] bg-purple-500/20 text-purple-400 px-1 py-0.25 rounded-full font-black tracking-widest border border-purple-500/30 shrink-0">FL</span>}
                                                       </div>
-                                                      <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{result.teamName}</div>
+                                                      <div className="text-[7px] text-muted-foreground font-black uppercase tracking-widest truncate">{result.teamName}</div>
                                                     </div>
                                                   </div>
-                                                  <div className="flex items-center gap-6">
+                                                  <div className="flex items-center gap-3 shrink-0">
                                                     <div className="text-right tabular-nums hidden sm:block">
-                                                      <div className="text-sm font-display font-black text-white leading-none">{idx === 0 ? (result.time || "WINNER") : (result.gap || result.status || "DNF")}</div>
-                                                      <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Interval</div>
+                                                      <div className="text-[9px] font-display font-black text-white leading-none">{idx === 0 ? (result.time || "WINNER") : (result.gap || result.status || "DNF")}</div>
+                                                      <div className="text-[6px] text-muted-foreground font-black uppercase tracking-tighter">Int</div>
                                                     </div>
-                                                    <div className="w-12 text-right tabular-nums">
-                                                      <div className="text-lg font-display font-black text-primary leading-none">+{Math.round(result.points)}</div>
-                                                      <div className="text-[8px] text-muted-foreground font-black uppercase tracking-tighter">Pts</div>
+                                                    <div className="text-right tabular-nums">
+                                                      <div className="text-xs font-display font-black text-primary leading-none">+{Math.round(result.points)}</div>
+                                                      <div className="text-[6px] text-muted-foreground font-black uppercase tracking-tighter">Pts</div>
                                                     </div>
                                                   </div>
                                                 </div>
