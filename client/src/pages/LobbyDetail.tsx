@@ -5,11 +5,18 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft } from "lucide-react";
+import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft, Shield } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Lobby, Race, Driver, Constructor, Selection, LobbyMember } from "@shared/schema";
 import { format } from "date-fns";
+
+function getInitials(text: string): string {
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+  if (words.length === 0) return "?";
+  if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
 
 export default function LobbyDetail({ id }: { id: number }) {
   const { user } = useAuth();
@@ -58,7 +65,7 @@ export default function LobbyDetail({ id }: { id: number }) {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-6 flex items-center gap-4">
+      <div className="mb-8 flex items-center gap-4">
         <button 
           onClick={() => setLocation("/paddock")}
           className="p-2 hover:bg-white/10 rounded-lg text-muted-foreground hover:text-white transition-colors"
@@ -67,33 +74,40 @@ export default function LobbyDetail({ id }: { id: number }) {
           <ChevronLeft className="w-6 h-6" />
         </button>
       </div>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">{lobby.name}</h1>
-          <p className="text-muted-foreground">League Code: <span className="font-mono font-bold text-foreground">{lobby.code}</span></p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex gap-2">
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="py-2 px-4 flex items-center gap-2">
-                <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                <div>
-                  <p className="text-[10px] uppercase text-muted-foreground leading-none">Driver Jollies</p>
-                  <p className="text-xl font-bold leading-tight">{usage?.driverJolliesRemaining ?? 0}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="py-2 px-4 flex items-center gap-2">
-                <Star className="w-5 h-5 text-blue-500 fill-blue-500" />
-                <div>
-                  <p className="text-[10px] uppercase text-muted-foreground leading-none">Team Jollies</p>
-                  <p className="text-xl font-bold leading-tight">{usage?.constructorJolliesRemaining ?? 0}</p>
-                </div>
-              </CardContent>
-            </Card>
+      
+      <div className="mb-12 flex items-center gap-6">
+        {lobby.imageUrl ? (
+          <img src={lobby.imageUrl} alt="" className="w-20 h-20 rounded-2xl object-cover border border-white/10 shadow-xl shrink-0" />
+        ) : (
+          <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0">
+            <span className="text-lg font-black text-white/40">{getInitials(lobby.name)}</span>
           </div>
+        )}
+        <div>
+          <h1 className="text-4xl md:text-5xl font-display font-black text-white uppercase tracking-tighter leading-none">{lobby.name}</h1>
+          <p className="text-xs font-mono text-white/40 uppercase tracking-[0.1em] mt-3">League Code: {lobby.code}</p>
         </div>
+      </div>
+
+      <div className="flex gap-2 mb-8">
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="py-2 px-4 flex items-center gap-2">
+            <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+            <div>
+              <p className="text-[10px] uppercase text-muted-foreground leading-none">Driver Jollies</p>
+              <p className="text-xl font-bold leading-tight">{usage?.driverJolliesRemaining ?? 0}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="py-2 px-4 flex items-center gap-2">
+            <Star className="w-5 h-5 text-blue-500 fill-blue-500" />
+            <div>
+              <p className="text-[10px] uppercase text-muted-foreground leading-none">Team Jollies</p>
+              <p className="text-xl font-bold leading-tight">{usage?.constructorJolliesRemaining ?? 0}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="predictions" className="space-y-6">
