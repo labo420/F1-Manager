@@ -434,7 +434,7 @@ export default function AdminPanel() {
                   </div>
                 ) : (
                   <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
-                    {draftStatus.draftOrder.map((player, index) => {
+                    {draftStatus.draftOrder.map((player: any, index: number) => {
                       const isCurrent = !draftStatus.isComplete && index === draftStatus.currentDrafterIndex;
                       const isNext = !draftStatus.isComplete && index === draftStatus.currentDrafterIndex + 1;
                       const pick = adminPicks?.find(p => p.userId === player.userId);
