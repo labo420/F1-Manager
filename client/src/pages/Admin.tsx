@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useActiveLobby, useLobbyInfo, useLobbyMembers } from "@/hooks/use-lobby";
 import { useRaces, useUpdateRaceStatus } from "@/hooks/use-races";
 import { useDrivers, useConstructors } from "@/hooks/use-competitors";
-import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock } from "lucide-react";
+import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -54,6 +54,28 @@ export default function AdminPanel() {
   const [driverEntries, setDriverEntries] = useState<DriverEntry[]>([]);
 
   const isAdmin = adminLobbies.length > 0;
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const deleteLobbyMutation = useMutation({
+    mutationFn: async (lobbyId: number) => {
+      const res = await fetch(`/api/lobby/${lobbyId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to delete lobby");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
+      setSelectedLobbyId("");
+      setShowDeleteConfirm(false);
+      toast({ title: "Lega eliminata", description: "La lega è stata eliminata permanentemente." });
+    },
+    onError: () => {
+      toast({ title: "Errore", description: "Impossibile eliminare la lega.", variant: "destructive" });
+    },
+  });
 
   const bulkSaveMutation = useMutation({
     mutationFn: async ({ raceId, results, lobbyId }: { raceId: number; results: DriverEntry[]; lobbyId: number }) => {
@@ -255,9 +277,19 @@ export default function AdminPanel() {
           <button 
             onClick={() => setSelectedLobbyId("")}
             className="w-12 h-12 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-2xl text-muted-foreground hover:text-white transition-all border border-white/5"
+            data-testid="button-admin-back"
             title="Back to League List"
           >
             <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button 
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={deleteLobbyMutation.isPending}
+            className="w-12 h-12 flex items-center justify-center bg-red-900/20 hover:bg-red-900/40 rounded-2xl text-red-500/60 hover:text-red-500 transition-all border border-red-900/30 disabled:opacity-50"
+            data-testid="button-delete-lobby"
+            title="Delete This League"
+          >
+            <Trash2 className="w-5 h-5" />
           </button>
           <div className="w-16 h-16 bg-primary rounded-tr-2xl rounded-bl-2xl f1-slant flex items-center justify-center red-glow shadow-2xl shadow-primary/20">
             <Settings className="w-10 h-10 text-white f1-slant-reverse" />
@@ -511,6 +543,51 @@ export default function AdminPanel() {
         </div>
 
       </div>
+
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            onClick={() => !deleteLobbyMutation.isPending && setShowDeleteConfirm(false)}
+          >
+            <div className="bg-zinc-900 border border-red-900/30 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <AlertTriangle className="w-6 h-6 text-red-500" />
+                  <h3 className="text-lg font-display font-black text-white uppercase tracking-tight">Elimina Lega</h3>
+                </div>
+                <p className="text-sm text-white/70 mb-6">
+                  Questa azione è irreversibile. Tutti i dati della lega, inclusi risultati e scelte dei giocatori, saranno eliminati permanentemente.
+                </p>
+                <div className="bg-red-900/10 border border-red-900/20 rounded-lg p-3 mb-6">
+                  <p className="text-xs text-red-200 font-mono font-semibold">Lega: {lobby?.name || "..."}</p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleteLobbyMutation.isPending}
+                    className="flex-1 py-2.5 rounded-lg border border-white/10 text-white/60 text-xs font-semibold uppercase tracking-wider hover:text-white transition-colors disabled:opacity-50"
+                  >
+                    Annulla
+                  </button>
+                  <button
+                    onClick={() => deleteLobbyMutation.mutate(Number(selectedLobbyId))}
+                    disabled={deleteLobbyMutation.isPending}
+                    data-testid="button-confirm-delete"
+                    className="flex-1 py-2.5 rounded-lg bg-red-900/40 border border-red-900/60 text-red-300 text-xs font-semibold uppercase tracking-wider hover:bg-red-900/60 hover:text-red-200 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {deleteLobbyMutation.isPending ? <div className="w-3 h-3 border border-red-300/30 border-t-red-300 rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    Elimina Permanentemente
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -851,6 +851,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.json(lobby);
   });
 
+  app.delete("/api/lobby/:id", async (req: any, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    const lobbyId = parseInt(req.params.id);
+    if (isNaN(lobbyId)) return res.status(400).json({ message: "Invalid lobby ID" });
+    const isAdmin = await storage.isUserAdminOfLobby(req.session.userId, lobbyId);
+    if (!isAdmin) return res.status(403).json({ message: "Admin access required" });
+    await storage.deleteLobby(lobbyId);
+    res.json({ message: "Lobby deleted successfully" });
+  });
+
   app.get("/api/lobby/:lobbyId/race/:raceId/fantasy-winners", async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     const lobbyId = Number(req.params.lobbyId);

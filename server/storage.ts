@@ -44,6 +44,7 @@ export interface IStorage {
   getLobbyById(lobbyId: number): Promise<Lobby | undefined>;
   getLobbyPlayerCount(lobbyId: number): Promise<number>;
   updateLobbyImage(lobbyId: number, imageUrl: string): Promise<Lobby>;
+  deleteLobby(lobbyId: number): Promise<void>;
 
   addLobbyMember(userId: number, lobbyId: number, role: string, teamName?: string): Promise<LobbyMember>;
   getLobbyMember(userId: number, lobbyId: number): Promise<LobbyMember | undefined>;
@@ -155,6 +156,14 @@ export class DatabaseStorage implements IStorage {
   async updateLobbyImage(lobbyId: number, imageUrl: string): Promise<Lobby> {
     const [lobby] = await db.update(lobbies).set({ imageUrl }).where(eq(lobbies.id, lobbyId)).returning();
     return lobby;
+  }
+
+  async deleteLobby(lobbyId: number): Promise<void> {
+    await db.delete(selections).where(eq(selections.lobbyId, lobbyId));
+    await db.delete(userScores).where(eq(userScores.lobbyId, lobbyId));
+    await db.delete(draftState).where(eq(draftState.lobbyId, lobbyId));
+    await db.delete(lobbyMembers).where(eq(lobbyMembers.lobbyId, lobbyId));
+    await db.delete(lobbies).where(eq(lobbies.id, lobbyId));
   }
 
   async addLobbyMember(userId: number, lobbyId: number, role: string, teamName?: string): Promise<LobbyMember> {
