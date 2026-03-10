@@ -465,6 +465,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       const localDrivers = await storage.getDrivers();
+      const matchedLocalIds = new Set<number>();
       const standings = apiStandings.map((s: any) => {
         const code: string = s.Driver.code;
         const fullName = `${s.Driver.givenName} ${s.Driver.familyName}`;
@@ -472,6 +473,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         const local = localDrivers.find(d =>
           d.number === apiNumber || d.name.toLowerCase().includes(s.Driver.familyName.toLowerCase())
         );
+        if (local) matchedLocalIds.add(local.id);
         const rawTeam: string = s.Constructors?.[0]?.name ?? "";
         return {
           driverId: local?.id ?? 0,
@@ -483,6 +485,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           podiums: podiumsByCode[code] || 0,
         };
       });
+      for (const d of localDrivers) {
+        if (!matchedLocalIds.has(d.id)) {
+          standings.push({ driverId: d.id, name: d.name, team: d.team, number: d.number, totalPoints: 0, wins: 0, podiums: 0 });
+        }
+      }
       res.json(standings);
     } catch {
       res.json(await storage.getDriverStandings());

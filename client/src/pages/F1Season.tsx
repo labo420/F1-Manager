@@ -277,11 +277,7 @@ export default function F1Season() {
   const completedRaces = raceCalendar?.filter(r => r.isCompleted) || [];
   const upcomingRaces = raceCalendar?.filter(r => !r.isCompleted) || [];
 
-  const displayDriverStandings = driverStandings?.length ? driverStandings : [
-    { driverId: 1, name: "Max Verstappen", team: "Red Bull Racing", number: 1, totalPoints: 0, wins: 0, podiums: 0 },
-    { driverId: 2, name: "Lewis Hamilton", team: "Ferrari", number: 44, totalPoints: 0, wins: 0, podiums: 0 },
-    { driverId: 3, name: "Lando Norris", team: "McLaren", number: 4, totalPoints: 0, wins: 0, podiums: 0 },
-  ];
+  const displayDriverStandings = driverStandings ?? [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
