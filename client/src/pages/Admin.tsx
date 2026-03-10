@@ -244,7 +244,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Role</span>
-                    <span className="text-white text-xs font-bold italic uppercase tracking-tighter">Chief Steward</span>
+                    <span className="text-white text-xs font-bold italic uppercase tracking-tighter">Admin</span>
                   </div>
                 </div>
               </div>
