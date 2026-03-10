@@ -282,21 +282,45 @@ export default function AdminPanel() {
           >
             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 blur-2xl" />
             <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-              <Flag className="w-4 h-4 text-primary" /> Session Select
+              <Flag className="w-4 h-4 text-primary" /> League Control
             </h2>
-            <div className="relative group">
-              <select
-                value={selectedRaceId}
-                onChange={(e) => setSelectedRaceId(Number(e.target.value))}
-                data-testid="select-race"
-                className="w-full bg-zinc-900/50 border-2 border-white/10 rounded-2xl px-5 py-4 text-white font-bold focus:border-primary focus:ring-1 outline-none appearance-none transition-all cursor-pointer relative z-10 group-hover:border-white/20"
-              >
-                <option value="" disabled className="bg-zinc-900">Select Grand Prix...</option>
-                {races?.map(r => (
-                  <option key={r.id} value={r.id} className="bg-zinc-900">{r.round ? `R${r.round}: ` : ""}{r.name} {r.isCompleted ? "✓" : ""}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none z-20 group-hover:text-white transition-colors" />
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 block">Select League</label>
+                <div className="relative group">
+                  <select
+                    value={selectedLobbyId}
+                    onChange={(e) => setSelectedLobbyId(Number(e.target.value))}
+                    data-testid="select-lobby"
+                    className="w-full bg-zinc-900/50 border-2 border-white/10 rounded-2xl px-5 py-4 text-white font-bold focus:border-primary focus:ring-1 outline-none appearance-none transition-all cursor-pointer relative z-10 group-hover:border-white/20"
+                  >
+                    <option value="" disabled className="bg-zinc-900">Select league...</option>
+                    {adminLobbies?.map(m => (
+                      <option key={m.lobbyId} value={m.lobbyId} className="bg-zinc-900">{m.lobbyName}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none z-20 group-hover:text-white transition-colors" />
+                </div>
+              </div>
+              {selectedLobbyId && (
+                <div className="pt-3 border-t border-white/5">
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 block">Select Session</label>
+                  <div className="relative group">
+                    <select
+                      value={selectedRaceId}
+                      onChange={(e) => setSelectedRaceId(Number(e.target.value))}
+                      data-testid="select-race"
+                      className="w-full bg-zinc-900/50 border-2 border-white/10 rounded-2xl px-5 py-4 text-white font-bold focus:border-primary focus:ring-1 outline-none appearance-none transition-all cursor-pointer relative z-10 group-hover:border-white/20"
+                    >
+                      <option value="" disabled className="bg-zinc-900">Select Grand Prix...</option>
+                      {races?.map(r => (
+                        <option key={r.id} value={r.id} className="bg-zinc-900">{r.round ? `R${r.round}: ` : ""}{r.name} {r.isCompleted ? "✓" : ""}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none z-20 group-hover:text-white transition-colors" />
+                  </div>
+                </div>
+              )}
             </div>
 
             {selectedRace && (
