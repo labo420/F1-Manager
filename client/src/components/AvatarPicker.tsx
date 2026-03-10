@@ -2,11 +2,22 @@ import { useState, useRef } from "react";
 import { Camera, Check, Upload, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const USER_PRESET_SEEDS = [
-  "Verstappen", "Norris", "Leclerc", "Hamilton", "Russell",
-  "Alonso", "Sainz", "Piastri", "Stroll", "Albon",
-  "Gasly", "Bearman", "Lawson", "Antonelli", "Hulkenberg",
-  "Bottas", "Perez", "Ocon", "Colapinto", "Hadjar",
+const USER_PRESET_AVATARS = [
+  "/avatars/driver_m1.png",
+  "/avatars/driver_m2.png",
+  "/avatars/driver_m3.png",
+  "/avatars/driver_m4.png",
+  "/avatars/driver_m5.png",
+  "/avatars/driver_m6.png",
+  "/avatars/driver_m7.png",
+  "/avatars/driver_m8.png",
+  "/avatars/driver_f1.png",
+  "/avatars/driver_f2.png",
+  "/avatars/driver_f3.png",
+  "/avatars/driver_f4.png",
+  "/avatars/driver_f5.png",
+  "/avatars/driver_f6.png",
+  "/avatars/driver_f7.png",
 ];
 
 const LOBBY_PRESET_SEEDS = [
@@ -14,10 +25,6 @@ const LOBBY_PRESET_SEEDS = [
   "AstonMartin", "Williams", "Haas", "AlphaTauri", "Sauber",
   "Cadillac", "Paddock", "GrandPrix", "Championship", "Fantasy",
 ];
-
-function getUserAvatarUrl(seed: string) {
-  return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(seed)}&backgroundColor=1a1a2e,0d1117,161b22&scale=80`;
-}
 
 function getLobbyAvatarUrl(seed: string) {
   return `https://api.dicebear.com/7.x/icons/svg?seed=${encodeURIComponent(seed)}&backgroundColor=1a1a2e,0d1117,161b22`;
@@ -62,11 +69,13 @@ export function AvatarPicker({ type, currentUrl, onSelectPreset, onUploadFile, i
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const seeds = type === "user" ? USER_PRESET_SEEDS : LOBBY_PRESET_SEEDS;
-  const getUrl = type === "user" ? getUserAvatarUrl : getLobbyAvatarUrl;
+  const handlePresetUserClick = (url: string) => {
+    setSelected(url);
+    onSelectPreset(url);
+  };
 
-  const handlePresetClick = (seed: string) => {
-    const url = getUrl(seed);
+  const handlePresetLobbyClick = (seed: string) => {
+    const url = getLobbyAvatarUrl(seed);
     setSelected(url);
     onSelectPreset(url);
   };
@@ -122,32 +131,60 @@ export function AvatarPicker({ type, currentUrl, onSelectPreset, onUploadFile, i
             <div>
               <p className="text-[10px] text-white/30 font-medium uppercase tracking-widest mb-3">Select an avatar</p>
               <div className="grid grid-cols-5 gap-2 max-h-64 overflow-y-auto pr-1">
-                {seeds.map((seed) => {
-                  const url = getUrl(seed);
-                  const isActive = selected === url || (!selected && currentUrl === url);
-                  return (
-                    <button
-                      key={seed}
-                      onClick={() => handlePresetClick(seed)}
-                      data-testid={`avatar-preset-${seed}`}
-                      className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-105 ${
-                        isActive ? "border-primary shadow-lg shadow-primary/30" : "border-white/10 hover:border-white/30"
-                      }`}
-                    >
-                      <img
-                        src={url}
-                        alt={seed}
-                        className="w-full h-full object-cover bg-zinc-800"
-                        loading="lazy"
-                      />
-                      {isActive && (
-                        <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white" />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
+                {type === "user" ? (
+                  USER_PRESET_AVATARS.map((url, i) => {
+                    const isActive = selected === url || (!selected && currentUrl === url);
+                    return (
+                      <button
+                        key={url}
+                        onClick={() => handlePresetUserClick(url)}
+                        data-testid={`avatar-preset-${i}`}
+                        className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-105 ${
+                          isActive ? "border-primary shadow-lg shadow-primary/30" : "border-white/10 hover:border-white/30"
+                        }`}
+                      >
+                        <img
+                          src={url}
+                          alt={`Driver avatar ${i + 1}`}
+                          className="w-full h-full object-cover bg-zinc-800"
+                          loading="lazy"
+                        />
+                        {isActive && (
+                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                            <Check className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })
+                ) : (
+                  LOBBY_PRESET_SEEDS.map((seed) => {
+                    const url = getLobbyAvatarUrl(seed);
+                    const isActive = selected === url || (!selected && currentUrl === url);
+                    return (
+                      <button
+                        key={seed}
+                        onClick={() => handlePresetLobbyClick(seed)}
+                        data-testid={`avatar-preset-${seed}`}
+                        className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-105 ${
+                          isActive ? "border-primary shadow-lg shadow-primary/30" : "border-white/10 hover:border-white/30"
+                        }`}
+                      >
+                        <img
+                          src={url}
+                          alt={seed}
+                          className="w-full h-full object-cover bg-zinc-800"
+                          loading="lazy"
+                        />
+                        {isActive && (
+                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                            <Check className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })
+                )}
               </div>
               {selected && (
                 <p className="text-[10px] text-green-400 font-medium mt-3 text-center">Avatar updated!</p>
