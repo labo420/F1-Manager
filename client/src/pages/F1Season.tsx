@@ -291,12 +291,15 @@ function SessionTimes({ race }: { race: RaceEntry }) {
       {sessions.map(session => {
         const dateStr = format(session.date, "MMM dd");
         return (
-          <div key={session.label} className="bg-white/5 rounded-xl p-4 border border-white/10">
-            <div className="flex items-center gap-2 mb-3">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{session.label}</span>
+          <div key={session.label} className="bg-white/5 rounded-xl p-4 border border-white/10 hover:border-white/20 transition-colors">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-white">{session.label}</span>
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-1 rounded-md">{dateStr}</span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">ITA</span>
                 <span className="font-mono text-sm font-black text-white">{session.ita}</span>
@@ -305,7 +308,6 @@ function SessionTimes({ race }: { race: RaceEntry }) {
                 <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">UTC</span>
                 <span className="font-mono text-sm font-black text-white">{session.utc}</span>
               </div>
-              <div className="text-[8px] text-muted-foreground font-black tracking-widest">{dateStr}</div>
             </div>
           </div>
         );
