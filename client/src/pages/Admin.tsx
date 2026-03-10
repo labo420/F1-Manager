@@ -37,6 +37,13 @@ const TEAM_COLORS: Record<string, string> = {
   "Cadillac": "#d1d1d1",
 };
 
+function getInitials(text: string): string {
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+  if (words.length === 0) return "?";
+  if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
 export default function AdminPanel() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -208,9 +215,13 @@ export default function AdminPanel() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/10 transition-colors" />
               
               <div className="flex justify-between items-start mb-6 relative z-10">
-                <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
+                {m.lobbyImageUrl ? (
+                  <img src={m.lobbyImageUrl} alt="" className="w-12 h-12 rounded-xl object-cover border border-white/10 group-hover:scale-110 transition-transform" />
+                ) : (
+                  <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center border border-white/10 group-hover:scale-110 transition-transform">
+                    <span className="text-xs font-black text-primary">{getInitials(m.lobbyName)}</span>
+                  </div>
+                )}
                 <div className="flex flex-col items-end">
                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Status</span>
                   <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-black uppercase border border-primary/20">
