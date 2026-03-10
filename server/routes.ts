@@ -257,11 +257,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const race = await storage.getRace(input.raceId);
       if (!race) return res.status(404).json({ message: "Race not found" });
       
-      // Article 2: Deadline strictly at start of FP1
-      const now = new Date();
-      const deadline = race.fp1Date ? new Date(race.fp1Date) : new Date(new Date(race.date).getTime() - 48 * 60 * 60 * 1000);
-      if (now > deadline) return res.status(403).json({ message: "Draft is closed (FP1 has started)" });
-
+      // If race is locked, reject. If unlocked by admin, allow picks regardless of deadline
       if (race.isLocked) return res.status(403).json({ message: "Picks are locked" });
 
       const inLobby = await storage.isUserInLobby(req.session.userId, input.lobbyId);
