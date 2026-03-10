@@ -337,7 +337,7 @@ function CircuitInfo({ race }: { race: RaceEntry }) {
         <div className="bg-zinc-900 rounded-lg p-1.5 text-center border border-white/5">
           <Ruler className="w-3 h-3 text-blue-400 mx-auto mb-1" />
           <div className="text-[8px] text-muted-foreground uppercase font-bold mb-0.25">Length</div>
-          <div className="text-white font-bold text-[8px]">{race.circuitLength.replace(',', '.')} km</div>
+          <div className="text-white font-bold text-[10px]">{race.circuitLength.replace(',', '.')} km</div>
         </div>
       )}
       {race.laps && (
