@@ -188,77 +188,114 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
   const playerLobbies = user.memberships?.filter((m: any) => m.role === "player") || [];
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 pb-24">
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-display font-black text-white uppercase tracking-tighter italic">
-          @{user.username}
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm tracking-widest uppercase opacity-50 font-black">Driver Identity Verified</p>
-      </div>
+    <div className="max-w-4xl mx-auto px-4 py-16 pb-24">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center mb-16"
+      >
+        <div className="mb-8">
+          <div className="inline-flex items-center justify-center relative">
+            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" style={{ opacity: 0.5 }} />
+            <h1 className="text-5xl md:text-6xl font-display font-black text-white uppercase tracking-tighter italic relative z-10">
+              @{user.username}
+            </h1>
+          </div>
+        </div>
+        <div className="flex items-center justify-center gap-3">
+          <div className="h-px w-8 bg-primary/40" />
+          <p className="text-muted-foreground text-xs tracking-[0.2em] uppercase font-black">Driver Identity Verified</p>
+          <div className="h-px w-8 bg-primary/40" />
+        </div>
+      </motion.div>
 
       {mode === "list" && (
         <>
           {adminLobbies.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-primary mb-4 flex items-center gap-2">
-                <Crown className="w-4 h-4" /> Leagues I Manage
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-12"
+            >
+              <h2 className="text-xs font-black uppercase tracking-[0.15em] text-primary mb-6 flex items-center gap-3">
+                <Crown className="w-5 h-5" /> Leagues I Manage
               </h2>
               <div className="space-y-3">
                 {adminLobbies.map((m: any) => (
-                  <button
+                  <motion.button
                     key={m.lobbyId}
+                    whileHover={{ scale: 1.02 }}
                     onClick={() => setActiveLobbyId(m.lobbyId)}
-                    className="w-full glass-panel rounded-xl p-5 flex items-center justify-between hover:border-primary/50 transition-all group text-left border-2 border-transparent"
+                    className="w-full glass-panel rounded-2xl p-6 flex items-center justify-between hover:bg-primary/10 hover:border-primary/40 transition-all group text-left border-2 border-primary/20"
                   >
-                    <div>
-                      <div className="text-white font-bold text-lg">{m.lobbyName}</div>
-                      <div className="text-muted-foreground text-xs mt-1">Code: <span className="text-primary font-mono">{m.lobbyCode}</span> | Team: {m.teamName}</div>
+                    <div className="flex-1">
+                      <div className="text-white font-black text-lg uppercase tracking-tight group-hover:text-primary transition-colors">{m.lobbyName}</div>
+                      <div className="text-muted-foreground text-xs mt-2 flex gap-4">
+                        <span>Code: <span className="text-primary font-mono font-bold">{m.lobbyCode}</span></span>
+                        <span>Team: <span className="text-white font-semibold">{m.teamName}</span></span>
+                      </div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </button>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors ml-4 shrink-0" />
+                  </motion.button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
           {playerLobbies.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
-                <Users className="w-4 h-4" /> Leagues I Joined
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="mb-12"
+            >
+              <h2 className="text-xs font-black uppercase tracking-[0.15em] text-muted-foreground mb-6 flex items-center gap-3">
+                <Users className="w-5 h-5" /> Leagues I Joined
               </h2>
               <div className="space-y-3">
                 {playerLobbies.map((m: any) => (
-                  <button
+                  <motion.button
                     key={m.lobbyId}
+                    whileHover={{ scale: 1.02 }}
                     onClick={() => setActiveLobbyId(m.lobbyId)}
-                    className="w-full glass-panel rounded-xl p-5 flex items-center justify-between hover:border-primary/50 transition-all group text-left border-2 border-transparent"
+                    className="w-full glass-panel rounded-2xl p-6 flex items-center justify-between hover:bg-white/5 hover:border-white/20 transition-all group text-left border-2 border-white/10"
                   >
-                    <div>
-                      <div className="text-white font-bold text-lg">{m.lobbyName}</div>
-                      <div className="text-muted-foreground text-xs mt-1">Team: {m.teamName}</div>
+                    <div className="flex-1">
+                      <div className="text-white font-black text-lg uppercase tracking-tight">{m.lobbyName}</div>
+                      <div className="text-muted-foreground text-xs mt-2">Team: <span className="text-white font-semibold">{m.teamName}</span></div>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </button>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-white transition-colors ml-4 shrink-0" />
+                  </motion.button>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-            <button
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-10">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setMode("create")}
-              className="glass-panel rounded-xl p-6 flex flex-col items-center gap-3 hover:border-primary/50 transition-all border-2 border-transparent group"
+              className="glass-panel rounded-2xl p-8 flex flex-col items-center gap-4 hover:bg-primary/10 hover:border-primary/40 transition-all border-2 border-primary/20 group"
             >
-              <PlusCircle className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
-              <span className="text-white font-bold uppercase">Create League</span>
-            </button>
-            <button
+              <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                <PlusCircle className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
+              </div>
+              <span className="text-white font-black text-sm uppercase tracking-wider">Create League</span>
+              <p className="text-xs text-muted-foreground text-center">Start your own F1 fantasy grid</p>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setMode("join")}
-              className="glass-panel rounded-xl p-6 flex flex-col items-center gap-3 hover:border-primary/50 transition-all border-2 border-transparent group"
+              className="glass-panel rounded-2xl p-8 flex flex-col items-center gap-4 hover:bg-white/5 hover:border-white/20 transition-all border-2 border-white/10 group"
             >
-              <LogIn className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
-              <span className="text-white font-bold uppercase">Join League</span>
-            </button>
+              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/15 transition-colors">
+                <LogIn className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+              </div>
+              <span className="text-white font-black text-sm uppercase tracking-wider">Join League</span>
+              <p className="text-xs text-muted-foreground text-center">Enter an existing league code</p>
+            </motion.button>
           </div>
         </>
       )}
@@ -405,12 +442,24 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
         </div>
       </div>
 
-      <div className="mb-6">
-        <h2 className="text-lg font-bold uppercase tracking-wider text-white flex items-center gap-2">
-          <Calendar className="text-primary w-5 h-5" /> 2026 Season
-        </h2>
-        <p className="text-muted-foreground text-sm mt-1">Official FIA/F1 Information</p>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="mb-10 mt-16"
+      >
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <Calendar className="text-primary w-5 h-5" />
+              </div>
+              2026 Season
+            </h2>
+            <p className="text-xs text-muted-foreground mt-3 tracking-[0.1em] uppercase font-bold">Official FIA/F1 Information</p>
+          </div>
+        </div>
+      </motion.div>
 
       <div className="space-y-2">
         {races.map((race) => {
