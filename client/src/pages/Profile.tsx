@@ -48,13 +48,13 @@ export default function Profile() {
   if (!user) return null;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 pb-24">
+    <div className="max-w-5xl mx-auto px-4 py-6 md:py-12 pb-24">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-12"
+        className="space-y-6 md:space-y-12"
       >
-        <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 text-center md:text-left">
+        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-12 text-center md:text-left">
           <div className="relative group shrink-0">
             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-primary/30 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-700" />
             {user.avatarUrl ? (
@@ -100,11 +100,11 @@ export default function Profile() {
         </div>
 
         {user.memberships && user.memberships.length > 0 && (
-          <div className="space-y-6">
+          <div className="space-y-3 md:space-y-6">
             <h2 className="text-sm font-semibold text-white/50 uppercase tracking-widest flex items-center gap-3">
               <Shield className="w-4 h-4 text-primary" /> Leagues
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
               {user.memberships.map((m: any, idx: number) => (
                 <motion.div
                   key={m.lobbyId}
@@ -160,7 +160,7 @@ export default function Profile() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="pt-8 border-t border-white/10 mt-8"
+          className="pt-4 md:pt-8 border-t border-white/10 mt-4 md:mt-8"
         >
           <button
             onClick={() => logout()}

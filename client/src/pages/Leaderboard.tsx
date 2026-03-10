@@ -20,8 +20,8 @@ export default function Leaderboard() {
 
   if (!activeLobbyId || !activeMembership) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12 pb-24">
-        <div className="text-center mb-12">
+      <div className="max-w-3xl mx-auto px-4 py-6 md:py-12 pb-24">
+        <div className="text-center mb-6 md:mb-12">
           <motion.div 
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -34,8 +34,8 @@ export default function Leaderboard() {
         </div>
 
         {adminLobbies.length > 0 && (
-          <div className="mb-10">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-6 flex items-center gap-3 px-2">
+          <div className="mb-5 md:mb-10">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-3 md:mb-6 flex items-center gap-3 px-2">
               <div className="w-8 h-[1px] bg-primary/30" />
               Leagues I Manage
             </h3>
@@ -70,8 +70,8 @@ export default function Leaderboard() {
         )}
 
         {playerLobbies.length > 0 && (
-          <div className="mb-10">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-6 flex items-center gap-3 px-2">
+          <div className="mb-5 md:mb-10">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-3 md:mb-6 flex items-center gap-3 px-2">
               <div className="w-8 h-[1px] bg-white/10" />
               Leagues I Joined
             </h3>

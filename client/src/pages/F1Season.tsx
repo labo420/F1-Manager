@@ -465,11 +465,11 @@ export default function F1Season() {
   const displayDriverStandings = driverStandings ?? [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 pb-24">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-12 pb-24">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8 sm:mb-16"
+        className="mb-4 sm:mb-16"
       >
         <div className="relative rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
@@ -521,7 +521,7 @@ export default function F1Season() {
         </div>
       </motion.div>
 
-      <div className="flex justify-center mb-12">
+      <div className="flex justify-center mb-6 md:mb-12">
         <div className="glass-panel rounded-2xl p-1.5 inline-flex gap-1 border-2 border-white/5 shadow-2xl" data-testid="toggle-f1-tabs">
           {[
             { key: "drivers" as const, label: "Drivers", icon: Trophy },

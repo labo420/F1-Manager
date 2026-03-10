@@ -40,8 +40,8 @@ export default function Paddock() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8 pb-24">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 sm:gap-8 mb-8 sm:mb-16">
+    <div className="max-w-7xl mx-auto py-3 sm:py-12 px-4 sm:px-6 lg:px-8 pb-24">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-8 mb-4 sm:mb-16">
         <div>
           <h1 className="text-4xl sm:text-6xl md:text-8xl font-display font-black text-white uppercase tracking-tighter italic leading-none mb-2">
             Paddock
@@ -74,10 +74,10 @@ export default function Paddock() {
           className="max-w-xl mx-auto mb-16 glass-panel rounded-3xl p-6 sm:p-10 border-2 border-primary/30 shadow-2xl relative overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl" />
-          <h2 className="text-3xl font-display font-black text-white uppercase tracking-tight mb-8 flex items-center gap-3">
+          <h2 className="text-3xl font-display font-black text-white uppercase tracking-tight mb-4 md:mb-8 flex items-center gap-3">
             <PlusCircle className="w-8 h-8 text-primary" /> Start New League
           </h2>
-          <form onSubmit={(e) => { e.preventDefault(); if (leagueName.trim() && teamName.trim()) createLobby.mutate({ name: leagueName.trim(), teamName: teamName.trim() }, { onSuccess: () => { setMode("list"); setLeagueName(""); setTeamName(""); } }); }} className="space-y-6">
+          <form onSubmit={(e) => { e.preventDefault(); if (leagueName.trim() && teamName.trim()) createLobby.mutate({ name: leagueName.trim(), teamName: teamName.trim() }, { onSuccess: () => { setMode("list"); setLeagueName(""); setTeamName(""); } }); }} className="space-y-3 md:space-y-6">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">League Identity</label>
               <input
