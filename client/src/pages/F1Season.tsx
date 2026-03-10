@@ -225,37 +225,53 @@ function SessionTimes({ race }: { race: RaceEntry }) {
 
   const raceDate = new Date(race.date);
   const qualDate = subDays(raceDate, 1);
+  const sprintQualDate = race.hasSprint ? subDays(raceDate, 2) : null;
   const sprintDate = race.hasSprint ? subDays(raceDate, 1) : null;
   
-  let qualData = { ita: "TBD", utc: "TBD" };
+  let sprintQualData = { ita: "TBD", utc: "TBD" };
   let sprintData = { ita: "TBD", utc: "TBD" };
+  let qualData = { ita: "TBD", utc: "TBD" };
   let raceData = { ita: "TBD", utc: "TBD" };
   
   if (sessionsStatus) {
-    const qualSession = (sessionsStatus.qualSessions || []).find(s => {
+    // Sprint Qualifying (Friday for sprint weekends)
+    const sprintQualSession = race.hasSprint ? (sessionsStatus.qualSessions || []).find(s => {
       const sessionDate = new Date(s.date_start);
-      const dateMatch = format(sessionDate, "yyyy-MM-dd") === format(qualDate, "yyyy-MM-dd");
-      return dateMatch && (s.session_name === "Qualifying" || (s.session_name.includes("Qualifying") && !s.session_name.includes("Sprint")));
-    });
+      const dateMatch = format(sessionDate, "yyyy-MM-dd") === format(sprintQualDate!, "yyyy-MM-dd");
+      return dateMatch && s.session_name === "Sprint Qualifying";
+    }) : null;
     
+    // Sprint (Saturday for sprint weekends)
     const sprintSession = race.hasSprint ? (sessionsStatus.raceSessions || []).find(s => {
       const sessionDate = new Date(s.date_start);
-      const dateMatch = format(sessionDate, "yyyy-MM-dd") === format(sprintDate, "yyyy-MM-dd");
+      const dateMatch = format(sessionDate, "yyyy-MM-dd") === format(sprintDate!, "yyyy-MM-dd");
       return dateMatch && s.session_name === "Sprint";
     }) : null;
     
+    // Regular Qualifying (Saturday or Friday depending on sprint)
+    const qualSession = (sessionsStatus.qualSessions || []).find(s => {
+      const sessionDate = new Date(s.date_start);
+      const dateMatch = format(sessionDate, "yyyy-MM-dd") === format(qualDate, "yyyy-MM-dd");
+      return dateMatch && s.session_name === "Qualifying";
+    });
+    
+    // Race (Sunday)
     const raceSession = (sessionsStatus.raceSessions || []).find(s => {
       const sessionDate = new Date(s.date_start);
       const dateMatch = format(sessionDate, "yyyy-MM-dd") === format(raceDate, "yyyy-MM-dd");
       return dateMatch && s.session_name === "Race";
     });
     
-    if (qualSession) {
-      qualData = getITAFromUTCTime(qualSession.date_start);
+    if (sprintQualSession) {
+      sprintQualData = getITAFromUTCTime(sprintQualSession.date_start);
     }
     
     if (sprintSession) {
       sprintData = getITAFromUTCTime(sprintSession.date_start);
+    }
+    
+    if (qualSession) {
+      qualData = getITAFromUTCTime(qualSession.date_start);
     }
     
     if (raceSession) {
@@ -264,8 +280,9 @@ function SessionTimes({ race }: { race: RaceEntry }) {
   }
   
   const sessions = [
-    { label: "Qualifying", date: qualDate, ita: qualData.ita, utc: qualData.utc },
+    ...(race.hasSprint && sprintQualData.ita !== "TBD" ? [{ label: "Sprint Qualifying", date: sprintQualDate!, ita: sprintQualData.ita, utc: sprintQualData.utc }] : []),
     ...(race.hasSprint && sprintData.ita !== "TBD" ? [{ label: "Sprint", date: sprintDate!, ita: sprintData.ita, utc: sprintData.utc }] : []),
+    { label: "Qualifying", date: qualDate, ita: qualData.ita, utc: qualData.utc },
     { label: "Race", date: raceDate, ita: raceData.ita, utc: raceData.utc },
   ];
 

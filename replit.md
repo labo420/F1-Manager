@@ -100,7 +100,9 @@ Private Fantasy F1 web application. Users register (username + password), create
 - **Constructor Standings**: All 10 constructors with team colors, sorted by points (from `/api/f1/constructor-standings`)
 - **Race Archive**: 24-race calendar with expandable cards showing:
   - **Circuit Info**: Circuit name, length (km), lap count, total distance
-  - **Session Times**: Qualifying, Race (and Sprint if applicable) start times in both ITA (CET/CEST) and UTC timezones, fetched from free F1 sessions API with accurate timezone conversion
+  - **Session Times**: Complete weekend schedule in both ITA (CET/CEST) and UTC timezones, fetched live from free F1 sessions API
+    - **Regular Weekends**: Qualifying → Race
+    - **Sprint Weekends**: Sprint Qualifying (shootout) → Sprint → Qualifying → Race
   - **Race Results Tab**: Driver positions, points, times, gaps, fastest lap (from `/api/f1/race/:id/external-results` — Jolpica API)
   - **Qualifying Tab**: Grid order with Q1/Q2/Q3 times and gaps (from `/api/f1/race/:id/qualifying` — Jolpica API)
   - **Sprint Tab**: Sprint results with points and gaps (if circuit has sprint format) (from `/api/f1/race/:id/sprint` — Jolpica API)
