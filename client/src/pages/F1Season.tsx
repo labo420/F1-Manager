@@ -466,55 +466,80 @@ export default function F1Season() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-16"
+        className="mb-16"
       >
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <div className="h-px w-8 bg-gradient-to-r from-transparent to-primary/40" />
-          <div className="px-4 py-2 bg-primary/10 rounded-full border border-primary/30 backdrop-blur-sm">
-            <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">FIA Official</p>
+        <div className="relative rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-950">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-primary/5 rounded-full -mr-64 -mt-32 blur-[100px] pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 p-8 md:p-12">
+            <div className="flex flex-col items-center md:items-start gap-6 text-center md:text-left">
+              <div className="flex items-center gap-4">
+                <div className="h-8 w-px bg-white/10 hidden md:block" />
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/F1.svg/500px-F1.svg.png"
+                  alt="Formula 1"
+                  className="h-12 w-auto object-contain"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+              </div>
+              <div>
+                <h1 className="text-4xl md:text-6xl font-display font-black text-white uppercase tracking-tighter leading-none mb-2" data-testid="text-f1-title">
+                  World Championship
+                </h1>
+                <p className="text-primary font-black uppercase tracking-[0.3em] text-sm">
+                  2026 Season — Official Records
+                </p>
+              </div>
+              <div className="flex items-center gap-3 flex-wrap justify-center md:justify-start">
+                <span className="px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-black text-muted-foreground uppercase tracking-widest">24 Races</span>
+                <span className="px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-black text-muted-foreground uppercase tracking-widest">22 Drivers</span>
+                <span className="px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[10px] font-black text-muted-foreground uppercase tracking-widest">11 Constructors</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center gap-3 shrink-0">
+              <div className="px-3 py-1.5 bg-white/5 rounded-full border border-white/10 text-[9px] font-black text-muted-foreground uppercase tracking-widest text-center">Sanctioned by</div>
+              <img
+                src="https://upload.wikimedia.org/wikipedia/en/thumb/e/e8/F%C3%A9d%C3%A9ration_Internationale_de_l%27Automobile_%28logo%29.svg/200px-F%C3%A9d%C3%A9ration_Internationale_de_l%27Automobile_%28logo%29.svg.png"
+                alt="FIA"
+                className="h-20 w-auto object-contain opacity-90"
+                onError={(e) => {
+                  const el = e.target as HTMLImageElement;
+                  el.style.display = 'none';
+                  const fallback = el.nextSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+              <div className="hidden items-center justify-center w-20 h-20 rounded-2xl bg-white/5 border border-white/10">
+                <span className="text-white font-black text-xl">FIA</span>
+              </div>
+              <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] text-center">
+                Fédération Internationale<br />de l'Automobile
+              </p>
+            </div>
           </div>
-          <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/40" />
-        </div>
 
-        <div className="inline-flex items-center justify-center mb-8 relative">
-          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
-          <svg className="w-24 h-24 relative z-10" viewBox="0 0 100 100" fill="none">
-            <defs>
-              <linearGradient id="fiaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#ef4444" stopOpacity="1" />
-                <stop offset="100%" stopColor="#ff6b6b" stopOpacity="1" />
-              </linearGradient>
-            </defs>
-            <rect x="10" y="10" width="80" height="80" rx="16" fill="url(#fiaGrad)" className="drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]" />
-            <circle cx="50" cy="50" r="35" fill="none" stroke="white" strokeWidth="2" opacity="0.3" />
-            <text x="50" y="48" fontSize="32" fontWeight="900" textAnchor="middle" fill="white" fontFamily="monospace">F1</text>
-            <circle cx="50" cy="50" r="40" fill="none" stroke="white" strokeWidth="1.5" opacity="0.15" />
-          </svg>
-        </div>
-
-        <h1 className="text-5xl md:text-7xl font-display font-black text-white uppercase tracking-tighter leading-none mb-2" data-testid="text-f1-title">
-          Formula 1<br className="sm:hidden" />
-          <span className="bg-gradient-to-r from-primary via-red-500 to-primary bg-clip-text text-transparent">2026 World Championship</span>
-        </h1>
-
-        <div className="flex items-center justify-center gap-8 mb-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">Season Record</span>
-          </div>
-          <div className="h-4 w-px bg-white/10" />
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black text-muted-foreground uppercase tracking-widest">FIA Sanctioned</span>
-            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+          <div className="border-t border-white/5 px-8 md:px-12 py-4 flex items-center gap-6 bg-white/[0.02] overflow-x-auto">
+            {[
+              { label: "Season", value: "2026" },
+              { label: "Status", value: "Active" },
+              { label: "Rounds", value: "24" },
+              { label: "Points System", value: "FIA Standard" },
+            ].map(item => (
+              <div key={item.label} className="flex items-center gap-3 shrink-0">
+                <div>
+                  <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{item.label}</div>
+                  <div className="text-xs font-black text-white">{item.value}</div>
+                </div>
+                <div className="h-6 w-px bg-white/10 last:hidden" />
+              </div>
+            ))}
           </div>
         </div>
-
-        <p className="text-muted-foreground uppercase tracking-[0.4em] text-[10px] font-black opacity-60">
-          Official FIA Season Records & Statistics
-        </p>
       </motion.div>
 
       <div className="flex justify-center mb-12">
