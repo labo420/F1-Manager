@@ -351,7 +351,7 @@ function CircuitInfo({ race }: { race: RaceEntry }) {
         <div className="bg-zinc-900 rounded-lg p-1.5 text-center border border-white/5">
           <Flag className="w-3 h-3 text-yellow-400 mx-auto mb-1" />
           <div className="text-[8px] text-muted-foreground uppercase font-bold mb-0.25">Total Distance</div>
-          <div className="text-white font-bold text-[8px]">{totalDistance} km</div>
+          <div className="text-white font-bold text-[10px]">{totalDistance} km</div>
         </div>
       )}
     </div>
