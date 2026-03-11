@@ -436,7 +436,51 @@ export default function AdminPanel() {
           )}
         </motion.div>
 
-        {/* 2. Players' Picks Panel */}
+        {/* 2. Players List - Compact */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.02 }}
+          className="glass-panel rounded-2xl p-4 border-2 border-white/5 shadow-2xl"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-white flex items-center gap-2">
+              <Users className="text-primary w-3 h-3" /> Players
+            </h2>
+            <span className="px-2 py-0.5 bg-white/5 rounded-full text-[8px] font-black text-muted-foreground tracking-widest border border-white/5">
+              {members?.length || 0} / 10
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {members?.map((m: any) => (
+              <div 
+                key={m.id}
+                data-testid={`member-${m.userId}`}
+                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-zinc-900/50 border border-white/5 hover:border-white/10 transition-colors group"
+              >
+                <div className="relative">
+                  {m.avatarUrl ? (
+                    <img src={m.avatarUrl} alt="" className="w-5 h-5 rounded object-cover border border-white/10" />
+                  ) : (
+                    <div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center border border-white/10">
+                      <UserCircle className="w-3 h-3 text-muted-foreground/30" />
+                    </div>
+                  )}
+                  {m.role === "admin" && (
+                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full border border-background shadow-sm">
+                      <Settings className="w-1.5 h-1.5 text-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="font-bold text-white text-[9px] uppercase tracking-tight truncate">{m.teamName === "TBD" ? m.username : m.teamName}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* 3. Players' Picks Panel */}
         {selectedRace && (
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -955,57 +999,7 @@ export default function AdminPanel() {
           </motion.div>
         )}
 
-        {/* 5. Players List */}
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="glass-panel rounded-3xl p-8 border-2 border-white/5 shadow-2xl"
-        >
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white flex items-center gap-3">
-              <Users className="text-primary w-4 h-4" /> Players
-            </h2>
-            <span className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-black text-muted-foreground tracking-widest border border-white/5">
-              {members?.length || 0} / 10
-            </span>
-          </div>
-          <div className="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-            {members?.map((m: any, idx: number) => (
-              <motion.div 
-                key={m.id} 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                data-testid={`member-${m.userId}`} 
-                className="flex items-center justify-between p-4 rounded-2xl bg-zinc-900/50 border border-white/5 hover:border-white/10 transition-colors group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    {m.avatarUrl ? (
-                      <img src={m.avatarUrl} alt="" className="w-10 h-10 rounded-xl object-cover border border-white/10 group-hover:scale-105 transition-transform" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                        <UserCircle className="w-6 h-6 text-muted-foreground/30" />
-                      </div>
-                    )}
-                    {m.role === "admin" && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center border-2 border-background shadow-lg">
-                        <Settings className="w-2.5 h-2.5 text-white" />
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="font-display font-black text-white text-xs uppercase tracking-tight group-hover:text-primary transition-colors">{m.teamName === "TBD" ? "Unassigned" : m.teamName}</div>
-                    <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-60">@{m.username}</div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* 6. Draft Monitor */}
+        {/* 5. Draft Monitor */}
         {selectedRace && (
           <motion.div
             initial={{ opacity: 0, x: -20 }}
