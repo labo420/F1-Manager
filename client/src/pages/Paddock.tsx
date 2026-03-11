@@ -2,10 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, Users, PlusCircle, LogIn } from "lucide-react";
+import { Loader2, Users, PlusCircle, LogIn, ArrowRight, Crown, X } from "lucide-react";
 import { useCreateLobby, useJoinLobby } from "@/hooks/use-lobby";
-import { TeamAvatar } from "@/components/TeamAvatar";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Membership } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
@@ -40,203 +39,281 @@ export default function Paddock() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8 pb-24">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-6 mb-6 sm:mb-12">
+    <div className="max-w-5xl mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 pb-28">
+
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10 sm:mb-14">
         <div>
-          <h1 className="text-4xl sm:text-6xl md:text-8xl font-display font-black text-white uppercase tracking-tighter italic leading-none mb-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary mb-2">
+            My Leagues
+          </p>
+          <h1 className="text-5xl sm:text-7xl font-display font-black text-white uppercase tracking-tighter leading-none">
             Paddock
           </h1>
-          <div className="h-1.5 w-24 bg-primary rounded-full ml-1" />
+          <div className="flex items-center gap-2 mt-3">
+            <div className="h-[3px] w-8 bg-primary rounded-full" />
+            <div className="h-px w-16 bg-white/10" />
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-3 w-full md:w-auto">
+        <div className="flex gap-2 sm:gap-3 shrink-0">
           <button
-            onClick={() => setMode("create")}
+            onClick={() => setMode(mode === "create" ? "list" : "create")}
             data-testid="button-create-league"
-            className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-2xl font-display font-black uppercase tracking-tight flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] red-glow shadow-2xl shadow-primary/40"
+            className={`group flex items-center gap-2 px-4 sm:px-6 py-3 rounded-xl font-display font-black uppercase text-sm tracking-wide transition-all duration-200
+              ${mode === "create"
+                ? "bg-primary/20 text-primary border border-primary/40"
+                : "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/25"}`}
           >
-            <PlusCircle className="w-5 h-5" /> Create League
+            {mode === "create" ? <X className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+            <span className="hidden sm:inline">Create</span>
           </button>
           <button
-            onClick={() => setMode("join")}
+            onClick={() => setMode(mode === "join" ? "list" : "join")}
             data-testid="button-join-league"
-            className="flex-1 md:flex-none glass-panel hover:bg-white/10 text-white px-4 sm:px-8 py-3 sm:py-4 rounded-2xl font-display font-black uppercase tracking-tight flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98] border-2 border-white/10"
+            className={`group flex items-center gap-2 px-4 sm:px-6 py-3 rounded-xl font-display font-black uppercase text-sm tracking-wide transition-all duration-200 border
+              ${mode === "join"
+                ? "bg-white/10 text-white border-white/20"
+                : "bg-transparent text-white border-white/15 hover:bg-white/8 hover:border-white/25"}`}
           >
-            <LogIn className="w-5 h-5 text-primary" /> Join League
+            {mode === "join" ? <X className="w-4 h-4" /> : <LogIn className="w-4 h-4 text-primary" />}
+            <span className="hidden sm:inline">Join</span>
           </button>
         </div>
       </div>
 
-      {mode === "create" && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-xl mx-auto mb-16 glass-panel rounded-3xl p-6 sm:p-10 border-2 border-primary/30 shadow-2xl relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl" />
-          <h2 className="text-3xl font-display font-black text-white uppercase tracking-tight mb-8 flex items-center gap-3">
-            <PlusCircle className="w-8 h-8 text-primary" /> Start New League
-          </h2>
-          <form onSubmit={(e) => { e.preventDefault(); if (leagueName.trim() && teamName.trim()) createLobby.mutate({ name: leagueName.trim(), teamName: teamName.trim() }, { onSuccess: () => { setMode("list"); setLeagueName(""); setTeamName(""); } }); }} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">League Identity</label>
-              <input
-                placeholder="Enter League Name"
-                value={leagueName}
-                onChange={(e) => setLeagueName(e.target.value)}
-                className="w-full bg-white/5 border-2 border-white/10 rounded-2xl px-6 py-5 text-white font-display font-bold uppercase tracking-tight focus:border-primary outline-none transition-all placeholder:text-white/20"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Your Scuderia</label>
-              <input
-                placeholder="Enter Team Name"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                className="w-full bg-white/5 border-2 border-white/10 rounded-2xl px-6 py-5 text-white font-display font-bold uppercase tracking-tight focus:border-primary outline-none transition-all placeholder:text-white/20"
-              />
-            </div>
-            <div className="flex gap-4 pt-4">
-              <button type="button" onClick={() => { setMode("list"); setTeamName(""); }} className="flex-1 py-5 rounded-2xl font-display font-black uppercase tracking-tight text-muted-foreground hover:text-white hover:bg-white/5 transition-all">
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={!leagueName.trim() || !teamName.trim() || createLobby.isPending}
-                className="flex-[2] bg-primary text-white rounded-2xl py-5 font-display font-black uppercase tracking-tight disabled:opacity-50 hover:bg-primary/90 transition-all red-glow"
-              >
-                {createLobby.isPending ? "Constructing..." : "Confirm Grid"}
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      )}
-
-      {mode === "join" && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-xl mx-auto mb-16 glass-panel rounded-3xl p-6 sm:p-10 border-2 border-primary/30 shadow-2xl relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-16 -mt-16 blur-3xl" />
-          <h2 className="text-3xl font-display font-black text-white uppercase tracking-tight mb-8 flex items-center gap-3">
-            <LogIn className="w-8 h-8 text-primary" /> Join The Grid
-          </h2>
-          <form onSubmit={(e) => { e.preventDefault(); if (code.length >= 4 && teamName.trim()) joinLobby.mutate({ code: code.toUpperCase(), teamName: teamName.trim() }, { onSuccess: () => { setMode("list"); setCode(""); setTeamName(""); } }); }} className="space-y-6">
-            <div className="space-y-2 text-center">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">League Invitation Code</label>
-              <input
-                placeholder="F1-XXXX"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                className="w-full bg-white/5 border-2 border-white/10 rounded-2xl px-6 py-6 text-white font-mono text-4xl text-center tracking-[0.4em] uppercase focus:border-primary outline-none transition-all placeholder:text-white/10"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Your Scuderia</label>
-              <input
-                placeholder="Enter Team Name"
-                value={teamName}
-                onChange={(e) => setTeamName(e.target.value)}
-                className="w-full bg-white/5 border-2 border-white/10 rounded-2xl px-6 py-5 text-white font-display font-bold uppercase tracking-tight focus:border-primary outline-none transition-all placeholder:text-white/20"
-              />
-            </div>
-            <div className="flex gap-4 pt-4">
-              <button type="button" onClick={() => { setMode("list"); setTeamName(""); }} className="flex-1 py-5 rounded-2xl font-display font-black uppercase tracking-tight text-muted-foreground hover:text-white hover:bg-white/5 transition-all">
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={code.length < 4 || !teamName.trim() || joinLobby.isPending}
-                className="flex-[2] bg-primary text-white rounded-2xl py-5 font-display font-black uppercase tracking-tight disabled:opacity-50 hover:bg-primary/90 transition-all red-glow"
-              >
-                {joinLobby.isPending ? "Connecting..." : "Confirm Entry"}
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {memberships?.map((membership, idx) => (
+      {/* ── Create form ── */}
+      <AnimatePresence>
+        {mode === "create" && (
           <motion.div
-            key={membership.lobbyId}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
+            key="create"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden mb-8"
           >
-            <Link href={`/lobby/${membership.lobbyId}`}>
-              <div className="glass-panel rounded-[2rem] p-3 hover:bg-white/5 hover:border-primary/50 transition-all group cursor-pointer border-2 border-white/5 relative overflow-hidden h-full flex flex-col shadow-xl">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-primary/15 transition-colors" />
-
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1 min-w-0 pr-2">
-                    <h3 className="text-xl font-display font-black text-white uppercase tracking-tight group-hover:text-primary transition-colors line-clamp-1 mb-0.5 leading-none">
-                      {membership.lobbyName}
-                    </h3>
-                    <code className="text-[8px] font-mono font-bold text-primary bg-primary/10 px-1 py-0.5 rounded-md uppercase tracking-widest">
-                      {membership.lobbyCode}
-                    </code>
-                  </div>
-                  <div className="relative shrink-0">
-                    {membership.lobbyImageUrl ? (
-                      <img
-                        src={membership.lobbyImageUrl}
-                        alt={membership.lobbyName}
-                        className="w-10 h-10 rounded-2xl object-cover border border-white/10 shadow-inner"
-                        data-testid={`img-lobby-${membership.lobbyId}`}
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors shadow-inner">
-                        <span className="text-[9px] font-black text-white/60 group-hover:text-primary transition-colors">{getInitials(membership.lobbyName)}</span>
-                      </div>
-                    )}
-                  </div>
+            <div className="rounded-xl border border-primary/20 bg-primary/5 overflow-hidden">
+              <div className="border-b border-primary/15 px-6 py-4 flex items-center gap-3">
+                <div className="w-1.5 h-4 bg-primary rounded-full" />
+                <span className="font-display font-black text-sm uppercase tracking-wider text-white">New League</span>
+              </div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (leagueName.trim() && teamName.trim()) {
+                    createLobby.mutate(
+                      { name: leagueName.trim(), teamName: teamName.trim() },
+                      { onSuccess: () => { setMode("list"); setLeagueName(""); setTeamName(""); } }
+                    );
+                  }
+                }}
+                className="p-6 grid sm:grid-cols-2 gap-4"
+              >
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">League Name</label>
+                  <input
+                    placeholder="e.g. Scuderia GP"
+                    value={leagueName}
+                    onChange={(e) => setLeagueName(e.target.value)}
+                    data-testid="input-league-name"
+                    className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white font-semibold text-sm focus:border-primary outline-none transition-colors placeholder:text-white/20"
+                  />
                 </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Your Scuderia</label>
+                  <input
+                    placeholder="e.g. Tifosi Racing"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    data-testid="input-team-name-create"
+                    className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white font-semibold text-sm focus:border-primary outline-none transition-colors placeholder:text-white/20"
+                  />
+                </div>
+                <div className="sm:col-span-2 flex gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => { setMode("list"); setLeagueName(""); setTeamName(""); }}
+                    className="px-6 py-2.5 rounded-lg font-bold uppercase text-xs text-white/35 hover:text-white/70 transition-colors border border-white/8 hover:border-white/15"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!leagueName.trim() || !teamName.trim() || createLobby.isPending}
+                    data-testid="button-submit-create"
+                    className="px-8 py-2.5 bg-primary text-white rounded-lg font-black uppercase text-xs tracking-wider disabled:opacity-40 hover:bg-primary/90 transition-all"
+                  >
+                    {createLobby.isPending ? "Creating…" : "Confirm"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        )}
 
-                <div className="mt-auto space-y-2 pt-2 border-t border-white/5">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Scuderia</span>
-                    <div className="flex items-center gap-1.5">
-                      <TeamAvatar name={membership.teamName} size="sm" />
-                      <span className="text-xs font-display font-black text-white uppercase tracking-tight">{membership.teamName}</span>
+        {/* ── Join form ── */}
+        {mode === "join" && (
+          <motion.div
+            key="join"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden mb-8"
+          >
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+              <div className="border-b border-white/8 px-6 py-4 flex items-center gap-3">
+                <div className="w-1.5 h-4 bg-white/30 rounded-full" />
+                <span className="font-display font-black text-sm uppercase tracking-wider text-white">Join League</span>
+              </div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (code.length >= 4 && teamName.trim()) {
+                    joinLobby.mutate(
+                      { code: code.toUpperCase(), teamName: teamName.trim() },
+                      { onSuccess: () => { setMode("list"); setCode(""); setTeamName(""); } }
+                    );
+                  }
+                }}
+                className="p-6 grid sm:grid-cols-2 gap-4"
+              >
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">League Code</label>
+                  <input
+                    placeholder="F1-XXXX"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.toUpperCase())}
+                    data-testid="input-league-code"
+                    className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white font-mono font-bold text-lg text-center tracking-[0.3em] uppercase focus:border-primary outline-none transition-colors placeholder:text-white/20"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Your Scuderia</label>
+                  <input
+                    placeholder="e.g. Tifosi Racing"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    data-testid="input-team-name-join"
+                    className="w-full bg-black/30 border border-white/10 rounded-lg px-4 py-3 text-white font-semibold text-sm focus:border-primary outline-none transition-colors placeholder:text-white/20"
+                  />
+                </div>
+                <div className="sm:col-span-2 flex gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => { setMode("list"); setCode(""); setTeamName(""); }}
+                    className="px-6 py-2.5 rounded-lg font-bold uppercase text-xs text-white/35 hover:text-white/70 transition-colors border border-white/8 hover:border-white/15"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={code.length < 4 || !teamName.trim() || joinLobby.isPending}
+                    data-testid="button-submit-join"
+                    className="px-8 py-2.5 bg-primary text-white rounded-lg font-black uppercase text-xs tracking-wider disabled:opacity-40 hover:bg-primary/90 transition-all"
+                  >
+                    {joinLobby.isPending ? "Joining…" : "Join Grid"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── League cards ── */}
+      {memberships && memberships.length > 0 ? (
+        <div className="space-y-3">
+          {memberships.map((membership, idx) => {
+            const isAdmin = membership.role === "admin";
+            const initials = getInitials(membership.lobbyName);
+            return (
+              <motion.div
+                key={membership.lobbyId}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.06 }}
+              >
+                <Link href={`/lobby/${membership.lobbyId}`}>
+                  <div
+                    className={`group relative flex items-center gap-4 sm:gap-6 rounded-xl px-5 py-4 sm:py-5 border transition-all duration-200 cursor-pointer overflow-hidden
+                      bg-white/[0.03] hover:bg-white/[0.055]
+                      ${isAdmin ? "border-primary/20 hover:border-primary/40" : "border-white/8 hover:border-white/18"}`}
+                    data-testid={`lobby-card-${membership.lobbyId}`}
+                  >
+                    {/* Left accent bar */}
+                    <div className={`absolute left-0 inset-y-0 w-[3px] rounded-r-full transition-all duration-200
+                      ${isAdmin ? "bg-primary" : "bg-white/20 group-hover:bg-white/40"}`} />
+
+                    {/* Avatar */}
+                    <div className={`shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center border font-display font-black text-sm transition-colors duration-200
+                      ${isAdmin
+                        ? "bg-primary/10 border-primary/20 text-primary group-hover:bg-primary/20"
+                        : "bg-white/5 border-white/10 text-white/50 group-hover:bg-white/10"}`}
+                    >
+                      {membership.lobbyImageUrl ? (
+                        <img
+                          src={membership.lobbyImageUrl}
+                          alt={membership.lobbyName}
+                          className="w-full h-full object-cover rounded-xl"
+                          data-testid={`img-lobby-${membership.lobbyId}`}
+                        />
+                      ) : (
+                        <span>{initials}</span>
+                      )}
+                    </div>
+
+                    {/* Main info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <h3 className={`font-display font-black text-base sm:text-lg uppercase tracking-tight leading-none transition-colors
+                          ${isAdmin ? "text-white group-hover:text-primary" : "text-white"}`}>
+                          {membership.lobbyName}
+                        </h3>
+                        {isAdmin && (
+                          <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
+                            <Crown className="w-2.5 h-2.5" /> Admin
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <code className="text-[10px] font-mono text-white/35 tracking-wider">{membership.lobbyCode}</code>
+                        <span className="text-white/15 text-xs">·</span>
+                        <span className="text-[10px] text-white/45 font-semibold uppercase tracking-wide">{membership.teamName}</span>
+                      </div>
+                    </div>
+
+                    {/* Right side: CTA */}
+                    <div className={`shrink-0 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest transition-all duration-200 opacity-0 group-hover:opacity-100
+                      ${isAdmin ? "text-primary" : "text-white/60"}`}>
+                      <span className="hidden sm:block">Enter</span>
+                      <ArrowRight className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Role</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-[0.1em] ${
-                      membership.role === 'admin' ? 'bg-primary/20 text-primary border border-primary/30 shadow-[0_0_15px_-5px_hsl(var(--primary)/0.5)]' : 'bg-white/10 text-white border border-white/10'
-                    }`}>
-                      {membership.role}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-2 flex items-center justify-end">
-                  <div className="text-[8px] font-black text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0 flex items-center gap-1.5">
-                    Enter Paddock <div className="w-3 h-[2px] bg-primary rounded-full" />
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </motion.div>
-        ))}
-
-        {memberships?.length === 0 && (
-          <div className="col-span-full text-center py-20 glass-panel rounded-3xl border-2 border-dashed border-white/10">
-            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Users className="w-10 h-10 text-muted-foreground opacity-20" />
-            </div>
-            <p className="text-xl font-display font-bold text-muted-foreground uppercase tracking-tight mb-6">Your Grid is Empty</p>
-            <button
-              onClick={() => setMode("create")}
-              className="text-primary hover:text-white font-black uppercase tracking-widest text-xs transition-colors border-b-2 border-primary/20 hover:border-white pb-1"
-            >
-              Start Your First League
-            </button>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-20 rounded-xl border border-dashed border-white/10 bg-white/[0.02]"
+        >
+          <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <Users className="w-7 h-7 text-white/20" />
           </div>
-        )}
-      </div>
+          <p className="font-display font-black text-lg uppercase tracking-tight text-white/30 mb-4">No Leagues Yet</p>
+          <button
+            onClick={() => setMode("create")}
+            className="text-primary hover:text-white font-black uppercase tracking-widest text-xs transition-colors"
+          >
+            Create Your First League →
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 }
