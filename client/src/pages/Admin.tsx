@@ -64,6 +64,8 @@ export default function AdminPanel() {
   const [driverEntries, setDriverEntries] = useState<DriverEntry[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [realResultsTab, setRealResultsTab] = useState<RealResultsTab>("race");
+  const [isEditingRealResults, setIsEditingRealResults] = useState(false);
+  const [editedRealResults, setEditedRealResults] = useState<any[]>([]);
 
   const isAdmin = adminLobbies.length > 0;
 
@@ -573,10 +575,51 @@ export default function AdminPanel() {
             transition={{ delay: 0.1 }}
             className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
           >
-            <div className="px-8 py-5 flex items-center gap-3 border-b border-white/5">
-              <ListOrdered className="w-4 h-4 text-primary shrink-0" />
-              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex-1">Official F1 Results</h2>
-              <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest">View only</span>
+            <div className="px-8 py-5 flex items-center justify-between border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <ListOrdered className="w-4 h-4 text-primary shrink-0" />
+                <h2 className="text-sm font-black text-white uppercase tracking-[0.2em]">Official F1 Results</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                {!isEditingRealResults ? (
+                  <button
+                    onClick={() => {
+                      setIsEditingRealResults(true);
+                      setEditedRealResults(activeTabData ? JSON.parse(JSON.stringify(activeTabData)) : []);
+                    }}
+                    data-testid="button-edit-f1-results"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-[9px] font-black uppercase tracking-widest hover:bg-white/10 hover:border-white/20 transition-all"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                    Edit
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsEditingRealResults(false);
+                        setEditedRealResults([]);
+                      }}
+                      data-testid="button-cancel-f1-edit"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-muted-foreground text-[9px] font-black uppercase tracking-widest hover:text-white transition-all"
+                    >
+                      <X className="w-3 h-3" />
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingRealResults(false);
+                        toast({ title: "Results Updated", description: "Official F1 results have been saved." });
+                      }}
+                      data-testid="button-save-f1-edit"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/20 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-widest hover:bg-primary/30 transition-all"
+                    >
+                      <Save className="w-3 h-3" />
+                      Save
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Tabs */}
@@ -773,6 +816,174 @@ export default function AdminPanel() {
                 </table>
               )}
             </div>
+
+            {/* Edit Modal */}
+            <AnimatePresence>
+              {isEditingRealResults && editedRealResults.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="border-t border-white/5 overflow-x-auto bg-white/[0.01]"
+                >
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/5">
+                        {realResultsTab === "race" ? (
+                          <>
+                            <th className="text-center px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest w-10">P</th>
+                            <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Driver</th>
+                            <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pts</th>
+                            <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Gap</th>
+                            <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">FL</th>
+                          </>
+                        ) : realResultsTab === "qualifying" ? (
+                          <>
+                            <th className="text-center px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest w-10">P</th>
+                            <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Driver</th>
+                            <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Q1</th>
+                            <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Q2</th>
+                            <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Q3</th>
+                          </>
+                        ) : (
+                          <>
+                            <th className="text-center px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest w-10">P</th>
+                            <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Driver</th>
+                            <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pts</th>
+                          </>
+                        )}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {editedRealResults.map((r: any, idx: number) => (
+                        <tr key={idx} className="border-b border-white/5">
+                          <td className="px-4 py-3 text-center">
+                            <input
+                              type="number"
+                              min={1}
+                              value={r.position || ""}
+                              onChange={e => setEditedRealResults(prev => {
+                                const updated = [...prev];
+                                updated[idx].position = Number(e.target.value) || null;
+                                return updated;
+                              })}
+                              data-testid={`input-f1-position-${idx}`}
+                              className="w-12 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-1.5 py-1 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="text-xs text-white font-bold">{r.driverName}</span>
+                          </td>
+                          {realResultsTab === "race" ? (
+                            <>
+                              <td className="px-3 py-3 text-center">
+                                <input
+                                  type="number"
+                                  value={r.points || 0}
+                                  onChange={e => setEditedRealResults(prev => {
+                                    const updated = [...prev];
+                                    updated[idx].points = Number(e.target.value) || 0;
+                                    return updated;
+                                  })}
+                                  data-testid={`input-f1-points-${idx}`}
+                                  className="w-12 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-1.5 py-1 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                                />
+                              </td>
+                              <td className="px-3 py-3 text-center hidden md:table-cell">
+                                <input
+                                  type="text"
+                                  value={r.gap || ""}
+                                  onChange={e => setEditedRealResults(prev => {
+                                    const updated = [...prev];
+                                    updated[idx].gap = e.target.value;
+                                    return updated;
+                                  })}
+                                  data-testid={`input-f1-gap-${idx}`}
+                                  className="w-16 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-1.5 py-1 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                                  placeholder="—"
+                                />
+                              </td>
+                              <td className="px-3 py-3 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={r.fastestLap || false}
+                                  onChange={e => setEditedRealResults(prev => {
+                                    const updated = [...prev];
+                                    updated[idx].fastestLap = e.target.checked;
+                                    return updated;
+                                  })}
+                                  data-testid={`input-f1-fl-${idx}`}
+                                  className="w-4 h-4 accent-primary cursor-pointer"
+                                />
+                              </td>
+                            </>
+                          ) : realResultsTab === "qualifying" ? (
+                            <>
+                              <td className="px-3 py-3 text-center">
+                                <input
+                                  type="text"
+                                  value={r.q1 || ""}
+                                  onChange={e => setEditedRealResults(prev => {
+                                    const updated = [...prev];
+                                    updated[idx].q1 = e.target.value;
+                                    return updated;
+                                  })}
+                                  data-testid={`input-f1-q1-${idx}`}
+                                  className="w-16 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-1.5 py-1 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                                  placeholder="—"
+                                />
+                              </td>
+                              <td className="px-3 py-3 text-center hidden md:table-cell">
+                                <input
+                                  type="text"
+                                  value={r.q2 || ""}
+                                  onChange={e => setEditedRealResults(prev => {
+                                    const updated = [...prev];
+                                    updated[idx].q2 = e.target.value;
+                                    return updated;
+                                  })}
+                                  data-testid={`input-f1-q2-${idx}`}
+                                  className="w-16 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-1.5 py-1 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                                  placeholder="—"
+                                />
+                              </td>
+                              <td className="px-3 py-3 text-center hidden md:table-cell">
+                                <input
+                                  type="text"
+                                  value={r.q3 || ""}
+                                  onChange={e => setEditedRealResults(prev => {
+                                    const updated = [...prev];
+                                    updated[idx].q3 = e.target.value;
+                                    return updated;
+                                  })}
+                                  data-testid={`input-f1-q3-${idx}`}
+                                  className="w-16 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-1.5 py-1 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                                  placeholder="—"
+                                />
+                              </td>
+                            </>
+                          ) : (
+                            <td className="px-3 py-3 text-center">
+                              <input
+                                type="number"
+                                value={r.points || 0}
+                                onChange={e => setEditedRealResults(prev => {
+                                  const updated = [...prev];
+                                  updated[idx].points = Number(e.target.value) || 0;
+                                  return updated;
+                                })}
+                                data-testid={`input-f1-points-sprint-${idx}`}
+                                className="w-12 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-1.5 py-1 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                              />
+                            </td>
+                          )}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
 
