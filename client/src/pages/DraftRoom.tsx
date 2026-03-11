@@ -226,13 +226,13 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                 <div className="flex items-center gap-2">
                   <div className={cn(
                     "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border transition-all",
-                    selectedDriverId ? "bg-primary/10 border-primary/30 text-primary" : "bg-white/5 border-white/10 text-muted-foreground opacity-40"
+                    selectedDriverId ? "bg-green-500/10 border-green-500/30 text-green-400" : "bg-white/5 border-white/10 text-muted-foreground opacity-40"
                   )}>
                     Driver {selectedDriverId ? "✓" : "—"}
                   </div>
                   <div className={cn(
                     "px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border transition-all",
-                    selectedConstructorId ? "bg-primary/10 border-primary/30 text-primary" : "bg-white/5 border-white/10 text-muted-foreground opacity-40"
+                    selectedConstructorId ? "bg-green-500/10 border-green-500/30 text-green-400" : "bg-white/5 border-white/10 text-muted-foreground opacity-40"
                   )}>
                     Team {selectedConstructorId ? "✓" : "—"}
                   </div>
