@@ -873,7 +873,10 @@ export class DatabaseStorage implements IStorage {
 
   async createUnlockRequest(lobbyId: number, raceId: number, userId: number): Promise<UnlockRequest> {
     const existing = await this.getUnlockRequestForUser(lobbyId, raceId, userId);
-    if (existing) {
+    if (existing && (existing.status === "pending" || existing.status === "approved")) {
+      throw new Error("You already have an active unlock request for this race");
+    }
+    if (existing && existing.status === "rejected") {
       const [updated] = await db.update(unlockRequests)
         .set({ status: "pending", requestedAt: new Date() })
         .where(eq(unlockRequests.id, existing.id))
