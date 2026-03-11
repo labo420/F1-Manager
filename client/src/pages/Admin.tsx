@@ -582,17 +582,6 @@ export default function AdminPanel() {
             {/* Tabs */}
             <div className="flex border-b border-white/5 px-6 pt-4 gap-1">
               <button
-                onClick={() => setRealResultsTab("qualifying")}
-                data-testid="tab-qualifying"
-                className={`px-4 py-2 rounded-t-xl text-[10px] font-black uppercase tracking-widest transition-all border-b-2 -mb-px ${
-                  realResultsTab === "qualifying"
-                    ? "text-primary border-primary"
-                    : "text-muted-foreground border-transparent hover:text-white"
-                }`}
-              >
-                Qualifying
-              </button>
-              <button
                 onClick={() => setRealResultsTab("race")}
                 data-testid="tab-race"
                 className={`px-4 py-2 rounded-t-xl text-[10px] font-black uppercase tracking-widest transition-all border-b-2 -mb-px ${
@@ -602,6 +591,17 @@ export default function AdminPanel() {
                 }`}
               >
                 Race
+              </button>
+              <button
+                onClick={() => setRealResultsTab("qualifying")}
+                data-testid="tab-qualifying"
+                className={`px-4 py-2 rounded-t-xl text-[10px] font-black uppercase tracking-widest transition-all border-b-2 -mb-px ${
+                  realResultsTab === "qualifying"
+                    ? "text-primary border-primary"
+                    : "text-muted-foreground border-transparent hover:text-white"
+                }`}
+              >
+                Qualifying
               </button>
               {selectedRace.hasSprint && (
                 <button
@@ -629,6 +629,55 @@ export default function AdminPanel() {
                   <p className="text-[10px] font-bold uppercase tracking-widest text-center">Data not available yet</p>
                   <p className="text-[9px] opacity-40 text-center">Results will appear once the session is complete</p>
                 </div>
+              ) : realResultsTab === "race" ? (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/5">
+                      <th className="text-center px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest w-10">P</th>
+                      <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Driver</th>
+                      <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden sm:table-cell">Team</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pts</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Gap</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">FL</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeTabData.map((r: any, idx: number) => {
+                      const teamColor = TEAM_COLORS[r.teamName];
+                      const isFinished = r.position !== null;
+                      return (
+                        <tr key={idx} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                          <td className="px-4 py-3 text-center">
+                            <span className={`font-black text-xs ${r.position === 1 ? "text-yellow-400" : r.position <= 3 ? "text-white" : isFinished ? "text-muted-foreground" : "text-red-400/60"}`}>
+                              {isFinished ? r.position : r.positionText || "DNF"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              {teamColor && <div className="w-0.5 h-6 rounded-full shrink-0" style={{ background: teamColor }} />}
+                              <div>
+                                <div className="font-bold text-white text-xs">{r.driverName}</div>
+                                <div className="text-[9px] text-muted-foreground sm:hidden">{r.teamName}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 hidden sm:table-cell">
+                            <span className="text-[10px] text-muted-foreground">{r.teamName}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <span className="text-xs font-black text-white">{r.points > 0 ? r.points : "—"}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center hidden md:table-cell">
+                            <span className="text-[10px] font-mono text-muted-foreground">{r.gap || (r.position === 1 ? "WINNER" : r.status || "—")}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            {r.fastestLap && <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest">FL</span>}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               ) : realResultsTab === "qualifying" ? (
                 <table className="w-full text-sm">
                   <thead>
@@ -673,55 +722,6 @@ export default function AdminPanel() {
                           </td>
                           <td className="px-3 py-3 text-center">
                             <span className="text-[10px] font-mono text-muted-foreground">{r.gap || (r.position === 1 ? "POLE" : "—")}</span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              ) : realResultsTab === "race" ? (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-white/5">
-                      <th className="text-center px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest w-10">P</th>
-                      <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Driver</th>
-                      <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden sm:table-cell">Team</th>
-                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pts</th>
-                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Gap</th>
-                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">FL</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {activeTabData.map((r: any, idx: number) => {
-                      const teamColor = TEAM_COLORS[r.teamName];
-                      const isFinished = r.position !== null;
-                      return (
-                        <tr key={idx} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                          <td className="px-4 py-3 text-center">
-                            <span className={`font-black text-xs ${r.position === 1 ? "text-yellow-400" : r.position <= 3 ? "text-white" : isFinished ? "text-muted-foreground" : "text-red-400/60"}`}>
-                              {isFinished ? r.position : r.positionText || "DNF"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              {teamColor && <div className="w-0.5 h-6 rounded-full shrink-0" style={{ background: teamColor }} />}
-                              <div>
-                                <div className="font-bold text-white text-xs">{r.driverName}</div>
-                                <div className="text-[9px] text-muted-foreground sm:hidden">{r.teamName}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 hidden sm:table-cell">
-                            <span className="text-[10px] text-muted-foreground">{r.teamName}</span>
-                          </td>
-                          <td className="px-3 py-3 text-center">
-                            <span className="text-xs font-black text-white">{r.points > 0 ? r.points : "—"}</span>
-                          </td>
-                          <td className="px-3 py-3 text-center hidden md:table-cell">
-                            <span className="text-[10px] font-mono text-muted-foreground">{r.gap || (r.position === 1 ? "WINNER" : r.status || "—")}</span>
-                          </td>
-                          <td className="px-3 py-3 text-center">
-                            {r.fastestLap && <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest">FL</span>}
                           </td>
                         </tr>
                       );
