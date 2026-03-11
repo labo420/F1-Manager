@@ -436,7 +436,7 @@ export default function AdminPanel() {
           )}
         </motion.div>
 
-        {/* 2. Players List */}
+        {/* 2. Players List - OPTION 1: Vertical List */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -451,20 +451,20 @@ export default function AdminPanel() {
               {members?.length || 0} / 10
             </span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          <div className="space-y-2">
             {members?.map((m: any) => (
               <div 
                 key={m.id}
                 data-testid={`member-${m.userId}`}
-                className="group relative p-2.5 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-primary/30 hover:bg-zinc-900/50 transition-all duration-200"
+                className="group flex items-center justify-between p-3 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-primary/30 hover:bg-zinc-900/50 transition-all duration-200"
               >
-                <div className="flex items-start gap-2">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div className="relative flex-shrink-0">
                     {m.avatarUrl ? (
-                      <img src={m.avatarUrl} alt="" className="w-8 h-8 rounded-lg object-cover border border-white/10 group-hover:border-primary/30 transition-colors" />
+                      <img src={m.avatarUrl} alt="" className="w-9 h-9 rounded-lg object-cover border border-white/10 group-hover:border-primary/30 transition-colors" />
                     ) : (
-                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-primary/30 transition-colors">
-                        <UserCircle className="w-4 h-4 text-muted-foreground/40" />
+                      <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-primary/30 transition-colors">
+                        <UserCircle className="w-5 h-5 text-muted-foreground/40" />
                       </div>
                     )}
                     {m.role === "admin" && (
@@ -474,8 +474,8 @@ export default function AdminPanel() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold text-white text-[10px] uppercase tracking-tight truncate group-hover:text-primary transition-colors">{m.teamName === "TBD" ? m.username : m.teamName}</div>
-                    <div className="text-[8px] text-muted-foreground/50 font-medium truncate">@{m.username}</div>
+                    <div className="font-bold text-white text-sm uppercase tracking-tight truncate group-hover:text-primary transition-colors">{m.teamName === "TBD" ? m.username : m.teamName}</div>
+                    <div className="text-[9px] text-muted-foreground/50 font-medium truncate">@{m.username}</div>
                   </div>
                 </div>
               </div>
