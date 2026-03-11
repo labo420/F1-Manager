@@ -289,74 +289,91 @@ export default function LobbyDetail({ id }: { id: number }) {
         </div>
       </div>
 
-      {/* Race Control — admin unlock requests */}
-      {isAdmin && pendingUnlockRequests.length > 0 && (
-        <div className="glass-panel rounded-3xl border border-yellow-400/30 bg-yellow-400/5 p-5 mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-xl bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center">
-              <Unlock className="w-4 h-4 text-yellow-400" />
+      {/* Race Control — always visible to admin */}
+      {isAdmin && (
+        <div className="glass-panel rounded-3xl border border-white/10 p-5 mb-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-yellow-400">Race Control</p>
-              <p className="text-[10px] text-muted-foreground opacity-60">Players requesting to change their pick</p>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">Race Control</p>
+              <p className="text-[10px] text-muted-foreground opacity-60">Admin tools for managing the draft</p>
             </div>
           </div>
-          <div className="space-y-3">
-            {pendingUnlockRequests.map(req => (
-              <div
-                key={req.id}
-                className="flex items-center justify-between gap-4 bg-white/5 rounded-2xl px-4 py-3 border border-white/5"
-                data-testid={`unlock-request-${req.id}`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                    <span className="text-[10px] font-black text-primary">
-                      {(req as any).username?.charAt(0).toUpperCase() ?? "?"}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-black text-white truncate">{(req as any).username ?? `User #${req.userId}`}</p>
-                    <p className="text-[10px] text-muted-foreground opacity-60 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      Requested {new Date(req.requestedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => respondMutation.mutate({ requestId: req.id, action: "approve" })}
-                    disabled={respondMutation.isPending}
-                    data-testid={`button-approve-unlock-${req.id}`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase tracking-wider hover:bg-green-500/20 transition-all disabled:opacity-40"
+
+          {/* Unlock requests section */}
+          <div className="mb-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 mb-3">
+              Unlock Requests {pendingUnlockRequests.length > 0 && (
+                <span className="ml-1.5 px-1.5 py-0.5 rounded bg-yellow-400/20 text-yellow-400">{pendingUnlockRequests.length}</span>
+              )}
+            </p>
+            {pendingUnlockRequests.length === 0 ? (
+              <p className="text-xs text-muted-foreground opacity-40 italic">No pending unlock requests</p>
+            ) : (
+              <div className="space-y-3">
+                {pendingUnlockRequests.map(req => (
+                  <div
+                    key={req.id}
+                    className="flex items-center justify-between gap-4 bg-yellow-400/5 rounded-2xl px-4 py-3 border border-yellow-400/15"
+                    data-testid={`unlock-request-${req.id}`}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => respondMutation.mutate({ requestId: req.id, action: "reject" })}
-                    disabled={respondMutation.isPending}
-                    data-testid={`button-reject-unlock-${req.id}`}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40"
-                  >
-                    <XCircle className="w-3.5 h-3.5" />
-                    Reject
-                  </button>
-                </div>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                        <span className="text-[10px] font-black text-primary">
+                          {(req as any).username?.charAt(0).toUpperCase() ?? "?"}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-white truncate">{(req as any).username ?? `User #${req.userId}`}</p>
+                        <p className="text-[10px] text-muted-foreground opacity-60 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          Requested {new Date(req.requestedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => respondMutation.mutate({ requestId: req.id, action: "approve" })}
+                        disabled={respondMutation.isPending}
+                        data-testid={`button-approve-unlock-${req.id}`}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase tracking-wider hover:bg-green-500/20 transition-all disabled:opacity-40"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => respondMutation.mutate({ requestId: req.id, action: "reject" })}
+                        disabled={respondMutation.isPending}
+                        data-testid={`button-reject-unlock-${req.id}`}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40"
+                      >
+                        <XCircle className="w-3.5 h-3.5" />
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-          <div className="border-t border-white/5 pt-4 mt-4">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70 mb-3">Reset Race</p>
+
+          {/* Reset race section */}
+          <div className="border-t border-white/5 pt-4">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 mb-3">Reset Race Selections</p>
+            <p className="text-[10px] text-muted-foreground opacity-40 mb-3">Clear all picks for a race so every player can re-draft from scratch.</p>
             <div className="flex items-center gap-2">
               <select
                 value={resetRaceId ?? ""}
                 onChange={(e) => setResetRaceId(Number(e.target.value) || null)}
-                className="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-black uppercase tracking-wider hover:border-white/20 transition-all"
+                data-testid="select-reset-race"
+                className="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-black hover:border-white/20 transition-all"
               >
-                <option value="">Select a race to reset...</option>
+                <option value="">Select a race…</option>
                 {races?.map(race => (
                   <option key={race.id} value={race.id}>
-                    {race.name} (Round {race.round})
+                    Round {race.round} — {race.name}
                   </option>
                 ))}
               </select>
@@ -364,8 +381,9 @@ export default function LobbyDetail({ id }: { id: number }) {
                 onClick={() => resetRaceId && resetMutation.mutate(resetRaceId)}
                 disabled={!resetRaceId || resetMutation.isPending}
                 data-testid="button-reset-race"
-                className="px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40"
               >
+                <XCircle className="w-3.5 h-3.5" />
                 {resetMutation.isPending ? "Resetting…" : "Reset"}
               </button>
             </div>
