@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useActiveLobby, useLobbyInfo, useLobbyMembers } from "@/hooks/use-lobby";
 import { useRaces, useUpdateRaceStatus } from "@/hooks/use-races";
 import { useDrivers, useConstructors } from "@/hooks/use-competitors";
-import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock, Trash2, Shield, Download, Zap, Edit2, X, Trophy, Car, ListOrdered } from "lucide-react";
+import { Settings, Lock, Unlock, CheckCircle, CheckCircle2, XCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock, Trash2, Shield, Download, Zap, Edit2, X, Trophy, Car, ListOrdered } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
@@ -156,6 +156,55 @@ export default function AdminPanel() {
   const isAdmin = adminLobbies.length > 0;
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [resetRaceId, setResetRaceId] = useState<number | null>(null);
+
+  const { data: unlockRequests } = useQuery<any[]>({
+    queryKey: ["/api/unlock-requests/lobby", selectedLobbyId],
+    queryFn: async () => {
+      const res = await fetch(`/api/unlock-requests/lobby/${selectedLobbyId}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    enabled: !!selectedLobbyId,
+    refetchInterval: 5000,
+  });
+
+  const pendingUnlockRequests = (unlockRequests ?? []).filter((r: any) => r.status === "pending");
+
+  const respondUnlockMutation = useMutation({
+    mutationFn: async ({ requestId, action }: { requestId: number; action: "approve" | "reject" }) => {
+      const res = await fetch(`/api/unlock-requests/${requestId}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    onSuccess: (_, { action }) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/unlock-requests/lobby", selectedLobbyId] });
+      toast({ title: action === "approve" ? "Unlock Approved" : "Unlock Rejected" });
+    },
+    onError: () => toast({ title: "Error", description: "Could not respond to request.", variant: "destructive" }),
+  });
+
+  const resetRaceMutation = useMutation({
+    mutationFn: async (raceId: number) => {
+      const res = await fetch(`/api/lobby/${selectedLobbyId}/race/${raceId}/reset`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/lobby", selectedLobbyId] });
+      setResetRaceId(null);
+      toast({ title: "Race Reset", description: "All picks for this race have been cleared." });
+    },
+    onError: () => toast({ title: "Error", description: "Could not reset race.", variant: "destructive" }),
+  });
 
   const deleteLobbyMutation = useMutation({
     mutationFn: async (lobbyId: number) => {
@@ -1308,6 +1357,122 @@ export default function AdminPanel() {
                   })}
                 </div>
               )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Unlock Requests */}
+        {selectedLobbyId && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15 }}
+            className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
+          >
+            <div className="px-5 py-4 flex items-center gap-3 border-b border-white/5">
+              <Unlock className="w-4 h-4 text-yellow-400 shrink-0" />
+              <h2 className="text-[11px] md:text-[16px] font-black text-white uppercase tracking-[0.2em] flex-1">Unlock Requests</h2>
+              {pendingUnlockRequests.length > 0 && (
+                <span className="px-2.5 py-1 bg-yellow-400/15 text-yellow-400 text-[9px] font-black uppercase tracking-widest rounded-full border border-yellow-400/20">
+                  {pendingUnlockRequests.length} pending
+                </span>
+              )}
+            </div>
+            {pendingUnlockRequests.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
+                <CheckCircle2 className="w-6 h-6 opacity-20" />
+                <p className="text-[10px] font-bold uppercase tracking-widest">No Pending Requests</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-white/[0.03]">
+                {pendingUnlockRequests.map((req: any) => (
+                  <div
+                    key={req.id}
+                    className="flex items-center justify-between gap-4 px-5 py-4"
+                    data-testid={`unlock-request-${req.id}`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                        <span className="text-xs font-black text-primary">
+                          {req.username?.charAt(0).toUpperCase() ?? "?"}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-black text-white truncate">{req.username ?? `User #${req.userId}`}</p>
+                        <p className="text-[10px] text-muted-foreground opacity-50 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {new Date(req.requestedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          {req.raceName && <> · <span className="text-white/40">{req.raceName}</span></>}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => respondUnlockMutation.mutate({ requestId: req.id, action: "approve" })}
+                        disabled={respondUnlockMutation.isPending}
+                        data-testid={`button-approve-unlock-${req.id}`}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase tracking-wider hover:bg-green-500/20 transition-all disabled:opacity-40"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => respondUnlockMutation.mutate({ requestId: req.id, action: "reject" })}
+                        disabled={respondUnlockMutation.isPending}
+                        data-testid={`button-reject-unlock-${req.id}`}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40"
+                      >
+                        <XCircle className="w-3.5 h-3.5" />
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Reset Race */}
+        {selectedLobbyId && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.17 }}
+            className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
+          >
+            <div className="px-5 py-4 flex items-center gap-3 border-b border-white/5">
+              <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+              <h2 className="text-[11px] md:text-[16px] font-black text-white uppercase tracking-[0.2em]">Reset Race Selections</h2>
+            </div>
+            <div className="p-6">
+              <p className="text-xs text-muted-foreground opacity-40 mb-4">
+                Clear all picks for a race so every player can re-draft from scratch. This cannot be undone.
+              </p>
+              <div className="flex items-center gap-3">
+                <select
+                  value={resetRaceId ?? ""}
+                  onChange={(e) => setResetRaceId(Number(e.target.value) || null)}
+                  data-testid="select-reset-race"
+                  className="flex-1 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white text-xs font-black hover:border-white/20 transition-all"
+                >
+                  <option value="">Select a race…</option>
+                  {races?.map(race => (
+                    <option key={race.id} value={race.id}>
+                      Round {race.round} — {race.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => resetRaceId && resetRaceMutation.mutate(resetRaceId)}
+                  disabled={!resetRaceId || resetRaceMutation.isPending}
+                  data-testid="button-reset-race"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40"
+                >
+                  <XCircle className="w-4 h-4" />
+                  {resetRaceMutation.isPending ? "Resetting…" : "Reset"}
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
