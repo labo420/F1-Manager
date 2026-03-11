@@ -9,6 +9,20 @@ import type { Driver, Constructor, DraftStatus, UsageInfo } from "@shared/schema
 import { cn } from "@/lib/utils";
 import { DriverAvatar } from "@/components/DriverAvatar";
 
+const CONSTRUCTOR_LOGOS: Record<string, string> = {
+  "Alpine": "/logos/alpine.png",
+  "Aston Martin": "/logos/astonmartin.png",
+  "Audi": "/logos/audi.png",
+  "Cadillac": "/logos/cadillac.png",
+  "Ferrari": "/logos/ferrari.png",
+  "Haas": "/logos/haas.png",
+  "McLaren": "/logos/mclaren.png",
+  "Mercedes": "/logos/mercedes.png",
+  "RB": "/logos/rb.png",
+  "Red Bull Racing": "/logos/redbull.png",
+  "Williams": "/logos/williams.png",
+};
+
 export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId: number }) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -334,12 +348,16 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                                     : "bg-white/3 border-white/5 hover:bg-white/6 hover:border-white/15 active:scale-[0.99]"
                             )}
                           >
-                            {/* Team color bar */}
+                            {/* Team logo */}
                             <div className="flex items-center gap-3">
-                              <div
-                                className="w-1 h-9 rounded-full shrink-0"
-                                style={{ backgroundColor: con.color ?? "#ffffff20" }}
-                              />
+                              {CONSTRUCTOR_LOGOS[con.name] ? (
+                                <img src={CONSTRUCTOR_LOGOS[con.name]} alt={con.name} className="h-9 w-auto object-contain shrink-0" />
+                              ) : (
+                                <div
+                                  className="w-1 h-9 rounded-full shrink-0"
+                                  style={{ backgroundColor: con.color ?? "#ffffff20" }}
+                                />
+                              )}
                               <div>
                                 <p className={cn("text-sm font-black uppercase tracking-tight leading-none", isSelected ? "text-white" : "text-white/80")}>
                                   {con.name}
