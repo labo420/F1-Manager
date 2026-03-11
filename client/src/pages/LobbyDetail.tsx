@@ -1,16 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useLocation } from "wouter";
-import { Link } from "wouter";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft, Flag, Zap, Wrench, Crown, ChevronRight, Medal } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
+import { useLocation, Link } from "wouter";
+import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft, Flag, Zap, Wrench, Crown, ChevronRight, Medal, BarChart3, Shield } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Lobby, Race, Selection, LobbyMember, RaceStandingsEntry } from "@shared/schema";
 import { format } from "date-fns";
 
@@ -23,30 +16,29 @@ function getInitials(text: string): string {
 
 const RACE_COUNTRY_CODES: Record<string, string> = {
   "Australia": "au", "China": "cn", "Japan": "jp", "Bahrain": "bh",
-  "Saudi Arabia": "sa", "Miami": "us", "Emilia Romagna": "it", "Monaco": "mc",
-  "Spain": "es", "Canada": "ca", "Austria": "at", "United Kingdom": "gb",
-  "Belgium": "be", "Hungary": "hu", "Netherlands": "nl", "Italy": "it",
-  "Azerbaijan": "az", "Singapore": "sg", "United States": "us", "Mexico": "mx",
-  "Brazil": "br", "Sao Paulo": "br", "Las Vegas": "us", "Qatar": "qa",
-  "Abu Dhabi": "ae", "UAE": "ae", "UK": "gb", "USA": "us",
+  "Saudi Arabia": "sa", "Monaco": "mc", "Spain": "es", "Canada": "ca",
+  "Austria": "at", "United Kingdom": "gb", "Belgium": "be", "Hungary": "hu",
+  "Netherlands": "nl", "Italy": "it", "Azerbaijan": "az", "Singapore": "sg",
+  "Mexico": "mx", "Brazil": "br", "Qatar": "qa", "UAE": "ae",
+  "UK": "gb", "USA": "us", "Emilia Romagna": "it", "Sao Paulo": "br",
 };
 
 function RaceFlag({ country, size = 20 }: { country: string; size?: number }) {
   const cc = RACE_COUNTRY_CODES[country];
-  if (!cc) return <span style={{ width: size, height: size * 0.67 }} className="inline-block bg-white/10 rounded-sm" />;
+  if (!cc) return <span style={{ width: size, height: Math.round(size * 0.67) }} className="inline-block bg-white/10 rounded-sm" />;
   return (
     <img
       src={`https://flagcdn.com/w40/${cc}.png`}
       alt={country}
       style={{ width: size, height: "auto" }}
-      className="rounded-sm object-cover inline-block"
+      className="rounded-sm object-cover inline-block shrink-0"
     />
   );
 }
 
 type BadgeKey = "pole_position" | "fastest_lap" | "p1_constructor" | "perfect_weekend";
 
-const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; color: string; bg: string; border: string }> = {
+const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; color: string; bg: string; border: string; glow: string }> = {
   pole_position: {
     label: "Pole Position",
     desc: "Driver con più punti della lobby",
@@ -54,6 +46,7 @@ const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; col
     color: "text-yellow-400",
     bg: "bg-yellow-400/10",
     border: "border-yellow-400/30",
+    glow: "shadow-yellow-400/20",
   },
   fastest_lap: {
     label: "Fastest Lap",
@@ -62,6 +55,7 @@ const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; col
     color: "text-purple-400",
     bg: "bg-purple-400/10",
     border: "border-purple-400/30",
+    glow: "shadow-purple-400/20",
   },
   p1_constructor: {
     label: "P1 Constructor",
@@ -70,6 +64,7 @@ const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; col
     color: "text-orange-400",
     bg: "bg-orange-400/10",
     border: "border-orange-400/30",
+    glow: "shadow-orange-400/20",
   },
   perfect_weekend: {
     label: "Perfect Weekend",
@@ -78,6 +73,7 @@ const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; col
     color: "text-amber-300",
     bg: "bg-amber-300/10",
     border: "border-amber-300/40",
+    glow: "shadow-amber-300/20",
   },
 };
 
@@ -92,10 +88,19 @@ type PlayerBadgeEntry = {
   badges: BadgeKey[];
 };
 
+type TabId = "predictions" | "standings" | "badges" | "players";
+
+const TABS: { id: TabId; label: string; Icon: any }[] = [
+  { id: "predictions", label: "Picks", Icon: Calendar },
+  { id: "standings", label: "Standings", Icon: BarChart3 },
+  { id: "badges", label: "Badges", Icon: Medal },
+  { id: "players", label: "Players", Icon: Users },
+];
+
 export default function LobbyDetail({ id }: { id: number }) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState<TabId>("predictions");
   const [selectedRaceId, setSelectedRaceId] = useState<number | null>(null);
   const [badgeRaceId, setBadgeRaceId] = useState<number | null>(null);
 
@@ -107,7 +112,7 @@ export default function LobbyDetail({ id }: { id: number }) {
     queryKey: ["/api/races"],
   });
 
-  const { data: mySelections, isLoading: loadingSelections } = useQuery<Selection[]>({
+  const { data: mySelections } = useQuery<Selection[]>({
     queryKey: [`/api/selections/${id}/me`],
   });
 
@@ -115,18 +120,13 @@ export default function LobbyDetail({ id }: { id: number }) {
     queryKey: [`/api/lobby/${id}/members`],
   });
 
-  const { data: usage, isLoading: loadingUsage } = useQuery<any>({
+  const { data: usage } = useQuery<any>({
     queryKey: [`/api/usage/${id}`],
-    initialData: {
-      driverUsage: {},
-      constructorUsage: {},
-      driverJolliesRemaining: 2,
-      constructorJolliesRemaining: 2,
-      jolliesRemaining: 4
-    }
+    initialData: { driverUsage: {}, constructorUsage: {}, driverJolliesRemaining: 2, constructorJolliesRemaining: 2, jolliesRemaining: 4 }
   });
 
   const completedRaces = races?.filter(r => r.isCompleted) ?? [];
+  const nextRace = races?.find(r => !r.isCompleted) || races?.[races.length - 1];
 
   useEffect(() => {
     if (completedRaces.length > 0 && selectedRaceId === null) {
@@ -149,10 +149,7 @@ export default function LobbyDetail({ id }: { id: number }) {
 
   const badgePlayers = badgeData?.players ?? [];
 
-  const currentMember = members?.find(m => m.userId === user?.id);
-  const nextRace = races?.find(r => !r.isCompleted) || races?.[races.length - 1];
-
-  if (loadingLobby || loadingRaces || loadingMembers || loadingUsage) {
+  if (loadingLobby || loadingRaces || loadingMembers) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -160,338 +157,414 @@ export default function LobbyDetail({ id }: { id: number }) {
     );
   }
 
-  if (!lobby) return <div>Lobby not found</div>;
+  if (!lobby) return <div className="text-white p-8">Lobby not found</div>;
+
+  const completedCount = races?.filter(r => r.isCompleted).length ?? 0;
+  const totalCount = races?.length ?? 24;
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8 flex items-center gap-4">
-        <button
-          onClick={() => setLocation("/paddock")}
-          className="p-2 hover:bg-white/10 rounded-lg text-muted-foreground hover:text-white transition-colors"
-          title="Back to League List"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-      </div>
+    <div className="max-w-7xl mx-auto py-6 sm:py-10 px-4 sm:px-6 lg:px-8 pb-24">
 
-      <div className="mb-12 flex items-center gap-6">
-        {lobby.imageUrl ? (
-          <img src={lobby.imageUrl} alt="" className="w-20 h-20 rounded-2xl object-cover border border-white/10 shadow-xl shrink-0" />
-        ) : (
-          <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shrink-0">
-            <span className="text-lg font-black text-white/40">{getInitials(lobby.name)}</span>
+      {/* Back button */}
+      <button
+        onClick={() => setLocation("/paddock")}
+        className="flex items-center gap-2 text-muted-foreground hover:text-white transition-colors mb-8 group"
+        data-testid="button-back-paddock"
+      >
+        <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+        <span className="text-xs font-black uppercase tracking-widest">Paddock</span>
+      </button>
+
+      {/* Hero header */}
+      <div className="glass-panel rounded-3xl border border-white/5 p-6 sm:p-8 mb-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
+        <div className="flex items-center gap-5 sm:gap-8">
+          {lobby.imageUrl ? (
+            <img src={lobby.imageUrl} alt="" className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl object-cover border border-white/10 shadow-2xl shrink-0" />
+          ) : (
+            <div className="w-16 h-16 sm:w-24 sm:h-24 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shadow-inner shrink-0">
+              <span className="text-xl sm:text-3xl font-black text-white/30">{getInitials(lobby.name)}</span>
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-display font-black text-white uppercase tracking-tighter leading-none mb-2 truncate">
+              {lobby.name}
+            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <code className="text-[10px] font-mono font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-lg uppercase tracking-widest">
+                {lobby.code}
+              </code>
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-50">
+                {members?.length ?? 0}/10 managers
+              </span>
+              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-50">
+                {completedCount}/{totalCount} gare
+              </span>
+            </div>
           </div>
-        )}
-        <div>
-          <h1 className="text-4xl md:text-5xl font-display font-black text-white uppercase tracking-tighter leading-none">{lobby.name}</h1>
-          <p className="text-xs font-mono text-white/40 uppercase tracking-[0.1em] mt-3">League Code: {lobby.code}</p>
+          {/* Jollies */}
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
+            <div className="glass-panel border border-yellow-400/20 rounded-2xl px-4 py-3 text-center">
+              <p className="text-[9px] font-black uppercase tracking-widest text-yellow-400/70 mb-0.5">Driver</p>
+              <div className="flex items-center gap-1.5">
+                <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                <span className="text-xl font-black text-white leading-none">{usage?.driverJolliesRemaining ?? 0}</span>
+              </div>
+            </div>
+            <div className="glass-panel border border-blue-400/20 rounded-2xl px-4 py-3 text-center">
+              <p className="text-[9px] font-black uppercase tracking-widest text-blue-400/70 mb-0.5">Team</p>
+              <div className="flex items-center gap-1.5">
+                <Star className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
+                <span className="text-xl font-black text-white leading-none">{usage?.constructorJolliesRemaining ?? 0}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile jollies */}
+        <div className="flex sm:hidden items-center gap-3 mt-5 pt-4 border-t border-white/5">
+          <div className="flex items-center gap-2">
+            <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+            <span className="text-xs font-black text-white">{usage?.driverJolliesRemaining ?? 0}</span>
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Driver Jollies</span>
+          </div>
+          <div className="w-px h-4 bg-white/10" />
+          <div className="flex items-center gap-2">
+            <Star className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
+            <span className="text-xs font-black text-white">{usage?.constructorJolliesRemaining ?? 0}</span>
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Team Jollies</span>
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-2 mb-8">
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="py-2 px-4 flex items-center gap-2">
-            <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-            <div>
-              <p className="text-[10px] uppercase text-muted-foreground leading-none">Driver Jollies</p>
-              <p className="text-xl font-bold leading-tight">{usage?.driverJolliesRemaining ?? 0}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="py-2 px-4 flex items-center gap-2">
-            <Star className="w-5 h-5 text-blue-500 fill-blue-500" />
-            <div>
-              <p className="text-[10px] uppercase text-muted-foreground leading-none">Team Jollies</p>
-              <p className="text-xl font-bold leading-tight">{usage?.constructorJolliesRemaining ?? 0}</p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Custom tab bar */}
+      <div className="flex gap-1 glass-panel rounded-2xl p-1 border border-white/5 mb-8">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            data-testid={`tab-${tab.id}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 sm:py-3 rounded-xl font-display font-black uppercase tracking-tight text-[11px] sm:text-xs transition-all ${
+              activeTab === tab.id
+                ? "bg-primary text-white shadow-lg shadow-primary/30"
+                : "text-muted-foreground hover:text-white hover:bg-white/5"
+            }`}
+          >
+            <tab.Icon className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden sm:inline">{tab.label}</span>
+          </button>
+        ))}
       </div>
 
-      <Tabs defaultValue="predictions" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 max-w-lg">
-          <TabsTrigger value="predictions">Predictions</TabsTrigger>
-          <TabsTrigger value="standings">Standings</TabsTrigger>
-          <TabsTrigger value="badges">Badges</TabsTrigger>
-          <TabsTrigger value="players">Players</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="predictions" className="space-y-6">
+      {/* Tab: Predictions */}
+      {activeTab === "predictions" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
-                    Next Race: {nextRace?.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {nextRace ? (
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
-                        <div>
-                          <p className="font-medium">{nextRace.circuitName}</p>
-                          <p className="text-sm text-muted-foreground">{nextRace.country}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium">{format(new Date(nextRace.date), "PPP")}</p>
-                          <Badge variant={nextRace.isLocked ? "destructive" : "secondary"}>
-                            {nextRace.isLocked ? "Locked" : "Open for Predictions"}
-                          </Badge>
-                        </div>
+            <div className="lg:col-span-2 space-y-5">
+
+              {/* Next race card */}
+              <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden">
+                <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-primary" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">
+                    Prossima Gara
+                  </p>
+                </div>
+                {nextRace ? (
+                  <div className="p-5">
+                    <div className="flex items-center gap-4 mb-5">
+                      <RaceFlag country={nextRace.country ?? ""} size={32} />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-display font-black text-white uppercase tracking-tight leading-none truncate">
+                          {nextRace.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground opacity-60 mt-0.5">{nextRace.circuitName}</p>
                       </div>
-
-                      {!nextRace.isLocked ? (
-                        <div className="text-center py-8 border-2 border-dashed rounded-lg">
-                          <p className="text-muted-foreground mb-4">Click below to make your choices for this race.</p>
-                          <Link href={`/draft/${id}/${nextRace.id}`}>
-                            <Button>Go to Draft Room</Button>
-                          </Link>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
-                          <Lock className="w-4 h-4" />
-                          <span>Predictions are locked for this race</span>
-                        </div>
-                      )}
+                      <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                        nextRace.isLocked
+                          ? "bg-red-500/10 text-red-400 border-red-400/30"
+                          : "bg-green-500/10 text-green-400 border-green-400/30"
+                      }`}>
+                        {nextRace.isLocked ? "🔴 Locked" : "🟢 Open"}
+                      </div>
                     </div>
-                  ) : (
-                    <p>No upcoming races.</p>
-                  )}
-                </CardContent>
-              </Card>
+                    <div className="flex items-center justify-between mb-5 px-4 py-3 rounded-xl bg-white/3 border border-white/5">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Data</span>
+                      <span className="text-xs font-black text-white">{format(new Date(nextRace.date), "PPP")}</span>
+                    </div>
+                    {!nextRace.isLocked ? (
+                      <Link href={`/draft/${id}/${nextRace.id}`}>
+                        <button
+                          data-testid="button-go-draft"
+                          className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-2xl font-display font-black uppercase tracking-tight flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] red-glow shadow-2xl shadow-primary/30"
+                        >
+                          <Flag className="w-4 h-4" /> Go to Draft Room
+                        </button>
+                      </Link>
+                    ) : (
+                      <div className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed border-white/10 text-muted-foreground">
+                        <Lock className="w-4 h-4" />
+                        <span className="text-xs font-black uppercase tracking-wider">Picks bloccati</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-muted-foreground text-sm">Nessuna gara in programma.</div>
+                )}
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your Current Selection</CardTitle>
-                </CardHeader>
-                <CardContent>
+              {/* My current pick */}
+              <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden">
+                <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-primary" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">
+                    La tua scelta
+                  </p>
+                </div>
+                <div className="p-5">
                   {nextRace && mySelections?.find(s => s.raceId === nextRace.id) ? (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
-                        <p className="text-xs text-muted-foreground uppercase">Driver</p>
-                        <p className="font-bold">Selection Saved</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="glass-panel rounded-2xl p-4 border border-primary/10">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-primary/70 mb-1">Driver</p>
+                        <p className="text-sm font-black text-white uppercase tracking-tight">Scelta salvata ✓</p>
                       </div>
-                      <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
-                        <p className="text-xs text-muted-foreground uppercase">Constructor</p>
-                        <p className="font-bold">Selection Saved</p>
+                      <div className="glass-panel rounded-2xl p-4 border border-primary/10">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-primary/70 mb-1">Constructor</p>
+                        <p className="text-sm font-black text-white uppercase tracking-tight">Scelta salvata ✓</p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-center py-4 text-muted-foreground italic">No selection made yet for the upcoming race.</p>
+                    <div className="py-6 text-center">
+                      <p className="text-xs text-muted-foreground opacity-50 uppercase tracking-widest font-black">
+                        Nessuna scelta per questa gara
+                      </p>
+                    </div>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">League Status</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Players</span>
-                    <span className="font-bold">{members?.length || 0}/10</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">Races Completed</span>
-                    <span className="font-bold">{races?.filter(r => r.isCompleted).length || 0}/{races?.length || 24}</span>
-                  </div>
-                  <div className="pt-4 border-t">
-                    <p className="text-xs text-muted-foreground mb-2 italic">Official F1 2026 Season</p>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Sidebar stats */}
+            <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden h-fit">
+              <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-primary" />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">
+                  Stato Lega
+                </p>
+              </div>
+              <div className="p-5 space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">Managers</span>
+                  <span className="text-sm font-black text-white">{members?.length || 0}<span className="text-muted-foreground opacity-40">/10</span></span>
+                </div>
+                <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${((members?.length ?? 0) / 10) * 100}%` }} />
+                </div>
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">Gare completate</span>
+                  <span className="text-sm font-black text-white">{completedCount}<span className="text-muted-foreground opacity-40">/{totalCount}</span></span>
+                </div>
+                <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-400 rounded-full transition-all" style={{ width: `${(completedCount / totalCount) * 100}%` }} />
+                </div>
+                <div className="pt-3 border-t border-white/5">
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-40">F1 2026 Season</p>
+                </div>
+              </div>
             </div>
           </div>
-        </TabsContent>
+        </motion.div>
+      )}
 
-        <TabsContent value="standings">
+      {/* Tab: Standings */}
+      {activeTab === "standings" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           {completedRaces.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Flag className="w-8 h-8 mx-auto mb-3 text-muted-foreground/40" />
-                <p className="text-muted-foreground italic text-sm">Standings will be available after the first race results are in.</p>
-              </CardContent>
-            </Card>
+            <div className="glass-panel rounded-3xl border border-white/5 flex flex-col items-center justify-center py-20">
+              <Flag className="w-10 h-10 text-muted-foreground opacity-20 mb-4" />
+              <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                Nessuna gara completata
+              </p>
+            </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-5">
+              {/* Race selector */}
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                 {completedRaces.map(race => (
                   <button
                     key={race.id}
                     data-testid={`race-selector-${race.id}`}
                     onClick={() => setSelectedRaceId(race.id)}
-                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${
+                    className={`shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-black uppercase tracking-tight border transition-all whitespace-nowrap ${
                       selectedRaceId === race.id
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-transparent text-muted-foreground border-white/10 hover:border-white/30 hover:text-white"
+                        ? "bg-primary text-white border-primary shadow-lg shadow-primary/30"
+                        : "glass-panel text-muted-foreground border-white/10 hover:border-white/20 hover:text-white"
                     }`}
                   >
+                    <RaceFlag country={race.country ?? ""} size={14} />
                     R{race.round ?? "?"} {race.country}
                   </button>
                 ))}
               </div>
 
-              <Card>
-                <CardHeader className="pb-2 pt-4 px-4">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Trophy className="w-4 h-4 text-yellow-500" />
-                    {completedRaces.find(r => r.id === selectedRaceId)?.name ?? "Race Standings"}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-2 pb-2 md:px-4 md:pb-4">
-                  {loadingStandings ? (
-                    <div className="flex justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    </div>
-                  ) : !raceStandings || raceStandings.length === 0 ? (
-                    <p className="text-center py-8 text-muted-foreground italic text-sm">No data for this race.</p>
-                  ) : (
-                    <>
-                      <div className="hidden md:block overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="border-b border-white/10 text-xs uppercase text-muted-foreground">
-                              <th className="py-2 pl-2 text-left w-8">#</th>
-                              <th className="py-2 text-left">Scuderia / Manager</th>
-                              <th className="py-2 text-left">Driver</th>
-                              <th className="py-2 text-left">Constructor</th>
-                              <th className="py-2 text-right pr-2">D Pts</th>
-                              <th className="py-2 text-right">C Pts</th>
-                              <th className="py-2 text-right pr-3">Total</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {raceStandings.map((entry, idx) => (
-                              <tr
-                                key={entry.userId}
-                                data-testid={`standings-row-${entry.userId}`}
-                                className={`border-b border-white/5 transition-colors hover:bg-white/5 ${idx === 0 ? "text-yellow-400" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : ""}`}
-                              >
-                                <td className="py-2.5 pl-2 font-bold text-sm">{idx + 1}</td>
-                                <td className="py-2.5">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
-                                      {entry.username.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                      <p className="font-semibold text-xs leading-tight">{entry.teamName}</p>
-                                      <p className="text-[10px] text-muted-foreground">@{entry.username}</p>
-                                    </div>
+              {/* Standings panel */}
+              <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden">
+                <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-yellow-400" />
+                  <p className="text-sm font-display font-black text-white uppercase tracking-tight">
+                    {completedRaces.find(r => r.id === selectedRaceId)?.name ?? "Classifica"}
+                  </p>
+                </div>
+                {loadingStandings ? (
+                  <div className="flex justify-center py-12">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : !raceStandings || raceStandings.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-40">Nessun dato per questa gara</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Desktop table */}
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-white/5">
+                            <th className="py-3 pl-5 text-left text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50 w-8">#</th>
+                            <th className="py-3 text-left text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">Scuderia</th>
+                            <th className="py-3 text-left text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">Driver</th>
+                            <th className="py-3 text-left text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">Constructor</th>
+                            <th className="py-3 text-right text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">D</th>
+                            <th className="py-3 text-right text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">C</th>
+                            <th className="py-3 pr-5 text-right text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">Tot</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {raceStandings.map((entry, idx) => (
+                            <tr
+                              key={entry.userId}
+                              data-testid={`standings-row-${entry.userId}`}
+                              className="border-b border-white/5 hover:bg-white/3 transition-colors"
+                            >
+                              <td className="py-3.5 pl-5">
+                                <span className={`text-sm font-black ${idx === 0 ? "text-yellow-400" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground opacity-40"}`}>
+                                  {idx + 1}
+                                </span>
+                              </td>
+                              <td className="py-3.5">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary shrink-0">
+                                    {entry.username.charAt(0).toUpperCase()}
                                   </div>
-                                </td>
-                                <td className="py-2.5 text-xs">{entry.driverName ?? <span className="text-muted-foreground italic">—</span>}</td>
-                                <td className="py-2.5 text-xs">{entry.constructorName ?? <span className="text-muted-foreground italic">—</span>}</td>
-                                <td className="py-2.5 text-right pr-2 font-mono text-xs">{entry.driverPoints}</td>
-                                <td className="py-2.5 text-right font-mono text-xs">{entry.constructorPoints}</td>
-                                <td className="py-2.5 text-right pr-3 font-bold">{entry.totalPoints}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                                  <div>
+                                    <p className="text-xs font-black text-white uppercase tracking-tight leading-none">{entry.teamName}</p>
+                                    <p className="text-[10px] text-muted-foreground opacity-50">@{entry.username}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3.5 text-xs text-muted-foreground">{entry.driverName ?? <span className="opacity-30">—</span>}</td>
+                              <td className="py-3.5 text-xs text-muted-foreground">{entry.constructorName ?? <span className="opacity-30">—</span>}</td>
+                              <td className="py-3.5 text-right font-mono text-xs text-blue-400">{entry.driverPoints}</td>
+                              <td className="py-3.5 text-right font-mono text-xs text-emerald-400">{entry.constructorPoints}</td>
+                              <td className="py-3.5 pr-5 text-right font-black text-sm text-white">{entry.totalPoints}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
 
-                      <div className="md:hidden space-y-2">
-                        {raceStandings.map((entry, idx) => (
-                          <div
-                            key={entry.userId}
-                            data-testid={`standings-card-${entry.userId}`}
-                            className="rounded-lg border border-white/8 bg-white/3 px-3 py-2.5 flex items-center gap-3"
-                          >
-                            <span className={`text-sm font-black w-5 text-center shrink-0 ${idx === 0 ? "text-yellow-400" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground"}`}>
-                              {idx + 1}
-                            </span>
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
-                              {entry.username.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-xs leading-tight truncate">{entry.teamName}</p>
-                              <p className="text-[10px] text-muted-foreground truncate">@{entry.username}</p>
-                              <div className="flex gap-2 mt-0.5 flex-wrap">
-                                <span className="text-[10px] text-muted-foreground/70">{entry.driverName ?? "—"}</span>
-                                <span className="text-[10px] text-muted-foreground/40">·</span>
-                                <span className="text-[10px] text-muted-foreground/70">{entry.constructorName ?? "—"}</span>
-                              </div>
-                            </div>
-                            <div className="text-right shrink-0 ml-1">
-                              <p className="font-bold text-sm leading-tight">{entry.totalPoints}</p>
-                              <p className="text-[10px] text-muted-foreground leading-tight">
-                                <span className="text-blue-400">{entry.driverPoints}</span>
-                                <span className="text-muted-foreground/40"> + </span>
-                                <span className="text-emerald-400">{entry.constructorPoints}</span>
-                              </p>
-                            </div>
+                    {/* Mobile cards */}
+                    <div className="md:hidden divide-y divide-white/5">
+                      {raceStandings.map((entry, idx) => (
+                        <div key={entry.userId} data-testid={`standings-card-${entry.userId}`} className="flex items-center gap-3 px-4 py-3.5">
+                          <span className={`text-sm font-black w-5 text-center shrink-0 ${idx === 0 ? "text-yellow-400" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground opacity-30"}`}>
+                            {idx + 1}
+                          </span>
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-black text-primary shrink-0">
+                            {entry.username.charAt(0).toUpperCase()}
                           </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-black text-white uppercase tracking-tight truncate">{entry.teamName}</p>
+                            <p className="text-[10px] text-muted-foreground opacity-50 truncate">{entry.driverName ?? "—"} · {entry.constructorName ?? "—"}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-black text-white">{entry.totalPoints}</p>
+                            <p className="text-[10px] leading-none">
+                              <span className="text-blue-400">{entry.driverPoints}</span>
+                              <span className="text-muted-foreground/30"> + </span>
+                              <span className="text-emerald-400">{entry.constructorPoints}</span>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           )}
-        </TabsContent>
+        </motion.div>
+      )}
 
-        <TabsContent value="badges">
+      {/* Tab: Badges */}
+      {activeTab === "badges" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           {completedRaces.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <Medal className="w-8 h-8 mx-auto mb-3 text-muted-foreground/40" />
-                <p className="text-muted-foreground italic text-sm">I badge saranno disponibili dopo la prima gara completata.</p>
-              </CardContent>
-            </Card>
+            <div className="glass-panel rounded-3xl border border-white/5 flex flex-col items-center justify-center py-20">
+              <Medal className="w-10 h-10 text-muted-foreground opacity-20 mb-4" />
+              <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                Badge disponibili dopo la prima gara
+              </p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-1 glass-panel rounded-2xl border border-white/5 overflow-hidden">
-                <div className="px-4 py-3 border-b border-white/5">
+              {/* Race list */}
+              <div className="lg:col-span-1 glass-panel rounded-3xl border border-white/5 overflow-hidden h-fit">
+                <div className="px-5 py-4 border-b border-white/5">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
                     Seleziona Gara
                   </p>
                 </div>
-                <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto">
+                <div className="divide-y divide-white/5 max-h-[480px] overflow-y-auto">
                   {completedRaces.map(race => (
                     <button
                       key={race.id}
                       onClick={() => setBadgeRaceId(race.id)}
                       data-testid={`button-badge-race-${race.id}`}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all hover:bg-white/5 ${
+                      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left transition-all hover:bg-white/3 ${
                         badgeRaceId === race.id ? "bg-primary/10 border-l-2 border-primary" : "border-l-2 border-transparent"
                       }`}
                     >
                       <RaceFlag country={race.country ?? ""} size={22} />
                       <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-black uppercase tracking-tight truncate ${badgeRaceId === race.id ? "text-primary" : "text-white"}`}>
+                        <p className={`text-xs font-black uppercase tracking-tight truncate leading-none mb-0.5 ${badgeRaceId === race.id ? "text-primary" : "text-white"}`}>
                           {race.name}
                         </p>
-                        <p className="text-[10px] text-muted-foreground opacity-50 font-mono">
-                          R{race.round ?? "—"} · {race.date}
+                        <p className="text-[10px] text-muted-foreground opacity-40 font-mono">
+                          Round {race.round ?? "—"}
                         </p>
                       </div>
-                      {badgeRaceId === race.id && (
-                        <ChevronRight className="w-3 h-3 text-primary shrink-0" />
-                      )}
+                      {badgeRaceId === race.id && <ChevronRight className="w-3 h-3 text-primary shrink-0" />}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="lg:col-span-2">
+              {/* Badge content */}
+              <div className="lg:col-span-2 space-y-4">
                 {badgesLoading ? (
-                  <div className="glass-panel rounded-2xl border border-white/5 flex items-center justify-center min-h-[200px]">
+                  <div className="glass-panel rounded-3xl border border-white/5 flex items-center justify-center min-h-[240px]">
                     <Loader2 className="w-6 h-6 animate-spin text-primary" />
                   </div>
                 ) : badgePlayers.length === 0 ? (
-                  <div className="glass-panel rounded-2xl border border-white/5 flex items-center justify-center min-h-[200px]">
+                  <div className="glass-panel rounded-3xl border border-white/5 flex items-center justify-center min-h-[240px]">
                     <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-40">
                       Nessuna pick per questa gara
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <>
+                    {/* Badge winner cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {(["perfect_weekend", "pole_position", "fastest_lap", "p1_constructor"] as BadgeKey[]).map(badgeKey => {
                         const winner = badgePlayers.find(p => p.badges.includes(badgeKey));
@@ -500,27 +573,27 @@ export default function LobbyDetail({ id }: { id: number }) {
                         return (
                           <motion.div
                             key={badgeKey}
-                            initial={{ opacity: 0, y: 10 }}
+                            initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`glass-panel rounded-2xl border-2 ${def.border} ${def.bg} p-4 flex items-center gap-4`}
+                            className={`glass-panel rounded-2xl border-2 ${def.border} ${def.bg} p-4 flex items-center gap-4 shadow-xl ${def.glow}`}
                             data-testid={`badge-card-${badgeKey}`}
                           >
-                            <div className={`w-11 h-11 rounded-xl ${def.bg} border ${def.border} flex items-center justify-center shrink-0`}>
+                            <div className={`w-12 h-12 rounded-xl ${def.bg} border-2 ${def.border} flex items-center justify-center shrink-0`}>
                               <def.Icon className={`w-5 h-5 ${def.color}`} />
                             </div>
-                            <div className="min-w-0">
-                              <p className={`text-xs font-black uppercase tracking-wider ${def.color} leading-none mb-0.5`}>
+                            <div className="min-w-0 flex-1">
+                              <p className={`text-[10px] font-black uppercase tracking-wider ${def.color} leading-none mb-1`}>
                                 {def.label}
                               </p>
-                              <p className="text-sm font-display font-black text-white uppercase tracking-tight truncate">
+                              <p className="text-sm font-display font-black text-white uppercase tracking-tight leading-none truncate mb-0.5">
                                 {winner.teamName}
                               </p>
-                              <p className="text-[10px] text-muted-foreground opacity-60 truncate">
+                              <p className="text-[10px] text-muted-foreground opacity-50 truncate">
                                 {badgeKey === "p1_constructor" ? winner.constructorName : winner.driverName}
                                 {" · "}
-                                {badgeKey === "p1_constructor"
-                                  ? `${winner.constructorPoints} pts`
-                                  : `${winner.driverPoints} pts`}
+                                <span className="font-black">
+                                  {badgeKey === "p1_constructor" ? winner.constructorPoints : winner.driverPoints} pts
+                                </span>
                               </p>
                             </div>
                           </motion.div>
@@ -528,10 +601,11 @@ export default function LobbyDetail({ id }: { id: number }) {
                       })}
                     </div>
 
-                    <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
-                      <div className="px-4 py-3 border-b border-white/5">
+                    {/* All players list */}
+                    <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden">
+                      <div className="px-5 py-4 border-b border-white/5">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
-                          Tutti i giocatori
+                          Tutti i manager
                         </p>
                       </div>
                       <div className="divide-y divide-white/5">
@@ -539,40 +613,38 @@ export default function LobbyDetail({ id }: { id: number }) {
                           <div
                             key={player.userId}
                             data-testid={`player-badge-row-${player.userId}`}
-                            className="flex items-center gap-3 px-4 py-3"
+                            className="flex items-center gap-3 px-5 py-3.5"
                           >
+                            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary shrink-0">
+                              {player.username.charAt(0).toUpperCase()}
+                            </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-black text-white uppercase tracking-tight truncate">
+                              <p className="text-xs font-black text-white uppercase tracking-tight truncate leading-none mb-0.5">
                                 {player.teamName}
                               </p>
-                              <p className="text-[10px] text-muted-foreground opacity-50 truncate">
-                                {player.driverName} · {player.driverPoints} pts &nbsp;|&nbsp; {player.constructorName} · {player.constructorPoints} pts
+                              <p className="text-[10px] text-muted-foreground opacity-40 truncate">
+                                {player.driverName} <span className="text-blue-400 font-black">{player.driverPoints}p</span>
+                                <span className="opacity-30"> · </span>
+                                {player.constructorName} <span className="text-emerald-400 font-black">{player.constructorPoints}p</span>
                               </p>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               {player.badges.length === 0 ? (
-                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-30">—</span>
+                                <span className="text-[9px] font-black text-muted-foreground opacity-20">—</span>
                               ) : (
                                 player.badges.filter(b => b !== "perfect_weekend").map(badgeKey => {
                                   const def = BADGE_DEFS[badgeKey as BadgeKey];
                                   if (!def) return null;
                                   return (
-                                    <div
-                                      key={badgeKey}
-                                      title={def.label}
-                                      className={`w-6 h-6 rounded-lg ${def.bg} border ${def.border} flex items-center justify-center`}
-                                    >
-                                      <def.Icon className={`w-3 h-3 ${def.color}`} />
+                                    <div key={badgeKey} title={def.label} className={`w-7 h-7 rounded-xl ${def.bg} border ${def.border} flex items-center justify-center`}>
+                                      <def.Icon className={`w-3.5 h-3.5 ${def.color}`} />
                                     </div>
                                   );
                                 })
                               )}
                               {player.badges.includes("perfect_weekend") && (
-                                <div
-                                  title="Perfect Weekend"
-                                  className={`w-6 h-6 rounded-lg ${BADGE_DEFS.perfect_weekend.bg} border ${BADGE_DEFS.perfect_weekend.border} flex items-center justify-center`}
-                                >
-                                  <Crown className={`w-3 h-3 ${BADGE_DEFS.perfect_weekend.color}`} />
+                                <div title="Perfect Weekend" className={`w-7 h-7 rounded-xl ${BADGE_DEFS.perfect_weekend.bg} border ${BADGE_DEFS.perfect_weekend.border} flex items-center justify-center`}>
+                                  <Crown className={`w-3.5 h-3.5 ${BADGE_DEFS.perfect_weekend.color}`} />
                                 </div>
                               )}
                             </div>
@@ -580,46 +652,49 @@ export default function LobbyDetail({ id }: { id: number }) {
                         ))}
                       </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
           )}
-        </TabsContent>
+        </motion.div>
+      )}
 
-        <TabsContent value="players">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Player List
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-y">
-                {members?.map((member) => (
-                  <div key={member.userId} className="py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
-                        {member.username.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-medium">{member.teamName}</p>
-                        <p className="text-xs text-muted-foreground">Manager: @{member.username}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      {member.role === "admin" && (
-                        <Badge variant="outline" className="text-[10px] uppercase">Admin</Badge>
-                      )}
-                    </div>
+      {/* Tab: Players */}
+      {activeTab === "players" && (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden">
+            <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
+              <Users className="w-4 h-4 text-primary" />
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">
+                Manager List
+              </p>
+              <span className="ml-auto text-[10px] font-black text-muted-foreground opacity-40 uppercase tracking-widest">
+                {members?.length ?? 0}/10
+              </span>
+            </div>
+            <div className="divide-y divide-white/5">
+              {members?.map((member, idx) => (
+                <div key={member.userId} className="flex items-center gap-4 px-5 py-4 hover:bg-white/3 transition-colors">
+                  <span className="text-xs font-black text-muted-foreground opacity-30 w-4 text-center shrink-0">{idx + 1}</span>
+                  <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center font-black text-primary text-sm shrink-0">
+                    {member.username.charAt(0).toUpperCase()}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-black text-white uppercase tracking-tight leading-none truncate">{member.teamName}</p>
+                    <p className="text-[10px] text-muted-foreground opacity-50 mt-0.5">@{member.username}</p>
+                  </div>
+                  {member.role === "admin" && (
+                    <span className="px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">
+                      Admin
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
