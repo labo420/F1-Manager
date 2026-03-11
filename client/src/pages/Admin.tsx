@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useActiveLobby, useLobbyInfo, useLobbyMembers } from "@/hooks/use-lobby";
 import { useRaces, useUpdateRaceStatus } from "@/hooks/use-races";
 import { useDrivers, useConstructors } from "@/hooks/use-competitors";
-import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock, Trash2, Shield, Download, Zap } from "lucide-react";
+import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock, Trash2, Shield, Download, Zap, Edit2, X, Trophy, Car, ListOrdered } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -44,6 +44,8 @@ function getInitials(text: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
+type RealResultsTab = "qualifying" | "race" | "sprint";
+
 export default function AdminPanel() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -60,6 +62,8 @@ export default function AdminPanel() {
 
   const [selectedRaceId, setSelectedRaceId] = useState<number | "">("");
   const [driverEntries, setDriverEntries] = useState<DriverEntry[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [realResultsTab, setRealResultsTab] = useState<RealResultsTab>("race");
 
   const isAdmin = adminLobbies.length > 0;
 
@@ -106,7 +110,8 @@ export default function AdminPanel() {
       queryClient.invalidateQueries({ queryKey: ["/api/f1/driver-standings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/f1/constructor-standings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/results/race"] });
-      toast({ title: "Official Results Saved", description: "Standings updated." });
+      setIsEditMode(false);
+      toast({ title: "Official Results Confirmed", description: "Standings updated." });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -126,6 +131,10 @@ export default function AdminPanel() {
       );
     }
   }, [drivers]);
+
+  useEffect(() => {
+    setIsEditMode(false);
+  }, [selectedRaceId]);
 
   const { data: existingResults } = useQuery<{ driverResults: any[]; constructorResults: any[] }>({
     queryKey: ["/api/results/race", selectedRaceId],
@@ -151,6 +160,38 @@ export default function AdminPanel() {
     },
     enabled: !!selectedLobbyId && !!selectedRaceId,
     refetchInterval: 5000,
+  });
+
+  const selectedRace = races?.find(r => r.id === Number(selectedRaceId));
+
+  const { data: qualifyingResults, isLoading: qualLoading } = useQuery<any[]>({
+    queryKey: ["/api/f1/race", selectedRaceId, "qualifying"],
+    queryFn: async () => {
+      const res = await fetch(`/api/f1/race/${selectedRaceId}/qualifying`, { credentials: "include" });
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!selectedRaceId,
+  });
+
+  const { data: externalRaceResults, isLoading: raceResLoading } = useQuery<any[]>({
+    queryKey: ["/api/f1/race", selectedRaceId, "external-results"],
+    queryFn: async () => {
+      const res = await fetch(`/api/f1/race/${selectedRaceId}/external-results`, { credentials: "include" });
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!selectedRaceId,
+  });
+
+  const { data: sprintResults, isLoading: sprintLoading } = useQuery<any[]>({
+    queryKey: ["/api/f1/race", selectedRaceId, "sprint"],
+    queryFn: async () => {
+      const res = await fetch(`/api/f1/race/${selectedRaceId}/sprint`, { credentials: "include" });
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: !!selectedRaceId && !!selectedRace?.hasSprint,
   });
 
   useEffect(() => {
@@ -256,8 +297,6 @@ export default function AdminPanel() {
     );
   }
 
-  const selectedRace = races?.find(r => r.id === Number(selectedRaceId));
-
   const updateEntry = (driverId: number, field: keyof DriverEntry, value: any) => {
     setDriverEntries(prev => {
       const updated = prev.map(e => {
@@ -273,8 +312,17 @@ export default function AdminPanel() {
     });
   };
 
+  const getRealResultsTabData = () => {
+    if (realResultsTab === "qualifying") return { data: qualifyingResults, loading: qualLoading };
+    if (realResultsTab === "sprint") return { data: sprintResults, loading: sprintLoading };
+    return { data: externalRaceResults, loading: raceResLoading };
+  };
+
+  const { data: activeTabData, loading: activeTabLoading } = getRealResultsTabData();
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-24">
+      {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -304,6 +352,7 @@ export default function AdminPanel() {
           </div>
         </div>
 
+        {/* Lobby Code */}
         {lobby && (
           <div className="glass-panel p-5 rounded-2xl flex items-center gap-6 border-2 border-white/5 shadow-2xl relative overflow-hidden group">
             <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -323,398 +372,794 @@ export default function AdminPanel() {
           </div>
         )}
       </motion.div>
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
-        <div className="space-y-8">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="glass-panel rounded-3xl p-8 border-2 border-white/5 shadow-2xl relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 blur-2xl" />
-            <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-              <Flag className="w-4 h-4 text-primary" /> Session Select
-            </h2>
-            <div className="relative group">
-              <select
-                value={selectedRaceId}
-                onChange={(e) => setSelectedRaceId(Number(e.target.value))}
-                data-testid="select-race"
-                className="w-full bg-zinc-900/50 border-2 border-white/10 rounded-2xl px-5 py-4 text-white font-bold focus:border-primary focus:ring-1 outline-none appearance-none transition-all cursor-pointer relative z-10 group-hover:border-white/20"
-              >
-                <option value="" disabled className="bg-zinc-900">Select Grand Prix...</option>
-                {races?.map(r => (
-                  <option key={r.id} value={r.id} className="bg-zinc-900">{r.round ? `R${r.round}: ` : ""}{r.name} {r.isCompleted ? "✓" : ""}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none z-20 group-hover:text-white transition-colors" />
-            </div>
 
-            {selectedRace && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="space-y-4 mt-8 pt-8 border-t border-white/5"
-              >
-                <h3 className="font-black text-[10px] text-muted-foreground uppercase tracking-widest mb-2">Race Operations</h3>
-                <div className="grid grid-cols-1 gap-3">
-                  <button
-                    onClick={() => updateStatus({ id: selectedRace.id, updates: { isLocked: !selectedRace.isLocked } })}
-                    disabled={updatingStatus}
-                    className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] transition-all border-2 ${
-                      selectedRace.isLocked 
-                        ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/5" 
-                        : "bg-green-500/10 border-green-500/20 text-green-500 shadow-lg shadow-green-500/5"
-                    }`}
-                  >
-                    {selectedRace.isLocked ? <><Lock className="w-4 h-4" /> Unlock Grid</> : <><Unlock className="w-4 h-4" /> Lock Grid</>}
-                  </button>
-                  <button
-                    onClick={() => updateStatus({ id: selectedRace.id, updates: { isCompleted: !selectedRace.isCompleted } })}
-                    disabled={updatingStatus}
-                    className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] transition-all border-2 ${
-                      selectedRace.isCompleted 
-                        ? "bg-zinc-800 border-white/10 text-white" 
-                        : "bg-primary border-primary text-white red-glow shadow-xl shadow-primary/20"
-                    }`}
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    {selectedRace.isCompleted ? "Reopen Session" : "Finalize Results"}
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </motion.div>
+      <div className="space-y-8">
 
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="glass-panel rounded-3xl p-8 border-2 border-white/5 shadow-2xl"
-          >
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white flex items-center gap-3">
-                <Users className="text-primary w-4 h-4" /> Players
-              </h2>
-              <span className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-black text-muted-foreground tracking-widest border border-white/5">
-                {members?.length || 0} / 10
-              </span>
-            </div>
-            <div className="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
-              {members?.map((m: any, idx: number) => (
-                <motion.div 
-                  key={m.id} 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  data-testid={`member-${m.userId}`} 
-                  className="flex items-center justify-between p-4 rounded-2xl bg-zinc-900/50 border border-white/5 hover:border-white/10 transition-colors group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      {m.avatarUrl ? (
-                        <img src={m.avatarUrl} alt="" className="w-10 h-10 rounded-xl object-cover border border-white/10 group-hover:scale-105 transition-transform" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                          <UserCircle className="w-6 h-6 text-muted-foreground/30" />
-                        </div>
-                      )}
-                      {m.role === "admin" && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center border-2 border-background shadow-lg">
-                          <Settings className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-display font-black text-white text-xs uppercase tracking-tight group-hover:text-primary transition-colors">{m.teamName === "TBD" ? "Unassigned" : m.teamName}</div>
-                      <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-60">@{m.username}</div>
-                    </div>
-                  </div>
-                </motion.div>
+        {/* 1. Session Select */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="glass-panel rounded-3xl p-8 border-2 border-white/5 shadow-2xl relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 blur-2xl" />
+          <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+            <Flag className="w-4 h-4 text-primary" /> Session Select
+          </h2>
+          <div className="relative group">
+            <select
+              value={selectedRaceId}
+              onChange={(e) => setSelectedRaceId(Number(e.target.value))}
+              data-testid="select-race"
+              className="w-full bg-zinc-900/50 border-2 border-white/10 rounded-2xl px-5 py-4 text-white font-bold focus:border-primary focus:ring-1 outline-none appearance-none transition-all cursor-pointer relative z-10 group-hover:border-white/20"
+            >
+              <option value="" disabled className="bg-zinc-900">Select Grand Prix...</option>
+              {races?.map(r => (
+                <option key={r.id} value={r.id} className="bg-zinc-900">{r.round ? `R${r.round}: ` : ""}{r.name} {r.isCompleted ? "✓" : ""}</option>
               ))}
-            </div>
-          </motion.div>
+            </select>
+            <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none z-20 group-hover:text-white transition-colors" />
+          </div>
 
           {selectedRace && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="space-y-4 mt-8 pt-8 border-t border-white/5"
             >
-              <div className="px-8 py-5 flex items-center gap-3 border-b border-white/5">
-                <Eye className="w-4 h-4 text-primary shrink-0" />
-                <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex-1 min-w-0">Draft Monitor</h2>
-                {draftStatus?.isComplete ? (
-                  <span className="px-2.5 py-1 bg-green-500/10 text-green-400 text-[9px] font-black uppercase tracking-widest rounded-full border border-green-500/20 shrink-0">
-                    Complete
-                  </span>
-                ) : draftStatus && !draftStatus.isComplete && draftStatus.draftOrder.length > 0 ? (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest rounded-full border border-primary/20 shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                    Live
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="p-4">
-                {draftLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : !draftStatus || draftStatus.draftOrder.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-2">
-                    <Clock className="w-7 h-7 opacity-20" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-center">Draft not started</p>
-                  </div>
-                ) : (
-                  <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
-                    {draftStatus.draftOrder.map((player: any, index: number) => {
-                      const isCurrent = !draftStatus.isComplete && index === draftStatus.currentDrafterIndex;
-                      const isNext = !draftStatus.isComplete && index === draftStatus.currentDrafterIndex + 1;
-                      const pick = adminPicks?.find(p => p.userId === player.userId);
-
-                      return (
-                        <div
-                          key={player.userId}
-                          className={`flex items-start gap-3 p-3 rounded-xl transition-all border ${
-                            isCurrent
-                              ? "bg-primary/10 border-primary/30"
-                              : player.hasPicked
-                              ? "bg-green-500/5 border-green-500/10"
-                              : isNext
-                              ? "bg-white/5 border-white/10"
-                              : "border-transparent"
-                          }`}
-                        >
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border shrink-0 mt-0.5 ${
-                            isCurrent
-                              ? "bg-primary/20 border-primary/40 text-primary"
-                              : player.hasPicked
-                              ? "bg-green-500/10 border-green-500/20 text-green-400"
-                              : "bg-white/5 border-white/10 text-muted-foreground"
-                          }`}>
-                            {index + 1}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="font-bold text-xs text-white truncate">
-                                {player.teamName && player.teamName !== "TBD" ? player.teamName : player.username}
-                              </span>
-                              {isCurrent && (
-                                <span className="flex items-center gap-1 px-1.5 py-0.5 bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest rounded-full border border-primary/30 shrink-0">
-                                  <span className="w-1 h-1 rounded-full bg-primary animate-ping inline-block" />
-                                  Now
-                                </span>
-                              )}
-                              {isNext && (
-                                <span className="px-1.5 py-0.5 bg-white/5 text-muted-foreground text-[8px] font-black uppercase tracking-widest rounded-full border border-white/10 shrink-0">
-                                  Next
-                                </span>
-                              )}
-                            </div>
-                            {pick ? (
-                              <div className="mt-0.5 space-y-0.5">
-                                <div className="text-[10px] text-green-400 font-bold truncate">{pick.driverName}</div>
-                                <div className="text-[9px] text-green-400/60 font-medium truncate">{pick.constructorName}</div>
-                              </div>
-                            ) : player.hasPicked ? (
-                              <div className="text-[9px] text-muted-foreground mt-0.5">Pick recorded</div>
-                            ) : (
-                              <div className="text-[9px] text-muted-foreground opacity-40 mt-0.5">Awaiting pick</div>
-                            )}
-                          </div>
-
-                          <div className="shrink-0 mt-0.5">
-                            {player.hasPicked ? (
-                              <CheckCircle className="w-3.5 h-3.5 text-green-400" />
-                            ) : isCurrent ? (
-                              <Activity className="w-3.5 h-3.5 text-primary" />
-                            ) : (
-                              <Clock className="w-3.5 h-3.5 text-muted-foreground opacity-20" />
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+              <h3 className="font-black text-[10px] text-muted-foreground uppercase tracking-widest mb-2">Race Operations</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <button
+                  onClick={() => updateStatus({ id: selectedRace.id, updates: { isLocked: !selectedRace.isLocked } })}
+                  disabled={updatingStatus}
+                  className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] transition-all border-2 ${
+                    selectedRace.isLocked 
+                      ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/5" 
+                      : "bg-green-500/10 border-green-500/20 text-green-500 shadow-lg shadow-green-500/5"
+                  }`}
+                >
+                  {selectedRace.isLocked ? <><Lock className="w-4 h-4" /> Unlock Grid</> : <><Unlock className="w-4 h-4" /> Lock Grid</>}
+                </button>
+                <button
+                  onClick={() => updateStatus({ id: selectedRace.id, updates: { isCompleted: !selectedRace.isCompleted } })}
+                  disabled={updatingStatus}
+                  className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] transition-all border-2 ${
+                    selectedRace.isCompleted 
+                      ? "bg-zinc-800 border-white/10 text-white" 
+                      : "bg-primary border-primary text-white red-glow shadow-xl shadow-primary/20"
+                  }`}
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {selectedRace.isCompleted ? "Reopen Session" : "Finalize Results"}
+                </button>
               </div>
             </motion.div>
           )}
-        </div>
+        </motion.div>
 
+        {/* 2. Players' Picks Panel */}
+        {selectedRace && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.05 }}
+            className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
+          >
+            <div className="px-8 py-5 flex items-center gap-3 border-b border-white/5">
+              <Users className="w-4 h-4 text-primary shrink-0" />
+              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex-1">Players' Picks</h2>
+              <span className="px-2.5 py-1 bg-white/5 text-muted-foreground text-[9px] font-black uppercase tracking-widest rounded-full border border-white/10">
+                {adminPicks?.length || 0} picks
+              </span>
+            </div>
+
+            <div className="p-6">
+              {!adminPicks ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : adminPicks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-2">
+                  <Clock className="w-7 h-7 opacity-20" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest">No picks yet</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Drivers column */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Trophy className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Drivers</span>
+                    </div>
+                    <div className="space-y-2">
+                      {members?.map((m: any) => {
+                        const pick = adminPicks.find(p => p.userId === m.userId);
+                        const teamColor = pick?.driverName
+                          ? TEAM_COLORS[drivers?.find(d => d.name === pick.driverName)?.team || ""] 
+                          : undefined;
+                        return (
+                          <div
+                            key={m.userId}
+                            data-testid={`pick-driver-${m.userId}`}
+                            className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/50 border border-white/5"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {m.avatarUrl ? (
+                                <img src={m.avatarUrl} alt="" className="w-7 h-7 rounded-lg object-cover border border-white/10 shrink-0" />
+                              ) : (
+                                <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 shrink-0">
+                                  <UserCircle className="w-4 h-4 text-muted-foreground/30" />
+                                </div>
+                              )}
+                              <span className="text-[10px] font-black text-white/60 uppercase tracking-tight truncate">
+                                {m.teamName === "TBD" ? m.username : m.teamName}
+                              </span>
+                            </div>
+                            {pick ? (
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {teamColor && <div className="w-1 h-4 rounded-full shrink-0" style={{ background: teamColor }} />}
+                                <span className="text-[10px] font-black text-white truncate max-w-[100px]">{pick.driverName}</span>
+                              </div>
+                            ) : (
+                              <span className="text-[9px] text-muted-foreground/40 font-bold italic shrink-0">No pick</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Constructors column */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Car className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Constructors</span>
+                    </div>
+                    <div className="space-y-2">
+                      {members?.map((m: any) => {
+                        const pick = adminPicks.find(p => p.userId === m.userId);
+                        const teamColor = pick?.constructorName ? TEAM_COLORS[pick.constructorName] : undefined;
+                        return (
+                          <div
+                            key={m.userId}
+                            data-testid={`pick-constructor-${m.userId}`}
+                            className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/50 border border-white/5"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {m.avatarUrl ? (
+                                <img src={m.avatarUrl} alt="" className="w-7 h-7 rounded-lg object-cover border border-white/10 shrink-0" />
+                              ) : (
+                                <div className="w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 shrink-0">
+                                  <UserCircle className="w-4 h-4 text-muted-foreground/30" />
+                                </div>
+                              )}
+                              <span className="text-[10px] font-black text-white/60 uppercase tracking-tight truncate">
+                                {m.teamName === "TBD" ? m.username : m.teamName}
+                              </span>
+                            </div>
+                            {pick ? (
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {teamColor && <div className="w-1 h-4 rounded-full shrink-0" style={{ background: teamColor }} />}
+                                <span className="text-[10px] font-black text-white truncate max-w-[100px]">{pick.constructorName}</span>
+                              </div>
+                            ) : (
+                              <span className="text-[9px] text-muted-foreground/40 font-bold italic shrink-0">No pick</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* 3. Real Results Panel (view-only) */}
+        {selectedRace && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
+          >
+            <div className="px-8 py-5 flex items-center gap-3 border-b border-white/5">
+              <ListOrdered className="w-4 h-4 text-primary shrink-0" />
+              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex-1">Official F1 Results</h2>
+              <span className="text-[9px] font-black text-muted-foreground/50 uppercase tracking-widest">View only</span>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-white/5 px-6 pt-4 gap-1">
+              <button
+                onClick={() => setRealResultsTab("qualifying")}
+                data-testid="tab-qualifying"
+                className={`px-4 py-2 rounded-t-xl text-[10px] font-black uppercase tracking-widest transition-all border-b-2 -mb-px ${
+                  realResultsTab === "qualifying"
+                    ? "text-primary border-primary"
+                    : "text-muted-foreground border-transparent hover:text-white"
+                }`}
+              >
+                Qualifying
+              </button>
+              <button
+                onClick={() => setRealResultsTab("race")}
+                data-testid="tab-race"
+                className={`px-4 py-2 rounded-t-xl text-[10px] font-black uppercase tracking-widest transition-all border-b-2 -mb-px ${
+                  realResultsTab === "race"
+                    ? "text-primary border-primary"
+                    : "text-muted-foreground border-transparent hover:text-white"
+                }`}
+              >
+                Race
+              </button>
+              {selectedRace.hasSprint && (
+                <button
+                  onClick={() => setRealResultsTab("sprint")}
+                  data-testid="tab-sprint"
+                  className={`px-4 py-2 rounded-t-xl text-[10px] font-black uppercase tracking-widest transition-all border-b-2 -mb-px ${
+                    realResultsTab === "sprint"
+                      ? "text-primary border-primary"
+                      : "text-muted-foreground border-transparent hover:text-white"
+                  }`}
+                >
+                  Sprint
+                </button>
+              )}
+            </div>
+
+            <div className="overflow-x-auto">
+              {activeTabLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : !activeTabData || activeTabData.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
+                  <Clock className="w-7 h-7 opacity-20" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-center">Data not available yet</p>
+                  <p className="text-[9px] opacity-40 text-center">Results will appear once the session is complete</p>
+                </div>
+              ) : realResultsTab === "qualifying" ? (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/5">
+                      <th className="text-center px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest w-10">P</th>
+                      <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Driver</th>
+                      <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden sm:table-cell">Team</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Q1</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Q2</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Q3</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Gap</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeTabData.map((r: any) => {
+                      const teamColor = TEAM_COLORS[r.teamName];
+                      return (
+                        <tr key={r.position} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                          <td className="px-4 py-3 text-center">
+                            <span className={`font-black text-xs ${r.position === 1 ? "text-yellow-400" : r.position <= 3 ? "text-white" : "text-muted-foreground"}`}>{r.position}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              {teamColor && <div className="w-0.5 h-6 rounded-full shrink-0" style={{ background: teamColor }} />}
+                              <div>
+                                <div className="font-bold text-white text-xs">{r.driverName}</div>
+                                <div className="text-[9px] text-muted-foreground sm:hidden">{r.teamName}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 hidden sm:table-cell">
+                            <span className="text-[10px] text-muted-foreground">{r.teamName}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <span className="text-[10px] font-mono text-white/70">{r.q1 || "—"}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center hidden md:table-cell">
+                            <span className="text-[10px] font-mono text-white/70">{r.q2 || "—"}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center hidden md:table-cell">
+                            <span className="text-[10px] font-mono text-white/70">{r.q3 || "—"}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <span className="text-[10px] font-mono text-muted-foreground">{r.gap || (r.position === 1 ? "POLE" : "—")}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : realResultsTab === "race" ? (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/5">
+                      <th className="text-center px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest w-10">P</th>
+                      <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Driver</th>
+                      <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden sm:table-cell">Team</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pts</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Gap</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">FL</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeTabData.map((r: any, idx: number) => {
+                      const teamColor = TEAM_COLORS[r.teamName];
+                      const isFinished = r.position !== null;
+                      return (
+                        <tr key={idx} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                          <td className="px-4 py-3 text-center">
+                            <span className={`font-black text-xs ${r.position === 1 ? "text-yellow-400" : r.position <= 3 ? "text-white" : isFinished ? "text-muted-foreground" : "text-red-400/60"}`}>
+                              {isFinished ? r.position : r.positionText || "DNF"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              {teamColor && <div className="w-0.5 h-6 rounded-full shrink-0" style={{ background: teamColor }} />}
+                              <div>
+                                <div className="font-bold text-white text-xs">{r.driverName}</div>
+                                <div className="text-[9px] text-muted-foreground sm:hidden">{r.teamName}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 hidden sm:table-cell">
+                            <span className="text-[10px] text-muted-foreground">{r.teamName}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <span className="text-xs font-black text-white">{r.points > 0 ? r.points : "—"}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center hidden md:table-cell">
+                            <span className="text-[10px] font-mono text-muted-foreground">{r.gap || (r.position === 1 ? "WINNER" : r.status || "—")}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            {r.fastestLap && <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest">FL</span>}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                /* Sprint */
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/5">
+                      <th className="text-center px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest w-10">P</th>
+                      <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Driver</th>
+                      <th className="text-left px-4 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden sm:table-cell">Team</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pts</th>
+                      <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest hidden md:table-cell">Gap</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeTabData.map((r: any, idx: number) => {
+                      const teamColor = TEAM_COLORS[r.teamName];
+                      return (
+                        <tr key={idx} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                          <td className="px-4 py-3 text-center">
+                            <span className={`font-black text-xs ${r.position === 1 ? "text-yellow-400" : r.position <= 3 ? "text-white" : "text-muted-foreground"}`}>{r.position}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              {teamColor && <div className="w-0.5 h-6 rounded-full shrink-0" style={{ background: teamColor }} />}
+                              <div>
+                                <div className="font-bold text-white text-xs">{r.driverName}</div>
+                                <div className="text-[9px] text-muted-foreground sm:hidden">{r.teamName}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 hidden sm:table-cell">
+                            <span className="text-[10px] text-muted-foreground">{r.teamName}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <span className="text-xs font-black text-white">{r.points > 0 ? r.points : "—"}</span>
+                          </td>
+                          <td className="px-3 py-3 text-center hidden md:table-cell">
+                            <span className="text-[10px] font-mono text-muted-foreground">{r.gap || (r.position === 1 ? "WINNER" : "—")}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* 4. Race Results Editor (edit-gated) */}
         {selectedRace && driverEntries.length > 0 && (
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.15 }}
             className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
           >
             <div className="px-8 py-5 flex items-center justify-between border-b border-white/5">
               <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
                 <Flag className="w-4 h-4 text-primary" /> Race Results
               </h2>
-              <button
-                onClick={async () => {
-                  try {
-                    const res = await fetch(`/api/admin/race/${selectedRaceId}/openf1-overtakes`, { credentials: "include" });
-                    if (!res.ok) {
-                      const err = await res.json();
-                      toast({ title: "OpenF1 Import Failed", description: err.message, variant: "destructive" });
-                      return;
-                    }
-                    const data = await res.json();
-                    let updated = 0;
-                    setDriverEntries(prev => prev.map(entry => {
-                      const match = data.results.find((r: any) => r.driverId === entry.driverId);
-                      if (match) { updated++; return { ...entry, overtakes: match.overtakes }; }
-                      return entry;
-                    }));
-                    toast({ title: "OpenF1 Import OK", description: `Aggiornati ${updated} piloti · ${data.sessionName} @ ${data.circuit}` });
-                  } catch {
-                    toast({ title: "Errore di rete", description: "Impossibile contattare OpenF1.", variant: "destructive" });
-                  }
-                }}
-                disabled={!selectedRaceId}
-                data-testid="button-import-openf1"
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500/10 border-2 border-sky-500/20 text-sky-400 text-[10px] font-black uppercase tracking-widest hover:bg-sky-500/20 hover:border-sky-500/40 transition-all disabled:opacity-40"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                Importa da OpenF1
-              </button>
+              <div className="flex items-center gap-3">
+                {!isEditMode ? (
+                  <button
+                    onClick={() => setIsEditMode(true)}
+                    data-testid="button-edit-results"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border-2 border-white/10 text-white text-[10px] font-black uppercase tracking-widest hover:bg-white/10 hover:border-white/20 transition-all"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    Edit Results
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(`/api/admin/race/${selectedRaceId}/openf1-overtakes`, { credentials: "include" });
+                          if (!res.ok) {
+                            const err = await res.json();
+                            toast({ title: "OpenF1 Import Failed", description: err.message, variant: "destructive" });
+                            return;
+                          }
+                          const data = await res.json();
+                          let updated = 0;
+                          setDriverEntries(prev => prev.map(entry => {
+                            const match = data.results.find((r: any) => r.driverId === entry.driverId);
+                            if (match) { updated++; return { ...entry, overtakes: match.overtakes }; }
+                            return entry;
+                          }));
+                          toast({ title: "OpenF1 Import OK", description: `Aggiornati ${updated} piloti · ${data.sessionName} @ ${data.circuit}` });
+                        } catch {
+                          toast({ title: "Errore di rete", description: "Impossibile contattare OpenF1.", variant: "destructive" });
+                        }
+                      }}
+                      disabled={!selectedRaceId}
+                      data-testid="button-import-openf1"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-sky-500/10 border-2 border-sky-500/20 text-sky-400 text-[10px] font-black uppercase tracking-widest hover:bg-sky-500/20 hover:border-sky-500/40 transition-all disabled:opacity-40"
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      OpenF1
+                    </button>
+                    <button
+                      onClick={() => setIsEditMode(false)}
+                      data-testid="button-cancel-edit"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border-2 border-white/10 text-muted-foreground text-[10px] font-black uppercase tracking-widest hover:text-white transition-all"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/5">
-                    <th className="text-left px-6 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pilota</th>
-                    <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pos</th>
-                    <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pt FIA</th>
-                    <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Sorpassi</th>
-                    <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">FL</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {driverEntries.map((entry, idx) => {
-                    const driver = drivers?.find(d => d.id === entry.driverId);
-                    const teamColor = driver ? TEAM_COLORS[driver.team] : undefined;
-                    return (
-                      <tr key={entry.driverId} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                        <td className="px-6 py-3">
-                          <div className="flex items-center gap-3">
-                            {teamColor && <div className="w-1 h-8 rounded-full shrink-0" style={{ background: teamColor }} />}
-                            <div>
-                              <div className="font-bold text-white text-xs">{driver?.name ?? `Driver #${entry.driverId}`}</div>
-                              <div className="text-[9px] text-muted-foreground font-medium">{driver?.team}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-3 py-3">
-                          <input
-                            type="number"
-                            min={1}
-                            max={20}
-                            value={entry.position}
-                            onChange={e => updateEntry(entry.driverId, "position", Number(e.target.value))}
-                            data-testid={`input-position-${entry.driverId}`}
-                            className="w-14 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-bold focus:border-primary focus:outline-none"
-                          />
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <span className="text-white font-black text-xs">{entry.points}</span>
-                        </td>
-                        <td className="px-3 py-3">
-                          <input
-                            type="number"
-                            min={0}
-                            value={entry.overtakes}
-                            onChange={e => updateEntry(entry.driverId, "overtakes", Number(e.target.value))}
-                            data-testid={`input-overtakes-${entry.driverId}`}
-                            className="w-14 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-bold focus:border-primary focus:outline-none"
-                          />
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <input
-                            type="checkbox"
-                            checked={entry.fastestLap}
-                            onChange={e => updateEntry(entry.driverId, "fastestLap", e.target.checked)}
-                            data-testid={`input-fastestlap-${entry.driverId}`}
-                            className="w-4 h-4 accent-primary cursor-pointer"
-                          />
-                        </td>
+            {isEditMode ? (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/5">
+                        <th className="text-left px-6 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pilota</th>
+                        <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pos</th>
+                        <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Pt FIA</th>
+                        <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">Sorpassi</th>
+                        <th className="text-center px-3 py-3 text-[9px] font-black text-muted-foreground uppercase tracking-widest">FL</th>
                       </tr>
+                    </thead>
+                    <tbody>
+                      {driverEntries.map((entry) => {
+                        const driver = drivers?.find(d => d.id === entry.driverId);
+                        const teamColor = driver ? TEAM_COLORS[driver.team] : undefined;
+                        return (
+                          <tr key={entry.driverId} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                            <td className="px-6 py-3">
+                              <div className="flex items-center gap-3">
+                                {teamColor && <div className="w-1 h-8 rounded-full shrink-0" style={{ background: teamColor }} />}
+                                <div>
+                                  <div className="font-bold text-white text-xs">{driver?.name ?? `Driver #${entry.driverId}`}</div>
+                                  <div className="text-[9px] text-muted-foreground font-medium">{driver?.team}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3">
+                              <input
+                                type="number"
+                                min={1}
+                                max={20}
+                                value={entry.position}
+                                onChange={e => updateEntry(entry.driverId, "position", Number(e.target.value))}
+                                data-testid={`input-position-${entry.driverId}`}
+                                className="w-14 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                              />
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <span className="text-white font-black text-xs">{entry.points}</span>
+                            </td>
+                            <td className="px-3 py-3">
+                              <input
+                                type="number"
+                                min={0}
+                                value={entry.overtakes}
+                                onChange={e => updateEntry(entry.driverId, "overtakes", Number(e.target.value))}
+                                data-testid={`input-overtakes-${entry.driverId}`}
+                                className="w-14 text-center bg-zinc-900/60 border border-white/10 rounded-lg px-2 py-1.5 text-white text-xs font-bold focus:border-primary focus:outline-none"
+                              />
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <input
+                                type="checkbox"
+                                checked={entry.fastestLap}
+                                onChange={e => updateEntry(entry.driverId, "fastestLap", e.target.checked)}
+                                data-testid={`input-fastestlap-${entry.driverId}`}
+                                className="w-4 h-4 accent-primary cursor-pointer"
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="px-8 py-5 border-t border-white/5 flex justify-end">
+                  <button
+                    onClick={() => {
+                      if (!selectedRaceId || !selectedLobbyId) return;
+                      bulkSaveMutation.mutate({ raceId: Number(selectedRaceId), results: driverEntries, lobbyId: Number(selectedLobbyId) });
+                    }}
+                    disabled={bulkSaveMutation.isPending || !selectedRaceId}
+                    data-testid="button-save-results"
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary border-2 border-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-40 red-glow shadow-xl shadow-primary/20"
+                  >
+                    {bulkSaveMutation.isPending ? (
+                      <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Salvataggio...</>
+                    ) : (
+                      <><CheckCircle className="w-4 h-4" /> Conferma Risultati</>
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Collapsed summary when not editing */
+              <div className="p-6">
+                {existingResults?.driverResults && existingResults.driverResults.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {driverEntries.slice(0, 3).map((entry) => {
+                      const driver = drivers?.find(d => d.id === entry.driverId);
+                      const teamColor = driver ? TEAM_COLORS[driver.team] : undefined;
+                      const medals = ["🥇", "🥈", "🥉"];
+                      return (
+                        <div key={entry.driverId} className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/50 border border-white/5">
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm">{medals[entry.position - 1] || `P${entry.position}`}</span>
+                            {teamColor && <div className="w-0.5 h-5 rounded-full" style={{ background: teamColor }} />}
+                            <span className="text-xs font-bold text-white">{driver?.name ?? `Driver #${entry.driverId}`}</span>
+                          </div>
+                          <span className="text-xs font-black text-primary">{entry.points} pts</span>
+                        </div>
+                      );
+                    })}
+                    {driverEntries.length > 3 && (
+                      <p className="text-center text-[9px] text-muted-foreground/50 font-bold uppercase tracking-widest pt-1">
+                        +{driverEntries.length - 3} more · click Edit Results to view all
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-6 text-muted-foreground gap-2">
+                    <Flag className="w-7 h-7 opacity-20" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest">No results saved yet</p>
+                    <p className="text-[9px] opacity-40">Click Edit Results to enter results</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* 5. Players List */}
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="glass-panel rounded-3xl p-8 border-2 border-white/5 shadow-2xl"
+        >
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-sm font-black uppercase tracking-[0.2em] text-white flex items-center gap-3">
+              <Users className="text-primary w-4 h-4" /> Players
+            </h2>
+            <span className="px-3 py-1 bg-white/5 rounded-full text-[10px] font-black text-muted-foreground tracking-widest border border-white/5">
+              {members?.length || 0} / 10
+            </span>
+          </div>
+          <div className="space-y-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
+            {members?.map((m: any, idx: number) => (
+              <motion.div 
+                key={m.id} 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                data-testid={`member-${m.userId}`} 
+                className="flex items-center justify-between p-4 rounded-2xl bg-zinc-900/50 border border-white/5 hover:border-white/10 transition-colors group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    {m.avatarUrl ? (
+                      <img src={m.avatarUrl} alt="" className="w-10 h-10 rounded-xl object-cover border border-white/10 group-hover:scale-105 transition-transform" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
+                        <UserCircle className="w-6 h-6 text-muted-foreground/30" />
+                      </div>
+                    )}
+                    {m.role === "admin" && (
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center border-2 border-background shadow-lg">
+                        <Settings className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="font-display font-black text-white text-xs uppercase tracking-tight group-hover:text-primary transition-colors">{m.teamName === "TBD" ? "Unassigned" : m.teamName}</div>
+                    <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest opacity-60">@{m.username}</div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* 6. Draft Monitor */}
+        {selectedRace && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.25 }}
+            className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
+          >
+            <div className="px-8 py-5 flex items-center gap-3 border-b border-white/5">
+              <Eye className="w-4 h-4 text-primary shrink-0" />
+              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex-1 min-w-0">Draft Monitor</h2>
+              {draftStatus?.isComplete ? (
+                <span className="px-2.5 py-1 bg-green-500/10 text-green-400 text-[9px] font-black uppercase tracking-widest rounded-full border border-green-500/20 shrink-0">
+                  Complete
+                </span>
+              ) : draftStatus && !draftStatus.isComplete && draftStatus.draftOrder.length > 0 ? (
+                <span className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest rounded-full border border-primary/20 shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  Live
+                </span>
+              ) : null}
+            </div>
+
+            <div className="p-4">
+              {draftLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : !draftStatus || draftStatus.draftOrder.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-2">
+                  <Clock className="w-7 h-7 opacity-20" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-center">Draft not started</p>
+                </div>
+              ) : (
+                <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
+                  {draftStatus.draftOrder.map((player: any, index: number) => {
+                    const isCurrent = !draftStatus.isComplete && index === draftStatus.currentDrafterIndex;
+                    const isNext = !draftStatus.isComplete && index === draftStatus.currentDrafterIndex + 1;
+                    const pick = adminPicks?.find(p => p.userId === player.userId);
+
+                    return (
+                      <div
+                        key={player.userId}
+                        className={`flex items-start gap-3 p-3 rounded-xl transition-all border ${
+                          isCurrent
+                            ? "bg-primary/10 border-primary/30"
+                            : player.hasPicked
+                            ? "bg-green-500/5 border-green-500/10"
+                            : isNext
+                            ? "bg-white/5 border-white/10"
+                            : "border-transparent"
+                        }`}
+                      >
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border shrink-0 mt-0.5 ${
+                          isCurrent
+                            ? "bg-primary/20 border-primary/40 text-primary"
+                            : player.hasPicked
+                            ? "bg-green-500/10 border-green-500/20 text-green-400"
+                            : "bg-white/5 border-white/10 text-muted-foreground"
+                        }`}>
+                          {index + 1}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-xs text-white truncate">
+                              {player.teamName && player.teamName !== "TBD" ? player.teamName : player.username}
+                            </span>
+                            {isCurrent && (
+                              <span className="flex items-center gap-1 px-1.5 py-0.5 bg-primary/20 text-primary text-[8px] font-black uppercase tracking-widest rounded-full border border-primary/30 shrink-0">
+                                <span className="w-1 h-1 rounded-full bg-primary animate-ping inline-block" />
+                                Now
+                              </span>
+                            )}
+                            {isNext && (
+                              <span className="px-1.5 py-0.5 bg-white/5 text-muted-foreground text-[8px] font-black uppercase tracking-widest rounded-full border border-white/10 shrink-0">
+                                Next
+                              </span>
+                            )}
+                          </div>
+                          {pick ? (
+                            <div className="mt-0.5 space-y-0.5">
+                              <div className="text-[10px] text-green-400 font-bold truncate">{pick.driverName}</div>
+                              <div className="text-[9px] text-green-400/60 font-medium truncate">{pick.constructorName}</div>
+                            </div>
+                          ) : player.hasPicked ? (
+                            <div className="text-[9px] text-muted-foreground mt-0.5">Pick recorded</div>
+                          ) : (
+                            <div className="text-[9px] text-muted-foreground opacity-40 mt-0.5">Awaiting pick</div>
+                          )}
+                        </div>
+
+                        <div className="shrink-0 mt-0.5">
+                          {player.hasPicked ? (
+                            <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                          ) : isCurrent ? (
+                            <Activity className="w-3.5 h-3.5 text-primary" />
+                          ) : (
+                            <Clock className="w-3.5 h-3.5 text-muted-foreground opacity-20" />
+                          )}
+                        </div>
+                      </div>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="px-8 py-5 border-t border-white/5 flex justify-end">
-              <button
-                onClick={() => {
-                  if (!selectedRaceId || !selectedLobbyId) return;
-                  bulkSaveMutation.mutate({ raceId: Number(selectedRaceId), results: driverEntries, lobbyId: Number(selectedLobbyId) });
-                }}
-                disabled={bulkSaveMutation.isPending || !selectedRaceId}
-                data-testid="button-save-results"
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary border-2 border-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-40 red-glow shadow-xl shadow-primary/20"
-              >
-                {bulkSaveMutation.isPending ? (
-                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Salvataggio...</>
-                ) : (
-                  <><Save className="w-4 h-4" /> Salva Risultati</>
-                )}
-              </button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
 
-      </div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="mt-16 max-w-2xl mx-auto"
-      >
-        <div className="glass-panel rounded-3xl p-8 border-2 border-red-900/20 bg-gradient-to-br from-red-950/30 to-transparent shadow-2xl relative overflow-hidden group hover:border-red-900/40 transition-all">
-          <div className="absolute inset-0 bg-red-900/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="absolute top-0 right-0 w-40 h-40 bg-red-500/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-red-500/20 transition-colors" />
-          
-          <div className="relative z-10">
-            <div className="flex items-start gap-4 mb-4">
-              <AlertTriangle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="text-lg font-display font-black text-white uppercase tracking-tight mb-2">Danger Zone</h3>
-                <p className="text-sm text-white/60 leading-relaxed">
-                  Permanently delete this league and all associated data. This action cannot be undone.
-                </p>
-              </div>
-            </div>
+        {/* Danger Zone */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="max-w-2xl mx-auto w-full mt-8"
+        >
+          <div className="glass-panel rounded-3xl p-8 border-2 border-red-900/20 bg-gradient-to-br from-red-950/30 to-transparent shadow-2xl relative overflow-hidden group hover:border-red-900/40 transition-all">
+            <div className="absolute inset-0 bg-red-900/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute top-0 right-0 w-40 h-40 bg-red-500/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-red-500/20 transition-colors" />
             
-            <button 
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={deleteLobbyMutation.isPending}
-              className="w-full mt-6 py-3.5 rounded-xl bg-red-900/40 border-2 border-red-900/50 text-red-300 font-semibold uppercase tracking-widest text-sm hover:bg-red-900/60 hover:border-red-900/70 hover:text-red-200 transition-all disabled:opacity-50 flex items-center justify-center gap-3 group/btn"
-              data-testid="button-delete-lobby"
-            >
-              {deleteLobbyMutation.isPending ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-red-300/30 border-t-red-300 rounded-full animate-spin" />
-                  Deleting League...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
-                  Delete League
-                </>
-              )}
-            </button>
+            <div className="relative z-10">
+              <div className="flex items-start gap-4 mb-4">
+                <AlertTriangle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="text-lg font-display font-black text-white uppercase tracking-tight mb-2">Danger Zone</h3>
+                  <p className="text-sm text-white/60 leading-relaxed">
+                    Permanently delete this league and all associated data. This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={deleteLobbyMutation.isPending}
+                className="w-full mt-6 py-3.5 rounded-xl bg-red-900/40 border-2 border-red-900/50 text-red-300 font-semibold uppercase tracking-widest text-sm hover:bg-red-900/60 hover:border-red-900/70 hover:text-red-200 transition-all disabled:opacity-50 flex items-center justify-center gap-3 group/btn"
+                data-testid="button-delete-lobby"
+              >
+                {deleteLobbyMutation.isPending ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-red-300/30 border-t-red-300 rounded-full animate-spin" />
+                    Deleting League...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                    Delete League
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+
+      </div>
 
       <AnimatePresence>
         {showDeleteConfirm && (
