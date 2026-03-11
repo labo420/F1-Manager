@@ -575,51 +575,9 @@ export default function AdminPanel() {
             transition={{ delay: 0.1 }}
             className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
           >
-            <div className="px-8 py-5 flex items-center justify-between border-b border-white/5">
-              <div className="flex items-center gap-3">
-                <ListOrdered className="w-4 h-4 text-primary shrink-0" />
-                <h2 className="text-sm font-black text-white uppercase tracking-[0.2em]">Official F1 Results</h2>
-              </div>
-              <div className="flex items-center gap-2">
-                {!isEditingRealResults ? (
-                  <button
-                    onClick={() => {
-                      setIsEditingRealResults(true);
-                      setEditedRealResults(activeTabData ? JSON.parse(JSON.stringify(activeTabData)) : []);
-                    }}
-                    data-testid="button-edit-f1-results"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-[9px] font-black uppercase tracking-widest hover:bg-white/10 hover:border-white/20 transition-all"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                    Edit
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => {
-                        setIsEditingRealResults(false);
-                        setEditedRealResults([]);
-                      }}
-                      data-testid="button-cancel-f1-edit"
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-muted-foreground text-[9px] font-black uppercase tracking-widest hover:text-white transition-all"
-                    >
-                      <X className="w-3 h-3" />
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsEditingRealResults(false);
-                        toast({ title: "Results Updated", description: "Official F1 results have been saved." });
-                      }}
-                      data-testid="button-save-f1-edit"
-                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/20 border border-primary/30 text-primary text-[9px] font-black uppercase tracking-widest hover:bg-primary/30 transition-all"
-                    >
-                      <Save className="w-3 h-3" />
-                      Save
-                    </button>
-                  </>
-                )}
-              </div>
+            <div className="px-8 py-5 flex items-center gap-3 border-b border-white/5">
+              <ListOrdered className="w-4 h-4 text-primary shrink-0" />
+              <h2 className="text-sm font-black text-white uppercase tracking-[0.2em]">Official F1 Results</h2>
             </div>
 
             {/* Tabs */}
@@ -1020,6 +978,44 @@ export default function AdminPanel() {
                 <CheckCircle className="w-4 h-4" />
                 {selectedRace.isCompleted ? "Reopen Session" : "Finalize Results"}
               </button>
+              {!isEditingRealResults ? (
+                <button
+                  onClick={() => {
+                    setIsEditingRealResults(true);
+                    setEditedRealResults(activeTabData ? JSON.parse(JSON.stringify(activeTabData)) : []);
+                  }}
+                  data-testid="button-edit-f1-results"
+                  className="w-full py-4 rounded-2xl bg-white/5 border-2 border-white/10 text-white font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] hover:bg-white/10 hover:border-white/20 transition-all"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Edit Results
+                </button>
+              ) : (
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setIsEditingRealResults(false);
+                      setEditedRealResults([]);
+                    }}
+                    data-testid="button-cancel-f1-edit"
+                    className="flex-1 py-4 rounded-2xl bg-white/5 border-2 border-white/10 text-muted-foreground font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] hover:text-white transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsEditingRealResults(false);
+                      toast({ title: "Results Updated", description: "Official F1 results have been saved." });
+                    }}
+                    data-testid="button-save-f1-edit"
+                    className="flex-1 py-4 rounded-2xl bg-primary/20 border-2 border-primary/30 text-primary font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] hover:bg-primary/30 transition-all"
+                  >
+                    <Save className="w-4 h-4" />
+                    Save
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
