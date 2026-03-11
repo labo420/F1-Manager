@@ -119,7 +119,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
   const myIdx = draftStatus?.draftOrder.findIndex(d => d.userId === user?.id) ?? -1;
   const nextInfo = myIdx >= 0 ? draftStatus?.draftOrder[myIdx + 1] : undefined;
   const nextHasPicked = nextInfo?.hasPicked ?? false;
-  const canRequestUnlock = iHavePicked && !nextHasPicked && !isComplete && myUnlockRequest?.status !== "pending";
+  const canRequestUnlock = iHavePicked && !nextHasPicked && !isComplete && !myUnlockRequest;
 
   const handlePick = () => {
     if (selectedDriverId && selectedConstructorId) {
