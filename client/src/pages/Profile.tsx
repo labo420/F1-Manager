@@ -14,7 +14,7 @@ export default function Profile() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [showPicker, setShowPicker] = useState(false);
-  const [openPanel, setOpenPanel] = useState<"password" | "username" | "leagues" | null>(null);
+  const [openPanel, setOpenPanel] = useState<"password" | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -186,22 +186,6 @@ export default function Profile() {
             <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors shrink-0" />
           </button>
 
-          {leagues.length > 0 && (
-            <button
-              onClick={() => setOpenPanel("leagues")}
-              data-testid="button-settings-leagues"
-              className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.03] transition-colors text-left group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-                <Shield className="w-4 h-4 text-white/40 group-hover:text-primary transition-colors" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white">Le mie leghe</p>
-                <p className="text-[10px] text-white/30">{leagues.length} {leagues.length === 1 ? "lega" : "leghe"} attive</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors shrink-0" />
-            </button>
-          )}
 
           <button
             onClick={() => logout()}
@@ -360,58 +344,7 @@ export default function Profile() {
                     </button>
                   </div>
                 </>
-              ) : (
-                <>
-                  <div className="sticky top-0 px-6 py-4 border-b border-white/5 bg-zinc-950/80 backdrop-blur flex items-center justify-between">
-                    <h2 className="font-display font-black text-white text-lg uppercase tracking-tight">Le mie leghe</h2>
-                    <button
-                      onClick={() => setOpenPanel(null)}
-                      className="text-white/40 hover:text-white transition-colors p-1"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <div className="flex-1 px-6 py-6 space-y-3">
-                    {leagues.map((m: any) => (
-                      <div key={m.lobbyId} className="glass-panel rounded-xl p-4 border border-white/5 hover:border-primary/30 transition-all group" data-testid={`panel-league-item-${m.lobbyId}`}>
-                        <div className="flex items-start gap-3 mb-3">
-                          {m.lobbyImageUrl ? (
-                            <img src={m.lobbyImageUrl} alt={m.lobbyName} className="w-10 h-10 rounded-lg object-cover border border-white/10 shrink-0" />
-                          ) : (
-                            <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 shrink-0">
-                              <Trophy className="w-5 h-5 text-white/20" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-white text-sm uppercase tracking-tight truncate">{m.lobbyName}</p>
-                            <p className="text-[10px] text-white/30 font-medium">{m.teamName && m.teamName !== "TBD" ? m.teamName : "—"}</p>
-                          </div>
-                        </div>
-                        <div className="space-y-1.5 pt-2 border-t border-white/5">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-[9px] text-white/40 uppercase tracking-wider">Codice</span>
-                            <code className="text-primary font-mono font-bold text-[9px] tracking-widest">{m.lobbyCode}</code>
-                          </div>
-                          <div className="flex items-center justify-between gap-2">
-                            {m.role === "admin" ? (
-                              <>
-                                <span className="text-[9px] text-white/40 uppercase tracking-wider">Ruolo</span>
-                                <span className="bg-primary/20 text-primary px-2 py-0.5 rounded text-[8px] font-black uppercase border border-primary/20">Admin</span>
-                              </>
-                            ) : (
-                              <>
-                                <span className="text-[9px] text-white/40 uppercase tracking-wider">Ruolo</span>
-                                <span className="bg-white/5 text-white/40 px-2 py-0.5 rounded text-[8px] font-black uppercase border border-white/10">Player</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
+              ) : null}
             </motion.div>
           </>
         )}
