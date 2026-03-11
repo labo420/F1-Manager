@@ -97,18 +97,20 @@ export function Navigation() {
       </div>
 
       <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/10 bg-zinc-950/95 backdrop-blur-xl z-50 safe-bottom">
-        <div className="flex justify-around items-center h-14 px-2" style={{ paddingLeft: 'max(0.5rem, env(safe-area-inset-left))', paddingRight: 'max(0.5rem, env(safe-area-inset-right))' }}>
+        <div className="flex justify-around items-center h-16 px-1" style={{ paddingLeft: 'max(0.25rem, env(safe-area-inset-left))', paddingRight: 'max(0.25rem, env(safe-area-inset-right))' }}>
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={`
-                flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-md transition-colors
-                ${location === item.href ? "text-white" : "text-white/40"}
+                flex flex-col items-center justify-center gap-1 px-2 py-2 rounded-xl transition-all min-w-[52px]
+                ${location === item.href
+                  ? "text-white bg-primary/15 border border-primary/25"
+                  : "text-white/40 hover:text-white/70"}
               `}
             >
-              <item.icon className={`w-4 h-4 ${location === item.href ? "text-primary" : ""}`} />
-              <span className="text-[9px] font-medium uppercase tracking-wide truncate">{item.label}</span>
+              <item.icon className={`w-[18px] h-[18px] ${location === item.href ? "text-primary" : ""}`} />
+              <span className="text-[10px] font-semibold uppercase tracking-wide truncate leading-none">{item.label}</span>
             </Link>
           ))}
         </div>

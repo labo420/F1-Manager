@@ -239,7 +239,7 @@ export default function Leaderboard() {
                       </td>
                       <td className="px-2 sm:px-4 py-2 sm:py-3 text-right">
                         <div className="flex flex-col items-end">
-                          <span className="font-display font-black text-xl sm:text-2xl text-white tracking-tighter tabular-nums">
+                          <span className="font-display font-black text-base sm:text-2xl text-white tracking-tighter tabular-nums">
                             {entry.totalPoints}
                           </span>
                           <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter -mt-0.5">

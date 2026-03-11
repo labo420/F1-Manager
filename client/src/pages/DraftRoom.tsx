@@ -37,6 +37,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null);
   const [selectedConstructorId, setSelectedConstructorId] = useState<number | null>(null);
   const [useJolly, setUseJolly] = useState(false);
+  const [mobilePickTab, setMobilePickTab] = useState<"driver" | "constructor">("driver");
 
   const mutation = useMutation({
     mutationFn: async (vars: { driverId: number; constructorId: number; useJolly: boolean }) => {
@@ -157,8 +158,159 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Left Sidebar: Draft Order */}
-        <div className="lg:col-span-1 space-y-4">
+        {/* Main Area: Selection — first on mobile, second on desktop */}
+        <div className="lg:col-span-3 space-y-6 order-1 lg:order-2">
+          {!isComplete ? (
+            <Card className={cn("border-2", isMyTurn ? "border-primary shadow-lg" : "border-muted opacity-80")}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>{isMyTurn ? "Your Turn to Pick!" : `Waiting for ${draftStatus?.currentDrafterName}...`}</span>
+                  {isMyTurn && <Badge className="bg-primary animate-bounce">Your Turn</Badge>}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Mobile tab switcher */}
+                <div className="flex md:hidden gap-2 mb-4 bg-muted/30 p-1 rounded-lg">
+                  <button
+                    onClick={() => setMobilePickTab("driver")}
+                    data-testid="mobile-tab-driver"
+                    className={cn(
+                      "flex-1 py-2 rounded-md text-sm font-bold transition-all flex items-center justify-center gap-1.5",
+                      mobilePickTab === "driver" ? "bg-background shadow text-white" : "text-muted-foreground"
+                    )}
+                  >
+                    <ChevronRight className="w-3.5 h-3.5 text-primary" />
+                    Driver
+                    {selectedDriverId && <span className="w-2 h-2 rounded-full bg-green-500 ml-1" />}
+                  </button>
+                  <button
+                    onClick={() => setMobilePickTab("constructor")}
+                    data-testid="mobile-tab-constructor"
+                    className={cn(
+                      "flex-1 py-2 rounded-md text-sm font-bold transition-all flex items-center justify-center gap-1.5",
+                      mobilePickTab === "constructor" ? "bg-background shadow text-white" : "text-muted-foreground"
+                    )}
+                  >
+                    <ChevronRight className="w-3.5 h-3.5 text-primary" />
+                    Constructor
+                    {selectedConstructorId && <span className="w-2 h-2 rounded-full bg-green-500 ml-1" />}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Driver Selection */}
+                  <div className={cn("space-y-4", mobilePickTab !== "driver" && "hidden md:block")}>
+                    <h3 className="font-bold hidden md:flex items-center gap-2">
+                      <ChevronRight className="w-4 h-4 text-primary" />
+                      Select Driver
+                    </h3>
+                    <div className="grid grid-cols-1 gap-2 md:max-h-[400px] md:overflow-y-auto pr-2">
+                      {drivers.map(driver => {
+                        const isTaken = draftStatus?.takenDriverIds.includes(driver.id);
+                        const usedCount = usage.driverUsage[driver.id] || 0;
+                        const isSelected = selectedDriverId === driver.id;
+                        const isDisabled = !isMyTurn || isTaken || usedCount >= 2;
+                        const isMandatory = isMandatoryDriver(driver.id);
+                        return (
+                          <button
+                            key={driver.id}
+                            disabled={isDisabled}
+                            className={cn(
+                              "flex items-center justify-between p-3 rounded-lg border text-left transition-all",
+                              isTaken ? "bg-muted/50 opacity-50 cursor-not-allowed" :
+                              usedCount >= 2 ? "bg-red-500/10 border-red-500/20 cursor-not-allowed" :
+                              isSelected ? "border-primary bg-primary/10 ring-2 ring-primary/20" :
+                              isMandatory ? "border-orange-500 bg-orange-500/5 animate-pulse" :
+                              "hover:border-primary hover:bg-primary/5 active:scale-[0.98]",
+                              "disabled:cursor-not-allowed"
+                            )}
+                            onClick={() => {
+                              setSelectedDriverId(driver.id);
+                              setMobilePickTab("constructor");
+                            }}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <DriverAvatar number={driver.number ?? undefined} name={driver.name} size="sm" />
+                              <div>
+                                <div className="flex items-center gap-1.5">
+                                  <p className="font-bold">{driver.name}</p>
+                                  {isMandatory && <Badge variant="outline" className="text-[8px] border-orange-500 text-orange-500">Mandatory</Badge>}
+                                </div>
+                                <p className="text-xs text-muted-foreground">{driver.team}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] uppercase text-muted-foreground">Used</p>
+                              <p className={cn("font-bold", usedCount >= 2 ? "text-red-500" : "text-primary")}>
+                                {usedCount}/2
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Constructor Selection */}
+                  <div className={cn("space-y-4", mobilePickTab !== "constructor" && "hidden md:block")}>
+                    <h3 className="font-bold hidden md:flex items-center gap-2">
+                      <ChevronRight className="w-4 h-4 text-primary" />
+                      Select Constructor
+                    </h3>
+                    <div className="grid grid-cols-1 gap-2 md:max-h-[400px] md:overflow-y-auto pr-2">
+                      {constructors.map(con => {
+                        const isTaken = draftStatus?.takenConstructorIds.includes(con.id);
+                        const usedCount = usage.constructorUsage[con.id] || 0;
+                        const isSelected = selectedConstructorId === con.id;
+                        const isDisabled = !isMyTurn || isTaken || usedCount >= 3;
+                        return (
+                          <button
+                            key={con.id}
+                            disabled={isDisabled}
+                            className={cn(
+                              "flex items-center justify-between p-3 rounded-lg border text-left transition-all",
+                              isTaken ? "bg-muted/50 opacity-50 cursor-not-allowed" :
+                              usedCount >= 3 ? "bg-red-500/10 border-red-500/20 cursor-not-allowed" :
+                              isSelected ? "border-primary bg-primary/10 ring-2 ring-primary/20" :
+                              "hover:border-primary hover:bg-primary/5 active:scale-[0.98]",
+                              "disabled:cursor-not-allowed"
+                            )}
+                            style={{ borderLeftColor: con.color, borderLeftWidth: '4px' }}
+                            onClick={() => setSelectedConstructorId(con.id)}
+                          >
+                            <div>
+                              <p className="font-bold">{con.name}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] uppercase text-muted-foreground">Used</p>
+                              <p className={cn("font-bold", usedCount >= 3 ? "text-red-500" : "text-primary")}>
+                                {usedCount}/3
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-green-500 bg-green-500/5">
+              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4">
+                  <ShieldCheck className="w-10 h-10 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">Draft Complete!</h2>
+                <p className="text-muted-foreground mb-6">All players have made their selections for this race.</p>
+                <Button onClick={() => setLocation(`/lobby/${lobbyId}`)}>Return to Lobby</Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Left Sidebar: Draft Order — second on mobile, first on desktop */}
+        <div className="lg:col-span-1 space-y-4 order-2 lg:order-1">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
@@ -222,130 +374,32 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
             </CardContent>
           </Card>
         </div>
-
-        {/* Main Area: Selection */}
-        <div className="lg:col-span-3 space-y-6">
-          {!isComplete ? (
-            <Card className={cn("border-2", isMyTurn ? "border-primary shadow-lg" : "border-muted opacity-80")}>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>{isMyTurn ? "Your Turn to Pick!" : `Waiting for ${draftStatus?.currentDrafterName}...`}</span>
-                  {isMyTurn && <Badge className="bg-primary animate-bounce">Your Turn</Badge>}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Driver Selection */}
-                  <div className="space-y-4">
-                    <h3 className="font-bold flex items-center gap-2">
-                      <ChevronRight className="w-4 h-4 text-primary" />
-                      Select Driver
-                    </h3>
-                    <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto pr-2">
-                      {drivers.map(driver => {
-                        const isTaken = draftStatus?.takenDriverIds.includes(driver.id);
-                        const usedCount = usage.driverUsage[driver.id] || 0;
-                        const isSelected = selectedDriverId === driver.id;
-                        const isDisabled = !isMyTurn || isTaken || usedCount >= 2;
-                        
-                        const isMandatory = isMandatoryDriver(driver.id);
-                        
-                        return (
-                          <button
-                            key={driver.id}
-                            disabled={isDisabled}
-                            className={cn(
-                              "flex items-center justify-between p-3 rounded-lg border text-left transition-all",
-                              isTaken ? "bg-muted/50 opacity-50 cursor-not-allowed" : 
-                              usedCount >= 2 ? "bg-red-500/10 border-red-500/20 cursor-not-allowed" :
-                              isSelected ? "border-primary bg-primary/10 ring-2 ring-primary/20" :
-                              isMandatory ? "border-orange-500 bg-orange-500/5 animate-pulse" :
-                              "hover:border-primary hover:bg-primary/5 active:scale-[0.98]",
-                              "disabled:cursor-not-allowed"
-                            )}
-                            onClick={() => setSelectedDriverId(driver.id)}
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <DriverAvatar number={driver.number ?? undefined} name={driver.name} size="sm" />
-                              <div>
-                                <div className="flex items-center gap-1.5">
-                                  <p className="font-bold">{driver.name}</p>
-                                  {isMandatory && <Badge variant="outline" className="text-[8px] border-orange-500 text-orange-500">Mandatory</Badge>}
-                                </div>
-                                <p className="text-xs text-muted-foreground">{driver.team}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-[10px] uppercase text-muted-foreground">Used</p>
-                              <p className={cn("font-bold", usedCount >= 2 ? "text-red-500" : "text-primary")}>
-                                {usedCount}/2
-                              </p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Constructor Selection */}
-                  <div className="space-y-4">
-                    <h3 className="font-bold flex items-center gap-2">
-                      <ChevronRight className="w-4 h-4 text-primary" />
-                      Select Constructor
-                    </h3>
-                    <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto pr-2">
-                      {constructors.map(con => {
-                        const isTaken = draftStatus?.takenConstructorIds.includes(con.id);
-                        const usedCount = usage.constructorUsage[con.id] || 0;
-                        const isSelected = selectedConstructorId === con.id;
-                        const isDisabled = !isMyTurn || isTaken || usedCount >= 3;
-
-                        return (
-                          <button
-                            key={con.id}
-                            disabled={isDisabled}
-                            className={cn(
-                              "flex items-center justify-between p-3 rounded-lg border text-left transition-all",
-                              isTaken ? "bg-muted/50 opacity-50 cursor-not-allowed" : 
-                              usedCount >= 3 ? "bg-red-500/10 border-red-500/20 cursor-not-allowed" :
-                              isSelected ? "border-primary bg-primary/10 ring-2 ring-primary/20" :
-                              "hover:border-primary hover:bg-primary/5 active:scale-[0.98]",
-                              "disabled:cursor-not-allowed"
-                            )}
-                            style={{ borderLeftColor: con.color, borderLeftWidth: '4px' }}
-                            onClick={() => setSelectedConstructorId(con.id)}
-                          >
-                            <div>
-                              <p className="font-bold">{con.name}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-[10px] uppercase text-muted-foreground">Used</p>
-                              <p className={cn("font-bold", usedCount >= 3 ? "text-red-500" : "text-primary")}>
-                                {usedCount}/3
-                              </p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="border-green-500 bg-green-500/5">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4">
-                  <ShieldCheck className="w-10 h-10 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold mb-2">Draft Complete!</h2>
-                <p className="text-muted-foreground mb-6">All players have made their selections for this race.</p>
-                <Button onClick={() => setLocation(`/lobby/${lobbyId}`)}>Return to Lobby</Button>
-              </CardContent>
-            </Card>
-          )}
-        </div>
       </div>
+
+      {/* Mobile sticky confirm bar — only visible when both picks are selected */}
+      {isMyTurn && !isComplete && selectedDriverId && selectedConstructorId && (
+        <div className="md:hidden fixed bottom-16 left-0 right-0 z-40 px-4 py-3 bg-zinc-950/95 border-t border-white/10 backdrop-blur-xl">
+          {needsJolly(selectedDriverId, selectedConstructorId) && (
+            <Button
+              variant={useJolly ? "default" : "outline"}
+              className={cn("w-full mb-2", useJolly ? "bg-yellow-600 hover:bg-yellow-700" : "border-yellow-600 text-yellow-600")}
+              onClick={() => setUseJolly(!useJolly)}
+            >
+              <Star className={cn("w-4 h-4 mr-2", useJolly && "fill-current")} />
+              {useJolly ? "Jolly Active" : "Use Jolly"}
+            </Button>
+          )}
+          <Button
+            onClick={handlePick}
+            disabled={mutation.isPending || (needsJolly(selectedDriverId, selectedConstructorId) && !useJolly)}
+            className="w-full bg-green-600 hover:bg-green-700"
+            data-testid="button-confirm-pick-mobile"
+          >
+            {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            Confirm Selection
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
