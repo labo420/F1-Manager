@@ -2,6 +2,15 @@ import { pgTable, text, integer, boolean, timestamp } from "drizzle-orm/pg-core"
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const unlockRequests = pgTable("unlock_requests", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  lobbyId: integer("lobby_id").references(() => lobbies.id).notNull(),
+  raceId: integer("race_id").references(() => races.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  status: text("status").notNull().default("pending"),
+  requestedAt: timestamp("requested_at").notNull().defaultNow(),
+});
+
 export const lobbies = pgTable("lobbies", {
   id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
   name: text("name").notNull(),
@@ -172,4 +181,27 @@ export type RaceStandingsEntry = {
   driverPoints: number;
   constructorPoints: number;
   totalPoints: number;
+};
+
+export type LeaderboardEntry = {
+  userId: number;
+  username: string;
+  teamName: string;
+  totalPoints: number;
+};
+
+export type UnlockRequest = typeof unlockRequests.$inferSelect;
+
+export type DraftStatus = {
+  draftOrder: Array<{ userId: number; username: string; teamName: string; avatarUrl: string | null; hasPicked: boolean }>;
+  currentDrafterIndex: number;
+  currentDrafterId: number;
+  currentDrafterName: string;
+  isMyTurn: boolean;
+  isComplete: boolean;
+  takenDriverIds: number[];
+  takenConstructorIds: number[];
+  pendingUnlockRequest: { id: number; userId: number; username: string; requestedAt: Date } | null;
+  myUnlockRequest: { id: number; status: string; requestedAt: Date } | null;
+  isBlockedByUnlock: boolean;
 };

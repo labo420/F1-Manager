@@ -1,8 +1,8 @@
 import { db } from "./db";
 import {
-  users, lobbies, lobbyMembers, drivers, constructors, races, selections, driverResults, constructorResults, draftState, userScores,
+  users, lobbies, lobbyMembers, drivers, constructors, races, selections, driverResults, constructorResults, draftState, userScores, unlockRequests,
   type User, type Lobby, type LobbyMember, type InsertUser, type Driver, type Constructor, type Race, type Selection,
-  type DriverResult, type ConstructorResult, type LeaderboardEntry, type DraftState, type DraftStatus, type UsageInfo, type Membership, type RaceFantasyWinners, type RaceStandingsEntry
+  type DriverResult, type ConstructorResult, type LeaderboardEntry, type DraftState, type DraftStatus, type UsageInfo, type Membership, type RaceFantasyWinners, type RaceStandingsEntry, type UnlockRequest
 } from "@shared/schema";
 import { eq, sql, and, asc, inArray } from "drizzle-orm";
 import session from "express-session";
@@ -95,6 +95,13 @@ export interface IStorage {
 
   getRaceFantasyWinners(lobbyId: number, raceId: number): Promise<RaceFantasyWinners>;
   getLobbyRaceSelections(lobbyId: number, raceId: number): Promise<Array<{ userId: number; username: string; teamName: string; driverName: string; driverNumber: number | null; constructorName: string }>>;
+
+  createUnlockRequest(lobbyId: number, raceId: number, userId: number): Promise<UnlockRequest>;
+  getActiveUnlockRequest(lobbyId: number, raceId: number): Promise<UnlockRequest | undefined>;
+  getUnlockRequestForUser(lobbyId: number, raceId: number, userId: number): Promise<UnlockRequest | undefined>;
+  getPendingUnlockRequestsForLobby(lobbyId: number): Promise<(UnlockRequest & { username: string; raceName: string })[]>;
+  respondToUnlockRequest(id: number, status: "approved" | "rejected"): Promise<UnlockRequest>;
+  approveUnlock(lobbyId: number, raceId: number, userId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -657,15 +664,50 @@ export class DatabaseStorage implements IStorage {
     const currentDrafterId = state.isComplete ? -1 : (order[state.currentDrafterIndex] ?? -1);
     const currentDrafter = members.find(m => m.userId === currentDrafterId);
 
+    const activeUnlockReq = await this.getActiveUnlockRequest(lobbyId, raceId);
+    const myUnlockReqRaw = await this.getUnlockRequestForUser(lobbyId, raceId, currentUserId);
+
+    let pendingUnlockRequest: DraftStatus["pendingUnlockRequest"] = null;
+    let myUnlockRequest: DraftStatus["myUnlockRequest"] = null;
+    let isBlockedByUnlock = false;
+
+    if (activeUnlockReq) {
+      const reqUser = members.find(m => m.userId === activeUnlockReq.userId);
+      const nextPickerIndex = state.currentDrafterIndex;
+      const nextPickerHasPicked = nextPickerIndex < order.length
+        ? lobbySelections.some(s => s.userId === order[nextPickerIndex])
+        : true;
+      if (!nextPickerHasPicked) {
+        isBlockedByUnlock = true;
+        pendingUnlockRequest = {
+          id: activeUnlockReq.id,
+          userId: activeUnlockReq.userId,
+          username: reqUser?.username || "Unknown",
+          requestedAt: activeUnlockReq.requestedAt,
+        };
+      }
+    }
+
+    if (myUnlockReqRaw) {
+      myUnlockRequest = {
+        id: myUnlockReqRaw.id,
+        status: myUnlockReqRaw.status,
+        requestedAt: myUnlockReqRaw.requestedAt,
+      };
+    }
+
     return {
       draftOrder: draftOrderWithInfo,
       currentDrafterIndex: state.currentDrafterIndex,
       currentDrafterId,
       currentDrafterName: currentDrafter?.username || "",
-      isMyTurn: currentDrafterId === currentUserId,
+      isMyTurn: currentDrafterId === currentUserId && !isBlockedByUnlock,
       isComplete: state.isComplete,
       takenDriverIds,
       takenConstructorIds,
+      pendingUnlockRequest,
+      myUnlockRequest,
+      isBlockedByUnlock,
     };
   }
 
@@ -827,6 +869,86 @@ export class DatabaseStorage implements IStorage {
     });
 
     return result.sort((a, b) => b.totalPoints - a.totalPoints);
+  }
+
+  async createUnlockRequest(lobbyId: number, raceId: number, userId: number): Promise<UnlockRequest> {
+    const existing = await this.getUnlockRequestForUser(lobbyId, raceId, userId);
+    if (existing) {
+      const [updated] = await db.update(unlockRequests)
+        .set({ status: "pending", requestedAt: new Date() })
+        .where(eq(unlockRequests.id, existing.id))
+        .returning();
+      return updated;
+    }
+    const [req] = await db.insert(unlockRequests).values({ lobbyId, raceId, userId, status: "pending" }).returning();
+    return req;
+  }
+
+  async getActiveUnlockRequest(lobbyId: number, raceId: number): Promise<UnlockRequest | undefined> {
+    const [req] = await db.select().from(unlockRequests).where(
+      and(eq(unlockRequests.lobbyId, lobbyId), eq(unlockRequests.raceId, raceId), eq(unlockRequests.status, "pending"))
+    );
+    if (!req) return undefined;
+    const fiveMinutes = 5 * 60 * 1000;
+    if (Date.now() - new Date(req.requestedAt).getTime() > fiveMinutes) {
+      await db.update(unlockRequests).set({ status: "rejected" }).where(eq(unlockRequests.id, req.id));
+      return undefined;
+    }
+    return req;
+  }
+
+  async getUnlockRequestForUser(lobbyId: number, raceId: number, userId: number): Promise<UnlockRequest | undefined> {
+    const [req] = await db.select().from(unlockRequests).where(
+      and(eq(unlockRequests.lobbyId, lobbyId), eq(unlockRequests.raceId, raceId), eq(unlockRequests.userId, userId))
+    );
+    return req;
+  }
+
+  async getPendingUnlockRequestsForLobby(lobbyId: number): Promise<(UnlockRequest & { username: string; raceName: string })[]> {
+    const reqs = await db.select().from(unlockRequests).where(
+      and(eq(unlockRequests.lobbyId, lobbyId), eq(unlockRequests.status, "pending"))
+    );
+    const fiveMinutes = 5 * 60 * 1000;
+    const valid: (UnlockRequest & { username: string; raceName: string })[] = [];
+    const allUsers = await db.select().from(users);
+    const allRaces = await db.select().from(races);
+    for (const req of reqs) {
+      if (Date.now() - new Date(req.requestedAt).getTime() > fiveMinutes) {
+        await db.update(unlockRequests).set({ status: "rejected" }).where(eq(unlockRequests.id, req.id));
+        continue;
+      }
+      const user = allUsers.find(u => u.id === req.userId);
+      const race = allRaces.find(r => r.id === req.raceId);
+      valid.push({ ...req, username: user?.username || "Unknown", raceName: race?.name || "Unknown" });
+    }
+    return valid;
+  }
+
+  async respondToUnlockRequest(id: number, status: "approved" | "rejected"): Promise<UnlockRequest> {
+    const [req] = await db.select().from(unlockRequests).where(eq(unlockRequests.id, id));
+    if (!req) throw new Error("Unlock request not found");
+    if (status === "approved") {
+      await this.approveUnlock(req.lobbyId, req.raceId, req.userId);
+    }
+    const [updated] = await db.update(unlockRequests).set({ status }).where(eq(unlockRequests.id, id)).returning();
+    return updated;
+  }
+
+  async approveUnlock(lobbyId: number, raceId: number, userId: number): Promise<void> {
+    await db.delete(selections).where(
+      and(eq(selections.userId, userId), eq(selections.raceId, raceId), eq(selections.lobbyId, lobbyId))
+    );
+    const state = await this.getDraftState(lobbyId, raceId);
+    if (!state) return;
+    let order: number[];
+    try {
+      order = typeof state.draftOrder === "string" ? JSON.parse(state.draftOrder) : state.draftOrder;
+    } catch { order = []; }
+    const userIndex = order.indexOf(userId);
+    if (userIndex === -1) return;
+    await db.update(draftState)
+      .set({ currentDrafterIndex: userIndex, isComplete: false })
+      .where(eq(draftState.id, state.id));
   }
 }
 

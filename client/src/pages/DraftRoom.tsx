@@ -2,7 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useState } from "react";
-import { Loader2, ChevronLeft, User, ShieldCheck, Info, Star, Flag, CheckCircle2, Clock } from "lucide-react";
+import { Loader2, ChevronLeft, User, ShieldCheck, Info, Star, Flag, CheckCircle2, Clock, Unlock, AlertTriangle } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Driver, Constructor, DraftStatus, UsageInfo } from "@shared/schema";
@@ -87,6 +87,20 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
     },
   });
 
+  const unlockMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/unlock-requests", { lobbyId, raceId });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/draft/${lobbyId}/${raceId}`] });
+      toast({ title: "Unlock requested", description: "Your request has been sent to the league admin." });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Request failed", description: error.message, variant: "destructive" });
+    },
+  });
+
   if (loadingDraft || !drivers || !constructors || !usage) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -97,6 +111,15 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
 
   const isMyTurn = draftStatus?.isMyTurn;
   const isComplete = draftStatus?.isComplete;
+  const isBlockedByUnlock = draftStatus?.isBlockedByUnlock ?? false;
+  const myUnlockRequest = draftStatus?.myUnlockRequest;
+  const pendingUnlockRequest = draftStatus?.pendingUnlockRequest;
+  const myDraftInfo = draftStatus?.draftOrder.find(d => d.userId === user?.id);
+  const iHavePicked = myDraftInfo?.hasPicked ?? false;
+  const myIdx = draftStatus?.draftOrder.findIndex(d => d.userId === user?.id) ?? -1;
+  const nextInfo = myIdx >= 0 ? draftStatus?.draftOrder[myIdx + 1] : undefined;
+  const nextHasPicked = nextInfo?.hasPicked ?? false;
+  const canRequestUnlock = iHavePicked && !nextHasPicked && !isComplete && myUnlockRequest?.status !== "pending";
 
   const handlePick = () => {
     if (selectedDriverId && selectedConstructorId) {
@@ -188,6 +211,35 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
               </button>
             )}
 
+            {/* Request Unlock button */}
+            {canRequestUnlock && (
+              <button
+                onClick={() => unlockMutation.mutate()}
+                disabled={unlockMutation.isPending}
+                data-testid="button-request-unlock"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-yellow-400/30 text-yellow-400/80 bg-yellow-400/5 text-xs font-black uppercase tracking-wider hover:border-yellow-400/50 hover:text-yellow-400 transition-all"
+              >
+                {unlockMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Unlock className="w-3.5 h-3.5" />}
+                Request Unlock
+              </button>
+            )}
+
+            {/* My pending unlock request badge */}
+            {myUnlockRequest?.status === "pending" && (
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-yellow-400/20 bg-yellow-400/5 text-xs font-black uppercase tracking-wider text-yellow-400/70">
+                <Clock className="w-3.5 h-3.5 animate-pulse" />
+                Unlock Requested
+              </div>
+            )}
+
+            {/* My approved unlock request badge */}
+            {myUnlockRequest?.status === "approved" && !iHavePicked && (
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-green-400/30 bg-green-400/5 text-xs font-black uppercase tracking-wider text-green-400">
+                <Unlock className="w-3.5 h-3.5" />
+                Unlocked — Re-pick Now
+              </div>
+            )}
+
             {/* Confirm — desktop only */}
             {isMyTurn && !isComplete && (
               <button
@@ -203,6 +255,22 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
           </div>
         </div>
       </div>
+
+      {/* Draft paused banner */}
+      {isBlockedByUnlock && (
+        <div className="glass-panel rounded-3xl border border-yellow-400/30 bg-yellow-400/5 p-5 mb-6 flex items-start gap-4">
+          <div className="w-10 h-10 rounded-2xl bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-5 h-5 text-yellow-400" />
+          </div>
+          <div>
+            <p className="text-sm font-black text-yellow-400 uppercase tracking-tight mb-0.5">Draft Paused</p>
+            <p className="text-xs text-muted-foreground opacity-70">
+              <span className="text-white font-black">{pendingUnlockRequest?.username}</span> has requested to change their pick.
+              Waiting for admin approval. The draft will resume automatically in 5 minutes if there is no response.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Main grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation, Link } from "wouter";
-import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft, Flag, Zap, Wrench, Crown, ChevronRight, Medal, BarChart3, Shield } from "lucide-react";
+import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft, Flag, Zap, Wrench, Crown, ChevronRight, Medal, BarChart3, Shield, Unlock, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Lobby, Race, Selection, LobbyMember, RaceStandingsEntry } from "@shared/schema";
+import type { Lobby, Race, Selection, LobbyMember, RaceStandingsEntry, UnlockRequest } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 function getInitials(text: string): string {
@@ -99,6 +101,7 @@ const TABS: { id: TabId; label: string; Icon: any }[] = [
 
 export default function LobbyDetail({ id }: { id: number }) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<TabId>("predictions");
   const [selectedRaceId, setSelectedRaceId] = useState<number | null>(null);
@@ -148,6 +151,36 @@ export default function LobbyDetail({ id }: { id: number }) {
   });
 
   const badgePlayers = badgeData?.players ?? [];
+
+  const isAdmin = members?.find(m => m.userId === user?.id)?.role === "admin";
+
+  const { data: unlockRequests } = useQuery<UnlockRequest[]>({
+    queryKey: [`/api/unlock-requests/lobby/${id}`],
+    enabled: isAdmin,
+    refetchInterval: 15000,
+  });
+
+  const respondMutation = useMutation({
+    mutationFn: async ({ requestId, action }: { requestId: number; action: "approve" | "reject" }) => {
+      const status = action === "approve" ? "approved" : "rejected";
+      const res = await apiRequest("POST", `/api/unlock-requests/${requestId}/respond`, { status });
+      return res.json();
+    },
+    onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: [`/api/unlock-requests/lobby/${id}`] });
+      toast({
+        title: vars.action === "approve" ? "Pick unlocked" : "Request rejected",
+        description: vars.action === "approve"
+          ? "The player can now re-submit their picks."
+          : "The draft will resume normally.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Action failed", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const pendingUnlockRequests = unlockRequests?.filter(r => r.status === "pending") ?? [];
 
   if (loadingLobby || loadingRaces || loadingMembers) {
     return (
@@ -236,6 +269,65 @@ export default function LobbyDetail({ id }: { id: number }) {
           </div>
         </div>
       </div>
+
+      {/* Race Control — admin unlock requests */}
+      {isAdmin && pendingUnlockRequests.length > 0 && (
+        <div className="glass-panel rounded-3xl border border-yellow-400/30 bg-yellow-400/5 p-5 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-xl bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center">
+              <Unlock className="w-4 h-4 text-yellow-400" />
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-yellow-400">Race Control</p>
+              <p className="text-[10px] text-muted-foreground opacity-60">Players requesting to change their pick</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {pendingUnlockRequests.map(req => (
+              <div
+                key={req.id}
+                className="flex items-center justify-between gap-4 bg-white/5 rounded-2xl px-4 py-3 border border-white/5"
+                data-testid={`unlock-request-${req.id}`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <span className="text-[10px] font-black text-primary">
+                      {(req as any).username?.charAt(0).toUpperCase() ?? "?"}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-black text-white truncate">{(req as any).username ?? `User #${req.userId}`}</p>
+                    <p className="text-[10px] text-muted-foreground opacity-60 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      Requested {new Date(req.requestedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => respondMutation.mutate({ requestId: req.id, action: "approve" })}
+                    disabled={respondMutation.isPending}
+                    data-testid={`button-approve-unlock-${req.id}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-black uppercase tracking-wider hover:bg-green-500/20 transition-all disabled:opacity-40"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => respondMutation.mutate({ requestId: req.id, action: "reject" })}
+                    disabled={respondMutation.isPending}
+                    data-testid={`button-reject-unlock-${req.id}`}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40"
+                  >
+                    <XCircle className="w-3.5 h-3.5" />
+                    Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Custom tab bar */}
       <div className="flex gap-1 glass-panel rounded-2xl p-1 border border-white/5 mb-8">

@@ -3,7 +3,7 @@ import type { Server } from "http";
 import { storage, setupSession } from "./storage";
 import { z } from "zod";
 import { db } from "./db";
-import { lobbies, users, drivers, constructors, races, driverResults, constructorResults, selections, lobbyMembers, draftState, userScores } from "@shared/schema";
+import { lobbies, users, drivers, constructors, races, driverResults, constructorResults, selections, lobbyMembers, draftState, userScores, unlockRequests } from "@shared/schema";
 import { eq, sql, and, inArray } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
@@ -379,6 +379,56 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const usageInfo = await storage.getUserUsageInfoInLobby(req.session.userId, lobbyId);
       res.status(200).json(usageInfo);
     } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/unlock-requests", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const { lobbyId, raceId } = z.object({ lobbyId: z.number(), raceId: z.number() }).parse(req.body);
+      const inLobby = await storage.isUserInLobby(req.session.userId, lobbyId);
+      if (!inLobby) return res.status(403).json({ message: "Not a member of this lobby" });
+      const draftStatus = await storage.getDraftStatus(lobbyId, raceId, req.session.userId);
+      const myInfo = draftStatus.draftOrder.find(d => d.userId === req.session.userId);
+      if (!myInfo?.hasPicked) return res.status(400).json({ message: "You haven't made your picks yet" });
+      const myIndex = draftStatus.draftOrder.findIndex(d => d.userId === req.session.userId);
+      const nextInfo = draftStatus.draftOrder[myIndex + 1];
+      if (nextInfo?.hasPicked) return res.status(400).json({ message: "The next player has already picked — unlock request not allowed" });
+      const request = await storage.createUnlockRequest(lobbyId, raceId, req.session.userId);
+      res.status(200).json(request);
+    } catch (err) {
+      if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/unlock-requests/lobby/:lobbyId", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const lobbyId = Number(req.params.lobbyId);
+      const isAdmin = await storage.isUserAdminOfLobby(req.session.userId, lobbyId);
+      if (!isAdmin) return res.status(403).json({ message: "Not an admin of this lobby" });
+      const requests = await storage.getPendingUnlockRequestsForLobby(lobbyId);
+      res.status(200).json(requests);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/unlock-requests/:id/respond", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const id = Number(req.params.id);
+      const { status } = z.object({ status: z.enum(["approved", "rejected"]) }).parse(req.body);
+      const [existing] = await db.select().from(unlockRequests).where(eq(unlockRequests.id, id));
+      if (!existing) return res.status(404).json({ message: "Request not found" });
+      const isAdmin = await storage.isUserAdminOfLobby(req.session.userId, existing.lobbyId);
+      if (!isAdmin) return res.status(403).json({ message: "Not an admin of this lobby" });
+      const updated = await storage.respondToUnlockRequest(id, status);
+      res.status(200).json(updated);
+    } catch (err) {
+      if (err instanceof z.ZodError) return res.status(400).json({ message: err.errors[0].message });
       res.status(500).json({ message: "Internal server error" });
     }
   });
