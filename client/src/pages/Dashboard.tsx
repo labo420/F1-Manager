@@ -491,8 +491,8 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-24">
-      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 pb-24 lg:pb-32">
+      <div className="mb-8 lg:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
             {hasMultipleLobbies && (
@@ -507,17 +507,17 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="mb-10 mt-16"
+        className="mb-10 lg:mb-14 mt-16 lg:mt-20"
       >
-        <div className="flex items-center gap-4 mb-10 text-[20px]">
-          <Calendar className="w-5 h-5 text-primary" />
+        <div className="flex items-center gap-4 lg:gap-6 mb-10 lg:mb-14 text-[20px]">
+          <Calendar className="w-5 h-5 lg:w-6 lg:h-6 text-primary" />
           <div>
-            <h2 className="font-bold uppercase tracking-wide text-white text-xl sm:text-[30px]">2026 FIA Formula 1 Race Calendar</h2>
-            <p className="text-xs text-muted-foreground mt-1 tracking-wide">Session times in Italian (ITA) and Coordinated Universal (UTC)</p>
+            <h2 className="font-bold uppercase tracking-wide text-white text-xl sm:text-[30px] lg:text-[36px]">2026 FIA Formula 1 Race Calendar</h2>
+            <p className="text-xs lg:text-sm text-muted-foreground mt-1 tracking-wide">Session times in Italian (ITA) and Coordinated Universal (UTC)</p>
           </div>
         </div>
       </motion.div>
-      <div className="space-y-4">
+      <div className="space-y-4 lg:space-y-6">
         {races.map((race, idx) => {
           const sessions = getSessionsForRace(race, sessionsStatus);
 
@@ -530,24 +530,24 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
               className="glass-panel rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-colors"
               data-testid={`calendar-race-${race.id}`}
             >
-              <div className="flex items-center justify-between px-3 py-2 border-b border-white/5">
-                <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center justify-between px-3 lg:px-5 py-2 lg:py-3 border-b border-white/5">
+                <div className="flex items-center gap-2 lg:gap-3 min-w-0">
                   <div className="flex flex-col items-center justify-center shrink-0">
-                    <span className="text-[7px] font-bold text-muted-foreground uppercase leading-none">RND</span>
-                    <span className="text-base font-bold text-primary leading-none">{race.round}</span>
+                    <span className="text-[7px] lg:text-[8px] font-bold text-muted-foreground uppercase leading-none">RND</span>
+                    <span className="text-base lg:text-lg font-bold text-primary leading-none">{race.round}</span>
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1 flex-wrap">
-                      <span className="font-bold text-[11px] text-white uppercase leading-none">
+                      <span className="font-bold text-[11px] lg:text-sm text-white uppercase leading-none">
                         {getCircuitFlag(race.name)}{race.name}
                       </span>
                       {race.hasSprint && (
-                        <span className="text-[7px] bg-orange-500/15 text-orange-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wide border border-orange-500/30 shrink-0">
+                        <span className="text-[7px] lg:text-[8px] bg-orange-500/15 text-orange-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wide border border-orange-500/30 shrink-0">
                           Sprint
                         </span>
                       )}
                     </div>
-                    <div className="text-[9px] text-muted-foreground font-medium uppercase tracking-wide mt-0.5">
+                    <div className="text-[9px] lg:text-[10px] text-muted-foreground font-medium uppercase tracking-wide mt-0.5">
                       {race.circuitName || race.country}
                     </div>
                   </div>
@@ -560,24 +560,24 @@ function RaceAccordionDashboard({ lobbyId, membership, user, setActiveLobbyId }:
                   return (
                     <div
                       key={session.label}
-                      className="flex flex-col gap-1 px-2 py-1.5 text-center"
+                      className="flex flex-col gap-1 lg:gap-2 px-2 lg:px-4 py-1.5 lg:py-2.5 text-center"
                     >
-                      <div className={`text-[7px] font-bold uppercase tracking-wide ${isSprint ? "text-orange-400" : isRace ? "text-primary" : "text-muted-foreground"}`}>
+                      <div className={`text-[7px] lg:text-[8px] font-bold uppercase tracking-wide ${isSprint ? "text-orange-400" : isRace ? "text-primary" : "text-muted-foreground"}`}>
                         {session.label}
                       </div>
-                      <div className="text-white font-semibold text-[10px]">
+                      <div className="text-white font-semibold text-[10px] lg:text-xs">
                         {format(session.date, "MMM d")}
                       </div>
                       <div className="space-y-0.5 mt-0.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[6px] text-muted-foreground font-medium uppercase tracking-wide">ITA</span>
-                          <span className={`font-mono text-[9px] font-semibold ${session.data.ita === "TBD" ? "text-muted-foreground" : "text-white"}`}>
+                          <span className="text-[6px] lg:text-[7px] text-muted-foreground font-medium uppercase tracking-wide">ITA</span>
+                          <span className={`font-mono text-[9px] lg:text-xs font-semibold ${session.data.ita === "TBD" ? "text-muted-foreground" : "text-white"}`}>
                             {session.data.ita}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-[6px] text-muted-foreground font-medium uppercase tracking-wide">UTC</span>
-                          <span className={`font-mono text-[9px] font-semibold ${session.data.utc === "TBD" ? "text-muted-foreground" : "text-muted-foreground"}`}>
+                          <span className="text-[6px] lg:text-[7px] text-muted-foreground font-medium uppercase tracking-wide">UTC</span>
+                          <span className={`font-mono text-[9px] lg:text-xs font-semibold ${session.data.utc === "TBD" ? "text-muted-foreground" : "text-muted-foreground"}`}>
                             {session.data.utc}
                           </span>
                         </div>
