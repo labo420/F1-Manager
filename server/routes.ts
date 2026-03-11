@@ -4,7 +4,7 @@ import { storage, setupSession } from "./storage";
 import { z } from "zod";
 import { db } from "./db";
 import { lobbies, users, drivers, constructors, races, driverResults, constructorResults, selections, lobbyMembers, draftState, userScores } from "@shared/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and, inArray } from "drizzle-orm";
 import fs from "fs";
 import path from "path";
 import multer from "multer";
@@ -997,6 +997,73 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         .where(and(eq(lobbyMembers.userId, req.session.userId), eq(lobbyMembers.lobbyId, lobbyId)))
         .returning();
       res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/lobby/:lobbyId/race/:raceId/badges", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    const lobbyId = Number(req.params.lobbyId);
+    const raceId = Number(req.params.raceId);
+    const inLobby = await storage.isUserInLobby(req.session.userId, lobbyId);
+    if (!inLobby) return res.status(403).json({ message: "Not a member" });
+
+    try {
+      const lobbySelections = await db
+        .select({ userId: selections.userId, driverId: selections.driverId, constructorId: selections.constructorId })
+        .from(selections)
+        .where(and(eq(selections.lobbyId, lobbyId), eq(selections.raceId, raceId)));
+
+      if (lobbySelections.length === 0) return res.json({ players: [] });
+
+      const userIds = lobbySelections.map(s => s.userId);
+      const driverIds = lobbySelections.map(s => s.driverId);
+      const constructorIds = lobbySelections.map(s => s.constructorId);
+
+      const [driverResultsData, constructorResultsData, userData, memberData, driverData, constructorData] = await Promise.all([
+        db.select().from(driverResults).where(and(eq(driverResults.raceId, raceId), eq(driverResults.isSprint, false))),
+        db.select().from(constructorResults).where(eq(constructorResults.raceId, raceId)),
+        db.select({ id: users.id, username: users.username }).from(users).where(inArray(users.id, userIds)),
+        db.select({ userId: lobbyMembers.userId, teamName: lobbyMembers.teamName }).from(lobbyMembers).where(and(eq(lobbyMembers.lobbyId, lobbyId), inArray(lobbyMembers.userId, userIds))),
+        db.select().from(drivers).where(inArray(drivers.id, driverIds)),
+        db.select().from(constructors).where(inArray(constructors.id, constructorIds)),
+      ]);
+
+      const enriched = lobbySelections.map(sel => {
+        const user = userData.find(u => u.id === sel.userId);
+        const team = memberData.find(t => t.userId === sel.userId);
+        const driver = driverData.find(d => d.id === sel.driverId);
+        const constructor = constructorData.find(c => c.id === sel.constructorId);
+        const driverResult = driverResultsData.find(r => r.driverId === sel.driverId);
+        const constructorResult = constructorResultsData.find(r => r.constructorId === sel.constructorId);
+        return {
+          userId: sel.userId,
+          username: user?.username ?? "",
+          teamName: team?.teamName ?? "",
+          driverName: driver?.name ?? "",
+          constructorName: constructor?.name ?? "",
+          driverPoints: driverResult?.points ?? 0,
+          constructorPoints: constructorResult?.points ?? 0,
+          fastestLap: driverResult?.fastestLap ?? false,
+        };
+      });
+
+      const validDriverPoints = enriched.map(s => s.driverPoints).filter(p => p > 0);
+      const validConstructorPoints = enriched.map(s => s.constructorPoints).filter(p => p > 0);
+      const maxDriverPoints = validDriverPoints.length > 0 ? Math.max(...validDriverPoints) : -1;
+      const maxConstructorPoints = validConstructorPoints.length > 0 ? Math.max(...validConstructorPoints) : -1;
+
+      const players = enriched.map(sel => {
+        const badges: string[] = [];
+        if (sel.driverPoints > 0 && sel.driverPoints === maxDriverPoints) badges.push("pole_position");
+        if (sel.fastestLap) badges.push("fastest_lap");
+        if (sel.constructorPoints > 0 && sel.constructorPoints === maxConstructorPoints) badges.push("p1_constructor");
+        if (badges.includes("pole_position") && badges.includes("p1_constructor")) badges.push("perfect_weekend");
+        return { ...sel, badges };
+      });
+
+      res.json({ players });
     } catch (err) {
       res.status(500).json({ message: "Internal server error" });
     }
