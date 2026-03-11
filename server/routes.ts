@@ -214,6 +214,16 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     res.status(200).json(leaderboard);
   });
 
+  app.get("/api/lobby/:lobbyId/race/:raceId/standings", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    const lobbyId = Number(req.params.lobbyId);
+    const raceId = Number(req.params.raceId);
+    const inLobby = await storage.isUserInLobby(req.session.userId, lobbyId);
+    if (!inLobby) return res.status(403).json({ message: "Not a member" });
+    const standings = await storage.getRaceStandings(lobbyId, raceId);
+    res.status(200).json(standings);
+  });
+
   app.get("/api/races", async (_req, res) => {
     const raceList = await storage.getRaces();
     const now = new Date();

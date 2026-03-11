@@ -1,14 +1,15 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useParams, Link, useLocation } from "wouter";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft, Shield } from "lucide-react";
+import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft, Shield, Flag } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Lobby, Race, Driver, Constructor, Selection, LobbyMember } from "@shared/schema";
+import type { Lobby, Race, Driver, Constructor, Selection, LobbyMember, RaceStandingsEntry } from "@shared/schema";
 import { format } from "date-fns";
 
 function getInitials(text: string): string {
@@ -22,6 +23,7 @@ export default function LobbyDetail({ id }: { id: number }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const [selectedRaceId, setSelectedRaceId] = useState<number | null>(null);
   
   const { data: lobby, isLoading: loadingLobby } = useQuery<Lobby>({
     queryKey: [`/api/lobby/${id}`],
@@ -48,6 +50,19 @@ export default function LobbyDetail({ id }: { id: number }) {
       constructorJolliesRemaining: 2,
       jolliesRemaining: 4
     }
+  });
+
+  const completedRaces = races?.filter(r => r.isCompleted) ?? [];
+
+  useEffect(() => {
+    if (completedRaces.length > 0 && selectedRaceId === null) {
+      setSelectedRaceId(completedRaces[completedRaces.length - 1].id);
+    }
+  }, [completedRaces.length]);
+
+  const { data: raceStandings, isLoading: loadingStandings } = useQuery<RaceStandingsEntry[]>({
+    queryKey: ["/api/lobby", id, "race", selectedRaceId, "standings"],
+    enabled: selectedRaceId !== null,
   });
 
   const currentMember = members?.find(m => m.userId === user?.id);
@@ -211,17 +226,134 @@ export default function LobbyDetail({ id }: { id: number }) {
         </TabsContent>
 
         <TabsContent value="standings">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-500" />
-                Leaderboard
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-center py-8 text-muted-foreground italic">Standings will be updated after the first race results are in.</p>
-            </CardContent>
-          </Card>
+          {completedRaces.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Flag className="w-8 h-8 mx-auto mb-3 text-muted-foreground/40" />
+                <p className="text-muted-foreground italic text-sm">Standings will be available after the first race results are in.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {/* Race Selector */}
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {completedRaces.map(race => (
+                  <button
+                    key={race.id}
+                    data-testid={`race-selector-${race.id}`}
+                    onClick={() => setSelectedRaceId(race.id)}
+                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all whitespace-nowrap ${
+                      selectedRaceId === race.id
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-transparent text-muted-foreground border-white/10 hover:border-white/30 hover:text-white"
+                    }`}
+                  >
+                    R{race.round ?? "?"} {race.country}
+                  </button>
+                ))}
+              </div>
+
+              {/* Standings Table / Cards */}
+              <Card>
+                <CardHeader className="pb-2 pt-4 px-4">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Trophy className="w-4 h-4 text-yellow-500" />
+                    {completedRaces.find(r => r.id === selectedRaceId)?.name ?? "Race Standings"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-2 pb-2 md:px-4 md:pb-4">
+                  {loadingStandings ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : !raceStandings || raceStandings.length === 0 ? (
+                    <p className="text-center py-8 text-muted-foreground italic text-sm">No data for this race.</p>
+                  ) : (
+                    <>
+                      {/* Desktop: Table */}
+                      <div className="hidden md:block overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-white/10 text-xs uppercase text-muted-foreground">
+                              <th className="py-2 pl-2 text-left w-8">#</th>
+                              <th className="py-2 text-left">Scuderia / Manager</th>
+                              <th className="py-2 text-left">Driver</th>
+                              <th className="py-2 text-left">Constructor</th>
+                              <th className="py-2 text-right pr-2">D Pts</th>
+                              <th className="py-2 text-right">C Pts</th>
+                              <th className="py-2 text-right pr-3">Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {raceStandings.map((entry, idx) => (
+                              <tr
+                                key={entry.userId}
+                                data-testid={`standings-row-${entry.userId}`}
+                                className={`border-b border-white/5 transition-colors hover:bg-white/5 ${idx === 0 ? "text-yellow-400" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : ""}`}
+                              >
+                                <td className="py-2.5 pl-2 font-bold text-sm">{idx + 1}</td>
+                                <td className="py-2.5">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
+                                      {entry.username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <p className="font-semibold text-xs leading-tight">{entry.teamName}</p>
+                                      <p className="text-[10px] text-muted-foreground">@{entry.username}</p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-2.5 text-xs">{entry.driverName ?? <span className="text-muted-foreground italic">—</span>}</td>
+                                <td className="py-2.5 text-xs">{entry.constructorName ?? <span className="text-muted-foreground italic">—</span>}</td>
+                                <td className="py-2.5 text-right pr-2 font-mono text-xs">{entry.driverPoints}</td>
+                                <td className="py-2.5 text-right font-mono text-xs">{entry.constructorPoints}</td>
+                                <td className="py-2.5 text-right pr-3 font-bold">{entry.totalPoints}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Mobile: Cards */}
+                      <div className="md:hidden space-y-2">
+                        {raceStandings.map((entry, idx) => (
+                          <div
+                            key={entry.userId}
+                            data-testid={`standings-card-${entry.userId}`}
+                            className="rounded-lg border border-white/8 bg-white/3 px-3 py-2.5 flex items-center gap-3"
+                          >
+                            <span className={`text-sm font-black w-5 text-center shrink-0 ${idx === 0 ? "text-yellow-400" : idx === 1 ? "text-slate-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground"}`}>
+                              {idx + 1}
+                            </span>
+                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                              {entry.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-xs leading-tight truncate">{entry.teamName}</p>
+                              <p className="text-[10px] text-muted-foreground truncate">@{entry.username}</p>
+                              <div className="flex gap-2 mt-0.5 flex-wrap">
+                                <span className="text-[10px] text-muted-foreground/70">{entry.driverName ?? "—"}</span>
+                                <span className="text-[10px] text-muted-foreground/40">·</span>
+                                <span className="text-[10px] text-muted-foreground/70">{entry.constructorName ?? "—"}</span>
+                              </div>
+                            </div>
+                            <div className="text-right shrink-0 ml-1">
+                              <p className="font-bold text-sm leading-tight">{entry.totalPoints}</p>
+                              <p className="text-[10px] text-muted-foreground leading-tight">
+                                <span className="text-blue-400">{entry.driverPoints}</span>
+                                <span className="text-muted-foreground/40"> + </span>
+                                <span className="text-emerald-400">{entry.constructorPoints}</span>
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="players">

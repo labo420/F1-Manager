@@ -2,7 +2,7 @@ import { db } from "./db";
 import {
   users, lobbies, lobbyMembers, drivers, constructors, races, selections, driverResults, constructorResults, draftState, userScores,
   type User, type Lobby, type LobbyMember, type InsertUser, type Driver, type Constructor, type Race, type Selection,
-  type DriverResult, type ConstructorResult, type LeaderboardEntry, type DraftState, type DraftStatus, type UsageInfo, type Membership, type RaceFantasyWinners
+  type DriverResult, type ConstructorResult, type LeaderboardEntry, type DraftState, type DraftStatus, type UsageInfo, type Membership, type RaceFantasyWinners, type RaceStandingsEntry
 } from "@shared/schema";
 import { eq, sql, and, asc, inArray } from "drizzle-orm";
 import session from "express-session";
@@ -80,6 +80,7 @@ export interface IStorage {
 
   getDriverLeaderboard(lobbyId: number): Promise<LeaderboardEntry[]>;
   getConstructorLeaderboard(lobbyId: number): Promise<LeaderboardEntry[]>;
+  getRaceStandings(lobbyId: number, raceId: number): Promise<RaceStandingsEntry[]>;
 
   getDraftState(lobbyId: number, raceId: number): Promise<DraftState | undefined>;
   initializeDraft(lobbyId: number, raceId: number, orderUserIds: number[]): Promise<DraftState>;
@@ -794,6 +795,38 @@ export class DatabaseStorage implements IStorage {
         constructorName: constructor?.name || "Unknown",
       };
     });
+  }
+
+  async getRaceStandings(lobbyId: number, raceId: number): Promise<RaceStandingsEntry[]> {
+    const members = await this.getLobbyMembers(lobbyId);
+    if (members.length === 0) return [];
+
+    const allDrivers = await this.getDrivers();
+    const allConstructors = await this.getConstructors();
+    const lobbySelections = await this.getSelectionsForLobbyRace(lobbyId, raceId);
+    const scores = await db.select().from(userScores).where(
+      and(eq(userScores.lobbyId, lobbyId), eq(userScores.raceId, raceId))
+    );
+
+    const result: RaceStandingsEntry[] = members.map(m => {
+      const sel = lobbySelections.find(s => s.userId === m.userId);
+      const score = scores.find(s => s.userId === m.userId);
+      const driver = sel ? allDrivers.find(d => d.id === sel.driverId) : null;
+      const constructor = sel ? allConstructors.find(c => c.id === sel.constructorId) : null;
+      return {
+        userId: m.userId,
+        username: m.username,
+        teamName: m.teamName || "Unknown",
+        avatarUrl: m.avatarUrl,
+        driverName: driver?.name ?? null,
+        constructorName: constructor?.name ?? null,
+        driverPoints: score?.driverPoints ?? 0,
+        constructorPoints: score?.constructorPoints ?? 0,
+        totalPoints: score?.totalPoints ?? 0,
+      };
+    });
+
+    return result.sort((a, b) => b.totalPoints - a.totalPoints);
   }
 }
 

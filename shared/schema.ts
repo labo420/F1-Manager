@@ -161,3 +161,15 @@ export type RaceFantasyWinners = {
   driverWinner: { userId: number; username: string; teamName: string; driverName: string; points: number } | null;
   constructorWinner: { userId: number; username: string; teamName: string; constructorName: string; points: number } | null;
 };
+
+export type RaceStandingsEntry = {
+  userId: number;
+  username: string;
+  teamName: string;
+  avatarUrl: string | null;
+  driverName: string | null;
+  constructorName: string | null;
+  driverPoints: number;
+  constructorPoints: number;
+  totalPoints: number;
+};
