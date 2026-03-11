@@ -338,7 +338,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                             data-testid={`constructor-btn-${con.id}`}
                             onClick={() => setSelectedConstructorId(con.id)}
                             className={cn(
-                              "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl border text-left transition-all",
+                              "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl border text-left transition-all relative overflow-hidden",
                               isTaken
                                 ? "bg-white/3 border-white/5 opacity-40 cursor-not-allowed"
                                 : usedCount >= 3
@@ -347,6 +347,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                                     ? "bg-primary/10 border-primary/40 ring-1 ring-primary/30 shadow-lg shadow-primary/10"
                                     : "bg-white/3 border-white/5 hover:bg-white/6 hover:border-white/15 active:scale-[0.99]"
                             )}
+                            style={{ borderLeftColor: con.color, borderLeftWidth: '3px' } as React.CSSProperties}
                           >
                             {/* Team logo */}
                             <div className="flex items-center gap-3">
