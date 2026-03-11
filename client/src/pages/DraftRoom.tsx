@@ -23,6 +23,20 @@ const CONSTRUCTOR_LOGOS: Record<string, string> = {
   "Williams": "/logos/williams.png",
 };
 
+const TEAM_COLORS: Record<string, string> = {
+  "Red Bull Racing": "#3671C6",
+  "Ferrari": "#E8002D",
+  "McLaren": "#FF8000",
+  "Mercedes": "#27F4D2",
+  "Aston Martin": "#229971",
+  "Alpine": "#FF87BC",
+  "RB": "#6692FF",
+  "Williams": "#64C4FF",
+  "Audi": "#ff3300",
+  "Haas": "#B6BABD",
+  "Cadillac": "#d1d1d1",
+};
+
 export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId: number }) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -281,7 +295,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                               setMobilePickTab("constructor");
                             }}
                             className={cn(
-                              "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl border text-left transition-all",
+                              "w-full flex items-center justify-between px-3.5 py-3 rounded-2xl border text-left transition-all relative overflow-hidden",
                               isTaken
                                 ? "bg-white/3 border-white/5 opacity-40 cursor-not-allowed"
                                 : usedCount >= 2
@@ -292,6 +306,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
                                       ? "bg-orange-500/5 border-orange-500/30"
                                       : "bg-white/3 border-white/5 hover:bg-white/6 hover:border-white/15 active:scale-[0.99]"
                             )}
+                            style={{ borderLeftColor: TEAM_COLORS[driver.team], borderLeftWidth: '3px' } as React.CSSProperties}
                           >
                             <div className="flex items-center gap-3">
                               <DriverAvatar number={driver.number ?? undefined} name={driver.name} size="sm" />
