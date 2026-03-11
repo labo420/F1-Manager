@@ -152,52 +152,52 @@ export default function Profile() {
         </div>
 
         <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden divide-y divide-white/5">
-          <div className="px-4 py-2.5">
-            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30">Impostazioni</p>
+          <div className="px-4 py-2.5 lg:px-6 lg:py-3">
+            <p className="text-[9px] lg:text-xs font-black uppercase tracking-[0.15em] text-white/30">Impostazioni</p>
           </div>
 
           <button
             onClick={() => { setOpenPanel("username"); setNewUsername(user?.username || ""); }}
             data-testid="button-settings-username"
-            className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.03] transition-colors text-left group"
+            className="w-full flex items-center gap-4 px-4 py-3.5 lg:gap-6 lg:px-6 lg:py-5 hover:bg-white/[0.03] transition-colors text-left group"
           >
-            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-              <User className="w-4 h-4 text-white/40 group-hover:text-primary transition-colors" />
+            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+              <User className="w-4 h-4 lg:w-5 lg:h-5 text-white/40 group-hover:text-primary transition-colors" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white">Cambia username</p>
-              <p className="text-[10px] text-white/30">Scegli un nuovo nome utente</p>
+              <p className="text-xs lg:text-sm font-semibold text-white">Cambia username</p>
+              <p className="text-[10px] lg:text-xs text-white/30">Scegli un nuovo nome utente</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors shrink-0" />
+            <ChevronRight className="w-4 h-4 lg:w-5 lg:h-5 text-white/20 group-hover:text-white/40 transition-colors shrink-0" />
           </button>
 
           <button
             onClick={() => { setOpenPanel("password"); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }}
             data-testid="button-settings-password"
-            className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.03] transition-colors text-left group"
+            className="w-full flex items-center gap-4 px-4 py-3.5 lg:gap-6 lg:px-6 lg:py-5 hover:bg-white/[0.03] transition-colors text-left group"
           >
-            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-              <Lock className="w-4 h-4 text-white/40 group-hover:text-primary transition-colors" />
+            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+              <Lock className="w-4 h-4 lg:w-5 lg:h-5 text-white/40 group-hover:text-primary transition-colors" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white">Cambia password</p>
-              <p className="text-[10px] text-white/30">Aggiorna le credenziali di accesso</p>
+              <p className="text-xs lg:text-sm font-semibold text-white">Cambia password</p>
+              <p className="text-[10px] lg:text-xs text-white/30">Aggiorna le credenziali di accesso</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors shrink-0" />
+            <ChevronRight className="w-4 h-4 lg:w-5 lg:h-5 text-white/20 group-hover:text-white/40 transition-colors shrink-0" />
           </button>
 
 
           <button
             onClick={() => logout()}
             data-testid="button-logout-profile"
-            className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-red-500/5 transition-colors text-left group"
+            className="w-full flex items-center gap-4 px-4 py-3.5 lg:gap-6 lg:px-6 lg:py-5 hover:bg-red-500/5 transition-colors text-left group"
           >
-            <div className="w-8 h-8 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0 group-hover:bg-red-500/20 transition-colors">
-              <LogOut className="w-4 h-4 text-red-400" />
+            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-red-500/10 flex items-center justify-center shrink-0 group-hover:bg-red-500/20 transition-colors">
+              <LogOut className="w-4 h-4 lg:w-5 lg:h-5 text-red-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-red-400">Logout</p>
-              <p className="text-[10px] text-white/30">Esci dall'account</p>
+              <p className="text-xs lg:text-sm font-semibold text-red-400">Logout</p>
+              <p className="text-[10px] lg:text-xs text-white/30">Esci dall'account</p>
             </div>
           </button>
         </div>
