@@ -5,7 +5,7 @@ import { useDrivers, useConstructors } from "@/hooks/use-competitors";
 import { Settings, Lock, Unlock, CheckCircle, Copy, Users, Flag, Save, AlertTriangle, ChevronLeft, UserCircle, ChevronDown, Activity, Timer, Eye, Clock, Trash2, Shield, Download, Zap, Edit2, X, Trophy, Car, ListOrdered } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DriverAvatar } from "@/components/DriverAvatar";
 import { LobbyImageEditor } from "@/components/LobbyImageEditor";
 import { motion, AnimatePresence } from "framer-motion";
@@ -109,6 +109,8 @@ export default function AdminPanel() {
   const [isEditingRealResults, setIsEditingRealResults] = useState(false);
   const [editedRealResults, setEditedRealResults] = useState<any[]>([]);
 
+  const playerPicksRef = useRef<HTMLDivElement>(null);
+
   const isAdmin = adminLobbies.length > 0;
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -206,6 +208,14 @@ export default function AdminPanel() {
 
   useEffect(() => {
     setIsEditMode(false);
+  }, [selectedRaceId]);
+
+  useEffect(() => {
+    if (selectedRaceId && playerPicksRef.current) {
+      setTimeout(() => {
+        playerPicksRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }
   }, [selectedRaceId]);
 
   const { data: existingResults } = useQuery<{ driverResults: any[]; constructorResults: any[] }>({
@@ -532,6 +542,7 @@ export default function AdminPanel() {
         {/* 3. Players' Picks Panel */}
         {selectedRace && (
           <motion.div
+            ref={playerPicksRef}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.05 }}
