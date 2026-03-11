@@ -41,7 +41,7 @@ type BadgeKey = "pole_position" | "fastest_lap" | "p1_constructor" | "perfect_we
 const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; color: string; bg: string; border: string; glow: string }> = {
   pole_position: {
     label: "Pole Position",
-    desc: "Driver con più punti della lobby",
+    desc: "Driver with most points in the lobby",
     Icon: Trophy,
     color: "text-yellow-400",
     bg: "bg-yellow-400/10",
@@ -50,7 +50,7 @@ const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; col
   },
   fastest_lap: {
     label: "Fastest Lap",
-    desc: "Driver con il giro veloce",
+    desc: "Driver with the fastest lap",
     Icon: Zap,
     color: "text-purple-400",
     bg: "bg-purple-400/10",
@@ -59,7 +59,7 @@ const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; col
   },
   p1_constructor: {
     label: "P1 Constructor",
-    desc: "Constructor con più punti della lobby",
+    desc: "Constructor with most points in the lobby",
     Icon: Wrench,
     color: "text-orange-400",
     bg: "bg-orange-400/10",
@@ -68,7 +68,7 @@ const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; col
   },
   perfect_weekend: {
     label: "Perfect Weekend",
-    desc: "Miglior driver e constructor della lobby",
+    desc: "Best driver and constructor in the lobby",
     Icon: Crown,
     color: "text-amber-300",
     bg: "bg-amber-300/10",
@@ -172,7 +172,7 @@ export default function LobbyDetail({ id }: { id: number }) {
         data-testid="button-back-paddock"
       >
         <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-        <span className="text-xs font-black uppercase tracking-widest">Paddock</span>
+        <span className="text-xs font-black uppercase tracking-widest">Back to Paddock</span>
       </button>
 
       {/* Hero header */}
@@ -195,24 +195,24 @@ export default function LobbyDetail({ id }: { id: number }) {
                 {lobby.code}
               </code>
               <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-50">
-                {members?.length ?? 0}/10 managers
+                {members?.length ?? 0}/10 Managers
               </span>
               <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-50">
-                {completedCount}/{totalCount} gare
+                {completedCount}/{totalCount} Races
               </span>
             </div>
           </div>
           {/* Jollies */}
           <div className="hidden sm:flex items-center gap-3 shrink-0">
             <div className="glass-panel border border-yellow-400/20 rounded-2xl px-4 py-3 text-center">
-              <p className="text-[9px] font-black uppercase tracking-widest text-yellow-400/70 mb-0.5">Driver</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-yellow-400/70 mb-0.5">Driver Jokers</p>
               <div className="flex items-center gap-1.5">
                 <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
                 <span className="text-xl font-black text-white leading-none">{usage?.driverJolliesRemaining ?? 0}</span>
               </div>
             </div>
             <div className="glass-panel border border-blue-400/20 rounded-2xl px-4 py-3 text-center">
-              <p className="text-[9px] font-black uppercase tracking-widest text-blue-400/70 mb-0.5">Team</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-blue-400/70 mb-0.5">Team Jokers</p>
               <div className="flex items-center gap-1.5">
                 <Star className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
                 <span className="text-xl font-black text-white leading-none">{usage?.constructorJolliesRemaining ?? 0}</span>
@@ -226,13 +226,13 @@ export default function LobbyDetail({ id }: { id: number }) {
           <div className="flex items-center gap-2">
             <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
             <span className="text-xs font-black text-white">{usage?.driverJolliesRemaining ?? 0}</span>
-            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Driver Jollies</span>
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Driver Jokers</span>
           </div>
           <div className="w-px h-4 bg-white/10" />
           <div className="flex items-center gap-2">
             <Star className="w-3.5 h-3.5 text-blue-400 fill-blue-400" />
             <span className="text-xs font-black text-white">{usage?.constructorJolliesRemaining ?? 0}</span>
-            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Team Jollies</span>
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Team Jokers</span>
           </div>
         </div>
       </div>
@@ -267,7 +267,7 @@ export default function LobbyDetail({ id }: { id: number }) {
                 <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-primary" />
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">
-                    Prossima Gara
+                    Next Race
                   </p>
                 </div>
                 {nextRace ? (
@@ -289,7 +289,7 @@ export default function LobbyDetail({ id }: { id: number }) {
                       </div>
                     </div>
                     <div className="flex items-center justify-between mb-5 px-4 py-3 rounded-xl bg-white/3 border border-white/5">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Data</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Date</span>
                       <span className="text-xs font-black text-white">{format(new Date(nextRace.date), "PPP")}</span>
                     </div>
                     {!nextRace.isLocked ? (
@@ -304,12 +304,12 @@ export default function LobbyDetail({ id }: { id: number }) {
                     ) : (
                       <div className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed border-white/10 text-muted-foreground">
                         <Lock className="w-4 h-4" />
-                        <span className="text-xs font-black uppercase tracking-wider">Picks bloccati</span>
+                        <span className="text-xs font-black uppercase tracking-wider">Picks Locked</span>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="p-8 text-center text-muted-foreground text-sm">Nessuna gara in programma.</div>
+                  <div className="p-8 text-center text-muted-foreground text-sm">No upcoming races.</div>
                 )}
               </div>
 
@@ -318,7 +318,7 @@ export default function LobbyDetail({ id }: { id: number }) {
                 <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
                   <Trophy className="w-4 h-4 text-primary" />
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">
-                    La tua scelta
+                    Your Selection
                   </p>
                 </div>
                 <div className="p-5">
@@ -326,17 +326,17 @@ export default function LobbyDetail({ id }: { id: number }) {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="glass-panel rounded-2xl p-4 border border-primary/10">
                         <p className="text-[9px] font-black uppercase tracking-widest text-primary/70 mb-1">Driver</p>
-                        <p className="text-sm font-black text-white uppercase tracking-tight">Scelta salvata ✓</p>
+                        <p className="text-sm font-black text-white uppercase tracking-tight">Saved ✓</p>
                       </div>
                       <div className="glass-panel rounded-2xl p-4 border border-primary/10">
                         <p className="text-[9px] font-black uppercase tracking-widest text-primary/70 mb-1">Constructor</p>
-                        <p className="text-sm font-black text-white uppercase tracking-tight">Scelta salvata ✓</p>
+                        <p className="text-sm font-black text-white uppercase tracking-tight">Saved ✓</p>
                       </div>
                     </div>
                   ) : (
                     <div className="py-6 text-center">
                       <p className="text-xs text-muted-foreground opacity-50 uppercase tracking-widest font-black">
-                        Nessuna scelta per questa gara
+                        No Selection Made For This Race
                       </p>
                     </div>
                   )}
@@ -349,7 +349,7 @@ export default function LobbyDetail({ id }: { id: number }) {
               <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
                 <Shield className="w-4 h-4 text-primary" />
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">
-                  Stato Lega
+                  League Status
                 </p>
               </div>
               <div className="p-5 space-y-4">
@@ -361,14 +361,14 @@ export default function LobbyDetail({ id }: { id: number }) {
                   <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${((members?.length ?? 0) / 10) * 100}%` }} />
                 </div>
                 <div className="flex justify-between items-center pt-2">
-                  <span className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">Gare completate</span>
+                  <span className="text-xs font-black text-muted-foreground uppercase tracking-widest opacity-60">Races Completed</span>
                   <span className="text-sm font-black text-white">{completedCount}<span className="text-muted-foreground opacity-40">/{totalCount}</span></span>
                 </div>
                 <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                   <div className="h-full bg-green-400 rounded-full transition-all" style={{ width: `${(completedCount / totalCount) * 100}%` }} />
                 </div>
                 <div className="pt-3 border-t border-white/5">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-40">F1 2026 Season</p>
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-40">F1 Official 2026</p>
                 </div>
               </div>
             </div>
@@ -383,7 +383,7 @@ export default function LobbyDetail({ id }: { id: number }) {
             <div className="glass-panel rounded-3xl border border-white/5 flex flex-col items-center justify-center py-20">
               <Flag className="w-10 h-10 text-muted-foreground opacity-20 mb-4" />
               <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-40">
-                Nessuna gara completata
+                No Races Completed Yet
               </p>
             </div>
           ) : (
@@ -421,7 +421,7 @@ export default function LobbyDetail({ id }: { id: number }) {
                   </div>
                 ) : !raceStandings || raceStandings.length === 0 ? (
                   <div className="py-12 text-center">
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-40">Nessun dato per questa gara</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-40">No Data Available For This Race</p>
                   </div>
                 ) : (
                   <>
@@ -431,7 +431,7 @@ export default function LobbyDetail({ id }: { id: number }) {
                         <thead>
                           <tr className="border-b border-white/5">
                             <th className="py-3 pl-5 text-left text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50 w-8">#</th>
-                            <th className="py-3 text-left text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">Scuderia</th>
+                            <th className="py-3 text-left text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">Team Manager</th>
                             <th className="py-3 text-left text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">Driver</th>
                             <th className="py-3 text-left text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">Constructor</th>
                             <th className="py-3 text-right text-[9px] font-black uppercase tracking-[0.15em] text-muted-foreground opacity-50">D</th>
@@ -513,7 +513,7 @@ export default function LobbyDetail({ id }: { id: number }) {
             <div className="glass-panel rounded-3xl border border-white/5 flex flex-col items-center justify-center py-20">
               <Medal className="w-10 h-10 text-muted-foreground opacity-20 mb-4" />
               <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-40">
-                Badge disponibili dopo la prima gara
+                Badges Available After First Race
               </p>
             </div>
           ) : (
@@ -522,7 +522,7 @@ export default function LobbyDetail({ id }: { id: number }) {
               <div className="lg:col-span-1 glass-panel rounded-3xl border border-white/5 overflow-hidden h-fit">
                 <div className="px-5 py-4 border-b border-white/5">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
-                    Seleziona Gara
+                    Select Race
                   </p>
                 </div>
                 <div className="divide-y divide-white/5 max-h-[480px] overflow-y-auto">
@@ -559,7 +559,7 @@ export default function LobbyDetail({ id }: { id: number }) {
                 ) : badgePlayers.length === 0 ? (
                   <div className="glass-panel rounded-3xl border border-white/5 flex items-center justify-center min-h-[240px]">
                     <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-40">
-                      Nessuna pick per questa gara
+                      No Selections For This Race
                     </p>
                   </div>
                 ) : (
@@ -605,7 +605,7 @@ export default function LobbyDetail({ id }: { id: number }) {
                     <div className="glass-panel rounded-3xl border border-white/5 overflow-hidden">
                       <div className="px-5 py-4 border-b border-white/5">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
-                          Tutti i manager
+                          All Managers
                         </p>
                       </div>
                       <div className="divide-y divide-white/5">
@@ -667,7 +667,7 @@ export default function LobbyDetail({ id }: { id: number }) {
             <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
               <Users className="w-4 h-4 text-primary" />
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70">
-                Manager List
+                All Managers
               </p>
               <span className="ml-auto text-[10px] font-black text-muted-foreground opacity-40 uppercase tracking-widest">
                 {members?.length ?? 0}/10
