@@ -433,6 +433,20 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  app.post("/api/lobby/:lobbyId/race/:raceId/reset", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const lobbyId = Number(req.params.lobbyId);
+      const raceId = Number(req.params.raceId);
+      const isAdmin = await storage.isUserAdminOfLobby(req.session.userId, lobbyId);
+      if (!isAdmin) return res.status(403).json({ message: "Not an admin of this lobby" });
+      await storage.resetRaceSelections(lobbyId, raceId);
+      res.status(200).json({ message: "Race selections reset successfully" });
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const requireLobbyAdmin = async (req: any, res: any, next: any) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     const lobbyId = Number(req.params.lobbyId || req.body?.lobbyId);

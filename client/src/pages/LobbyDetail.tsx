@@ -160,6 +160,8 @@ export default function LobbyDetail({ id }: { id: number }) {
     refetchInterval: 15000,
   });
 
+  const [resetRaceId, setResetRaceId] = useState<number | null>(null);
+
   const respondMutation = useMutation({
     mutationFn: async ({ requestId, action }: { requestId: number; action: "approve" | "reject" }) => {
       const status = action === "approve" ? "approved" : "rejected";
@@ -177,6 +179,23 @@ export default function LobbyDetail({ id }: { id: number }) {
     },
     onError: (error: Error) => {
       toast({ title: "Action failed", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const resetMutation = useMutation({
+    mutationFn: async (raceId: number) => {
+      const res = await apiRequest("POST", `/api/lobby/${id}/race/${raceId}/reset`, {});
+      return res.json();
+    },
+    onSuccess: (_, raceId) => {
+      queryClient.invalidateQueries({ queryKey: [`/api/draft/${id}/${raceId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/selections/${id}/me`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/usage/${id}`] });
+      setResetRaceId(null);
+      toast({ title: "Race reset", description: "All selections for this race have been cleared. Players can re-draft." });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Reset failed", description: error.message, variant: "destructive" });
     },
   });
 
@@ -325,6 +344,31 @@ export default function LobbyDetail({ id }: { id: number }) {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="border-t border-white/5 pt-4 mt-4">
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground opacity-70 mb-3">Reset Race</p>
+            <div className="flex items-center gap-2">
+              <select
+                value={resetRaceId ?? ""}
+                onChange={(e) => setResetRaceId(Number(e.target.value) || null)}
+                className="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-xs font-black uppercase tracking-wider hover:border-white/20 transition-all"
+              >
+                <option value="">Select a race to reset...</option>
+                {races?.map(race => (
+                  <option key={race.id} value={race.id}>
+                    {race.name} (Round {race.round})
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => resetRaceId && resetMutation.mutate(resetRaceId)}
+                disabled={!resetRaceId || resetMutation.isPending}
+                data-testid="button-reset-race"
+                className="px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40"
+              >
+                {resetMutation.isPending ? "Resetting…" : "Reset"}
+              </button>
+            </div>
           </div>
         </div>
       )}

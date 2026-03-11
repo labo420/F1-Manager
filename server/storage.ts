@@ -946,6 +946,21 @@ export class DatabaseStorage implements IStorage {
       .set({ currentDrafterIndex: userIndex, isComplete: false })
       .where(eq(draftState.id, state.id));
   }
+
+  async resetRaceSelections(lobbyId: number, raceId: number): Promise<void> {
+    await db.delete(selections).where(
+      and(eq(selections.lobbyId, lobbyId), eq(selections.raceId, raceId))
+    );
+    const state = await this.getDraftState(lobbyId, raceId);
+    if (!state) return;
+    let order: number[];
+    try {
+      order = typeof state.draftOrder === "string" ? JSON.parse(state.draftOrder) : state.draftOrder;
+    } catch { order = []; }
+    await db.update(draftState)
+      .set({ currentDrafterIndex: 0, isComplete: false })
+      .where(eq(draftState.id, state.id));
+  }
 }
 
 export const storage = new DatabaseStorage();
