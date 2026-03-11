@@ -1,15 +1,17 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useParams, Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
+import { Link } from "wouter";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft, Shield, Flag } from "lucide-react";
+import { Loader2, Trophy, Users, Star, Lock, Calendar, ChevronLeft, Flag, Zap, Wrench, Crown, ChevronRight, Medal } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Lobby, Race, Driver, Constructor, Selection, LobbyMember, RaceStandingsEntry } from "@shared/schema";
+import { motion } from "framer-motion";
+import type { Lobby, Race, Selection, LobbyMember, RaceStandingsEntry } from "@shared/schema";
 import { format } from "date-fns";
 
 function getInitials(text: string): string {
@@ -19,12 +21,84 @@ function getInitials(text: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
+const RACE_COUNTRY_CODES: Record<string, string> = {
+  "Australia": "au", "China": "cn", "Japan": "jp", "Bahrain": "bh",
+  "Saudi Arabia": "sa", "Miami": "us", "Emilia Romagna": "it", "Monaco": "mc",
+  "Spain": "es", "Canada": "ca", "Austria": "at", "United Kingdom": "gb",
+  "Belgium": "be", "Hungary": "hu", "Netherlands": "nl", "Italy": "it",
+  "Azerbaijan": "az", "Singapore": "sg", "United States": "us", "Mexico": "mx",
+  "Brazil": "br", "Sao Paulo": "br", "Las Vegas": "us", "Qatar": "qa",
+  "Abu Dhabi": "ae", "UAE": "ae", "UK": "gb", "USA": "us",
+};
+
+function RaceFlag({ country, size = 20 }: { country: string; size?: number }) {
+  const cc = RACE_COUNTRY_CODES[country];
+  if (!cc) return <span style={{ width: size, height: size * 0.67 }} className="inline-block bg-white/10 rounded-sm" />;
+  return (
+    <img
+      src={`https://flagcdn.com/w40/${cc}.png`}
+      alt={country}
+      style={{ width: size, height: "auto" }}
+      className="rounded-sm object-cover inline-block"
+    />
+  );
+}
+
+type BadgeKey = "pole_position" | "fastest_lap" | "p1_constructor" | "perfect_weekend";
+
+const BADGE_DEFS: Record<BadgeKey, { label: string; desc: string; Icon: any; color: string; bg: string; border: string }> = {
+  pole_position: {
+    label: "Pole Position",
+    desc: "Driver con più punti della lobby",
+    Icon: Trophy,
+    color: "text-yellow-400",
+    bg: "bg-yellow-400/10",
+    border: "border-yellow-400/30",
+  },
+  fastest_lap: {
+    label: "Fastest Lap",
+    desc: "Driver con il giro veloce",
+    Icon: Zap,
+    color: "text-purple-400",
+    bg: "bg-purple-400/10",
+    border: "border-purple-400/30",
+  },
+  p1_constructor: {
+    label: "P1 Constructor",
+    desc: "Constructor con più punti della lobby",
+    Icon: Wrench,
+    color: "text-orange-400",
+    bg: "bg-orange-400/10",
+    border: "border-orange-400/30",
+  },
+  perfect_weekend: {
+    label: "Perfect Weekend",
+    desc: "Miglior driver e constructor della lobby",
+    Icon: Crown,
+    color: "text-amber-300",
+    bg: "bg-amber-300/10",
+    border: "border-amber-300/40",
+  },
+};
+
+type PlayerBadgeEntry = {
+  userId: number;
+  username: string;
+  teamName: string;
+  driverName: string;
+  constructorName: string;
+  driverPoints: number;
+  constructorPoints: number;
+  badges: BadgeKey[];
+};
+
 export default function LobbyDetail({ id }: { id: number }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [selectedRaceId, setSelectedRaceId] = useState<number | null>(null);
-  
+  const [badgeRaceId, setBadgeRaceId] = useState<number | null>(null);
+
   const { data: lobby, isLoading: loadingLobby } = useQuery<Lobby>({
     queryKey: [`/api/lobby/${id}`],
   });
@@ -58,12 +132,22 @@ export default function LobbyDetail({ id }: { id: number }) {
     if (completedRaces.length > 0 && selectedRaceId === null) {
       setSelectedRaceId(completedRaces[completedRaces.length - 1].id);
     }
+    if (completedRaces.length > 0 && badgeRaceId === null) {
+      setBadgeRaceId(completedRaces[completedRaces.length - 1].id);
+    }
   }, [completedRaces.length]);
 
   const { data: raceStandings, isLoading: loadingStandings } = useQuery<RaceStandingsEntry[]>({
     queryKey: ["/api/lobby", id, "race", selectedRaceId, "standings"],
     enabled: selectedRaceId !== null,
   });
+
+  const { data: badgeData, isLoading: badgesLoading } = useQuery<{ players: PlayerBadgeEntry[] }>({
+    queryKey: [`/api/lobby/${id}/race/${badgeRaceId}/badges`],
+    enabled: badgeRaceId !== null,
+  });
+
+  const badgePlayers = badgeData?.players ?? [];
 
   const currentMember = members?.find(m => m.userId === user?.id);
   const nextRace = races?.find(r => !r.isCompleted) || races?.[races.length - 1];
@@ -81,7 +165,7 @@ export default function LobbyDetail({ id }: { id: number }) {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8 flex items-center gap-4">
-        <button 
+        <button
           onClick={() => setLocation("/paddock")}
           className="p-2 hover:bg-white/10 rounded-lg text-muted-foreground hover:text-white transition-colors"
           title="Back to League List"
@@ -89,7 +173,7 @@ export default function LobbyDetail({ id }: { id: number }) {
           <ChevronLeft className="w-6 h-6" />
         </button>
       </div>
-      
+
       <div className="mb-12 flex items-center gap-6">
         {lobby.imageUrl ? (
           <img src={lobby.imageUrl} alt="" className="w-20 h-20 rounded-2xl object-cover border border-white/10 shadow-xl shrink-0" />
@@ -126,9 +210,10 @@ export default function LobbyDetail({ id }: { id: number }) {
       </div>
 
       <Tabs defaultValue="predictions" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 max-w-md">
+        <TabsList className="grid w-full grid-cols-4 max-w-lg">
           <TabsTrigger value="predictions">Predictions</TabsTrigger>
           <TabsTrigger value="standings">Standings</TabsTrigger>
+          <TabsTrigger value="badges">Badges</TabsTrigger>
           <TabsTrigger value="players">Players</TabsTrigger>
         </TabsList>
 
@@ -157,7 +242,7 @@ export default function LobbyDetail({ id }: { id: number }) {
                           </Badge>
                         </div>
                       </div>
-                      
+
                       {!nextRace.isLocked ? (
                         <div className="text-center py-8 border-2 border-dashed rounded-lg">
                           <p className="text-muted-foreground mb-4">Click below to make your choices for this race.</p>
@@ -185,7 +270,6 @@ export default function LobbyDetail({ id }: { id: number }) {
                 <CardContent>
                   {nextRace && mySelections?.find(s => s.raceId === nextRace.id) ? (
                     <div className="grid grid-cols-2 gap-4">
-                      {/* Selection details would go here, need to fetch driver/constructor names */}
                       <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
                         <p className="text-xs text-muted-foreground uppercase">Driver</p>
                         <p className="font-bold">Selection Saved</p>
@@ -235,7 +319,6 @@ export default function LobbyDetail({ id }: { id: number }) {
             </Card>
           ) : (
             <div className="space-y-4">
-              {/* Race Selector */}
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                 {completedRaces.map(race => (
                   <button
@@ -253,7 +336,6 @@ export default function LobbyDetail({ id }: { id: number }) {
                 ))}
               </div>
 
-              {/* Standings Table / Cards */}
               <Card>
                 <CardHeader className="pb-2 pt-4 px-4">
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -270,7 +352,6 @@ export default function LobbyDetail({ id }: { id: number }) {
                     <p className="text-center py-8 text-muted-foreground italic text-sm">No data for this race.</p>
                   ) : (
                     <>
-                      {/* Desktop: Table */}
                       <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
@@ -314,7 +395,6 @@ export default function LobbyDetail({ id }: { id: number }) {
                         </table>
                       </div>
 
-                      {/* Mobile: Cards */}
                       <div className="md:hidden space-y-2">
                         {raceStandings.map((entry, idx) => (
                           <div
@@ -356,6 +436,157 @@ export default function LobbyDetail({ id }: { id: number }) {
           )}
         </TabsContent>
 
+        <TabsContent value="badges">
+          {completedRaces.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Medal className="w-8 h-8 mx-auto mb-3 text-muted-foreground/40" />
+                <p className="text-muted-foreground italic text-sm">I badge saranno disponibili dopo la prima gara completata.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1 glass-panel rounded-2xl border border-white/5 overflow-hidden">
+                <div className="px-4 py-3 border-b border-white/5">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                    Seleziona Gara
+                  </p>
+                </div>
+                <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto">
+                  {completedRaces.map(race => (
+                    <button
+                      key={race.id}
+                      onClick={() => setBadgeRaceId(race.id)}
+                      data-testid={`button-badge-race-${race.id}`}
+                      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all hover:bg-white/5 ${
+                        badgeRaceId === race.id ? "bg-primary/10 border-l-2 border-primary" : "border-l-2 border-transparent"
+                      }`}
+                    >
+                      <RaceFlag country={race.country ?? ""} size={22} />
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs font-black uppercase tracking-tight truncate ${badgeRaceId === race.id ? "text-primary" : "text-white"}`}>
+                          {race.name}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground opacity-50 font-mono">
+                          R{race.round ?? "—"} · {race.date}
+                        </p>
+                      </div>
+                      {badgeRaceId === race.id && (
+                        <ChevronRight className="w-3 h-3 text-primary shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="lg:col-span-2">
+                {badgesLoading ? (
+                  <div className="glass-panel rounded-2xl border border-white/5 flex items-center justify-center min-h-[200px]">
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  </div>
+                ) : badgePlayers.length === 0 ? (
+                  <div className="glass-panel rounded-2xl border border-white/5 flex items-center justify-center min-h-[200px]">
+                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground opacity-40">
+                      Nessuna pick per questa gara
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {(["perfect_weekend", "pole_position", "fastest_lap", "p1_constructor"] as BadgeKey[]).map(badgeKey => {
+                        const winner = badgePlayers.find(p => p.badges.includes(badgeKey));
+                        if (!winner) return null;
+                        const def = BADGE_DEFS[badgeKey];
+                        return (
+                          <motion.div
+                            key={badgeKey}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`glass-panel rounded-2xl border-2 ${def.border} ${def.bg} p-4 flex items-center gap-4`}
+                            data-testid={`badge-card-${badgeKey}`}
+                          >
+                            <div className={`w-11 h-11 rounded-xl ${def.bg} border ${def.border} flex items-center justify-center shrink-0`}>
+                              <def.Icon className={`w-5 h-5 ${def.color}`} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className={`text-xs font-black uppercase tracking-wider ${def.color} leading-none mb-0.5`}>
+                                {def.label}
+                              </p>
+                              <p className="text-sm font-display font-black text-white uppercase tracking-tight truncate">
+                                {winner.teamName}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground opacity-60 truncate">
+                                {badgeKey === "p1_constructor" ? winner.constructorName : winner.driverName}
+                                {" · "}
+                                {badgeKey === "p1_constructor"
+                                  ? `${winner.constructorPoints} pts`
+                                  : `${winner.driverPoints} pts`}
+                              </p>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-white/5">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                          Tutti i giocatori
+                        </p>
+                      </div>
+                      <div className="divide-y divide-white/5">
+                        {badgePlayers.map(player => (
+                          <div
+                            key={player.userId}
+                            data-testid={`player-badge-row-${player.userId}`}
+                            className="flex items-center gap-3 px-4 py-3"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-black text-white uppercase tracking-tight truncate">
+                                {player.teamName}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground opacity-50 truncate">
+                                {player.driverName} · {player.driverPoints} pts &nbsp;|&nbsp; {player.constructorName} · {player.constructorPoints} pts
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {player.badges.length === 0 ? (
+                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-30">—</span>
+                              ) : (
+                                player.badges.filter(b => b !== "perfect_weekend").map(badgeKey => {
+                                  const def = BADGE_DEFS[badgeKey as BadgeKey];
+                                  if (!def) return null;
+                                  return (
+                                    <div
+                                      key={badgeKey}
+                                      title={def.label}
+                                      className={`w-6 h-6 rounded-lg ${def.bg} border ${def.border} flex items-center justify-center`}
+                                    >
+                                      <def.Icon className={`w-3 h-3 ${def.color}`} />
+                                    </div>
+                                  );
+                                })
+                              )}
+                              {player.badges.includes("perfect_weekend") && (
+                                <div
+                                  title="Perfect Weekend"
+                                  className={`w-6 h-6 rounded-lg ${BADGE_DEFS.perfect_weekend.bg} border ${BADGE_DEFS.perfect_weekend.border} flex items-center justify-center`}
+                                >
+                                  <Crown className={`w-3 h-3 ${BADGE_DEFS.perfect_weekend.color}`} />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
         <TabsContent value="players">
           <Card>
             <CardHeader>
@@ -365,18 +596,18 @@ export default function LobbyDetail({ id }: { id: number }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-                  <div className="divide-y">
-                    {members?.map((member) => (
-                      <div key={member.userId} className="py-4 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
-                            {member.username.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <p className="font-medium">{member.teamName}</p>
-                            <p className="text-xs text-muted-foreground">Manager: @{member.username}</p>
-                          </div>
-                        </div>
+              <div className="divide-y">
+                {members?.map((member) => (
+                  <div key={member.userId} className="py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                        {member.username.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-medium">{member.teamName}</p>
+                        <p className="text-xs text-muted-foreground">Manager: @{member.username}</p>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-4">
                       {member.role === "admin" && (
                         <Badge variant="outline" className="text-[10px] uppercase">Admin</Badge>
