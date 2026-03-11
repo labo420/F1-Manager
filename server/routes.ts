@@ -973,6 +973,20 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  app.patch("/api/user/username", async (req: any, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const { username } = z.object({ username: z.string().min(1).max(30) }).parse(req.body);
+      const user = await storage.updateUsername(req.session.userId, username);
+      res.json(user);
+    } catch (err: any) {
+      if (err.message === "Username already taken") {
+        return res.status(400).json({ message: "Username already taken" });
+      }
+      res.status(400).json({ message: "Invalid input" });
+    }
+  });
+
   app.patch("/api/lobby/:id/image", async (req: any, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     const lobbyId = parseInt(req.params.id);

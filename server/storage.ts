@@ -39,6 +39,7 @@ export interface IStorage {
   updateUserAvatar(userId: number, avatarUrl: string): Promise<User>;
   updateUserBio(userId: number, bio: string): Promise<User>;
   updateUserPassword(userId: number, newPassword: string): Promise<void>;
+  updateUsername(userId: number, newUsername: string): Promise<User>;
 
   createLobby(name: string, code: string, adminId: number): Promise<Lobby>;
   getLobbyByCode(code: string): Promise<Lobby | undefined>;
@@ -135,6 +136,15 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserPassword(userId: number, newPassword: string): Promise<void> {
     await db.update(users).set({ password: newPassword }).where(eq(users.id, userId));
+  }
+
+  async updateUsername(userId: number, newUsername: string): Promise<User> {
+    const existing = await this.getUserByUsername(newUsername);
+    if (existing && existing.id !== userId) {
+      throw new Error("Username already taken");
+    }
+    const [user] = await db.update(users).set({ username: newUsername }).where(eq(users.id, userId)).returning();
+    return user;
   }
 
   async createLobby(name: string, code: string, adminId: number, teamName?: string): Promise<Lobby> {

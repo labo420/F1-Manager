@@ -14,10 +14,11 @@ export default function Profile() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [showPicker, setShowPicker] = useState(false);
-  const [openPanel, setOpenPanel] = useState<"password" | "leagues" | null>(null);
+  const [openPanel, setOpenPanel] = useState<"password" | "username" | "leagues" | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [newUsername, setNewUsername] = useState("");
   const [showPwd, setShowPwd] = useState(false);
 
   const presetMutation = useMutation({
@@ -67,11 +68,32 @@ export default function Profile() {
     },
   });
 
+  const usernameMutation = useMutation({
+    mutationFn: async (username: string) => {
+      return apiRequest("PATCH", "/api/user/username", { username });
+    },
+    onSuccess: () => {
+      setOpenPanel(null);
+      setNewUsername("");
+      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
+      toast({ title: "Username updated", description: "Your new username is active." });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed", description: err.message || "Could not update username.", variant: "destructive" });
+    },
+  });
+
   const handlePasswordSave = () => {
     if (!currentPassword.trim()) return toast({ title: "Error", description: "Enter your current password.", variant: "destructive" });
     if (!newPassword.trim()) return toast({ title: "Error", description: "Enter a new password.", variant: "destructive" });
     if (newPassword !== confirmPassword) return toast({ title: "Error", description: "Passwords do not match.", variant: "destructive" });
     passwordMutation.mutate({ currentPassword, newPassword });
+  };
+
+  const handleUsernameSave = () => {
+    if (!newUsername.trim()) return toast({ title: "Error", description: "Enter a new username.", variant: "destructive" });
+    if (newUsername === user?.username) return toast({ title: "Error", description: "Choose a different username.", variant: "destructive" });
+    usernameMutation.mutate(newUsername);
   };
 
   if (!user) return null;
@@ -133,6 +155,21 @@ export default function Profile() {
           <div className="px-4 py-2.5">
             <p className="text-[9px] font-black uppercase tracking-[0.15em] text-white/30">Impostazioni</p>
           </div>
+
+          <button
+            onClick={() => { setOpenPanel("username"); setNewUsername(user?.username || ""); }}
+            data-testid="button-settings-username"
+            className="w-full flex items-center gap-4 px-4 py-3.5 hover:bg-white/[0.03] transition-colors text-left group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+              <User className="w-4 h-4 text-white/40 group-hover:text-primary transition-colors" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-white">Cambia username</p>
+              <p className="text-[10px] text-white/30">Scegli un nuovo nome utente</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors shrink-0" />
+          </button>
 
           <button
             onClick={() => { setOpenPanel("password"); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }}
@@ -215,7 +252,49 @@ export default function Profile() {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-zinc-950 border-l border-white/10 z-50 overflow-y-auto flex flex-col"
             >
-              {openPanel === "password" ? (
+              {openPanel === "username" ? (
+                <>
+                  <div className="sticky top-0 px-6 py-4 border-b border-white/5 bg-zinc-950/80 backdrop-blur flex items-center justify-between">
+                    <h2 className="font-display font-black text-white text-lg uppercase tracking-tight">Cambia username</h2>
+                    <button
+                      onClick={() => setOpenPanel(null)}
+                      className="text-white/40 hover:text-white transition-colors p-1"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="flex-1 px-6 py-6 space-y-4">
+                    <input
+                      type="text"
+                      placeholder="Nuovo username"
+                      value={newUsername}
+                      onChange={e => setNewUsername(e.target.value)}
+                      data-testid="input-new-username"
+                      className="w-full bg-zinc-900/80 border border-white/10 rounded-lg px-3 py-3 text-white text-sm font-medium focus:border-primary focus:outline-none placeholder:text-white/20"
+                    />
+                    <p className="text-[10px] text-white/30">Username: 1-30 caratteri, deve essere unico.</p>
+                  </div>
+
+                  <div className="sticky bottom-0 px-6 py-4 border-t border-white/5 bg-zinc-950/80 backdrop-blur flex gap-3">
+                    <button
+                      onClick={() => setOpenPanel(null)}
+                      className="flex-1 px-4 py-3 rounded-lg border border-white/10 text-white/40 text-sm font-semibold uppercase tracking-wider hover:text-white transition-colors"
+                    >
+                      Annulla
+                    </button>
+                    <button
+                      onClick={handleUsernameSave}
+                      disabled={usernameMutation.isPending}
+                      data-testid="button-save-username"
+                      className="flex-1 px-4 py-3 rounded-lg bg-primary text-white text-sm font-black uppercase tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {usernameMutation.isPending && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                      Salva
+                    </button>
+                  </div>
+                </>
+              ) : openPanel === "password" ? (
                 <>
                   <div className="sticky top-0 px-6 py-4 border-b border-white/5 bg-zinc-950/80 backdrop-blur flex items-center justify-between">
                     <h2 className="font-display font-black text-white text-lg uppercase tracking-tight">Cambia password</h2>

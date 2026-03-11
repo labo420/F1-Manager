@@ -25,7 +25,7 @@ Private Fantasy F1 web application. Users register (username + password), create
 | `client/src/pages/Paddock.tsx` | Central league hub: Make Picks (draft), Spy Opponents, Standings |
 | `client/src/pages/Admin.tsx` | Admin Race Control + bulk results entry + members list |
 | `client/src/pages/Leaderboard.tsx` | Per-lobby dual standings (driver/constructor toggle) |
-| `client/src/pages/Profile.tsx` | Avatar upload, league memberships overview |
+| `client/src/pages/Profile.tsx` | Avatar upload, username change, password change, league memberships overview |
 | `client/src/pages/F1Season.tsx` | Public F1 2026 season page (standings, archive, circuit details) |
 | `client/src/components/Navigation.tsx` | Top nav + mobile bottom dock + back button + Paddock link |
 | `client/src/hooks/use-auth.ts` | Auth hook (login, register, logout, current user + memberships) |
