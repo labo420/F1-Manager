@@ -156,7 +156,6 @@ export default function AdminPanel() {
   const isAdmin = adminLobbies.length > 0;
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [resetRaceId, setResetRaceId] = useState<number | null>(null);
 
   const { data: unlockRequests } = useQuery<any[]>({
     queryKey: ["/api/unlock-requests/lobby", selectedLobbyId],
@@ -200,7 +199,6 @@ export default function AdminPanel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/lobby", selectedLobbyId] });
-      setResetRaceId(null);
       toast({ title: "Race Reset", description: "All picks for this race have been cleared." });
     },
     onError: () => toast({ title: "Error", description: "Could not reset race.", variant: "destructive" }),
@@ -1446,33 +1444,27 @@ export default function AdminPanel() {
               <h2 className="text-[11px] md:text-[16px] font-black text-white uppercase tracking-[0.2em]">Reset Race Selections</h2>
             </div>
             <div className="p-6">
-              <p className="text-xs text-muted-foreground opacity-40 mb-4">
-                Clear all picks for a race so every player can re-draft from scratch. This cannot be undone.
-              </p>
-              <div className="flex items-center gap-3">
-                <select
-                  value={resetRaceId ?? ""}
-                  onChange={(e) => setResetRaceId(Number(e.target.value) || null)}
-                  data-testid="select-reset-race"
-                  className="flex-1 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 text-white text-xs font-black hover:border-white/20 transition-all"
-                >
-                  <option value="">Select a race…</option>
-                  {races?.map(race => (
-                    <option key={race.id} value={race.id}>
-                      Round {race.round} — {race.name}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={() => resetRaceId && resetRaceMutation.mutate(resetRaceId)}
-                  disabled={!resetRaceId || resetRaceMutation.isPending}
-                  data-testid="button-reset-race"
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40"
-                >
-                  <XCircle className="w-4 h-4" />
-                  {resetRaceMutation.isPending ? "Resetting…" : "Reset"}
-                </button>
-              </div>
+              {!selectedRaceId ? (
+                <p className="text-xs text-muted-foreground opacity-40 italic">Select a Grand Prix above to reset its selections.</p>
+              ) : (
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-black text-white uppercase tracking-tight">
+                      {races?.find(r => r.id === selectedRaceId)?.name ?? `Race #${selectedRaceId}`}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground opacity-40 mt-0.5">All picks will be permanently cleared.</p>
+                  </div>
+                  <button
+                    onClick={() => resetRaceMutation.mutate(Number(selectedRaceId))}
+                    disabled={resetRaceMutation.isPending}
+                    data-testid="button-reset-race"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40 shrink-0"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    {resetRaceMutation.isPending ? "Resetting…" : "Reset"}
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
