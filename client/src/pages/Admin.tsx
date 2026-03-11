@@ -436,44 +436,47 @@ export default function AdminPanel() {
           )}
         </motion.div>
 
-        {/* 2. Players List - Compact */}
+        {/* 2. Players List */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.02 }}
-          className="glass-panel rounded-2xl p-4 border-2 border-white/5 shadow-2xl"
+          className="border-2 border-white/5 rounded-2xl p-5 bg-gradient-to-br from-white/[0.03] to-transparent shadow-xl"
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-black uppercase tracking-[0.2em] text-white flex items-center gap-2">
-              <Users className="text-primary w-3 h-3" /> Players
+              <Users className="text-primary w-3.5 h-3.5" /> Scuderie
             </h2>
-            <span className="px-2 py-0.5 bg-white/5 rounded-full text-[8px] font-black text-muted-foreground tracking-widest border border-white/5">
+            <span className="px-2.5 py-1 bg-primary/10 rounded-full text-[8px] font-black text-primary tracking-widest border border-primary/20">
               {members?.length || 0} / 10
             </span>
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {members?.map((m: any) => (
               <div 
                 key={m.id}
                 data-testid={`member-${m.userId}`}
-                className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-zinc-900/50 border border-white/5 hover:border-white/10 transition-colors group"
+                className="group relative p-2.5 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-primary/30 hover:bg-zinc-900/50 transition-all duration-200"
               >
-                <div className="relative">
-                  {m.avatarUrl ? (
-                    <img src={m.avatarUrl} alt="" className="w-5 h-5 rounded object-cover border border-white/10" />
-                  ) : (
-                    <div className="w-5 h-5 rounded bg-white/5 flex items-center justify-center border border-white/10">
-                      <UserCircle className="w-3 h-3 text-muted-foreground/30" />
-                    </div>
-                  )}
-                  {m.role === "admin" && (
-                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full border border-background shadow-sm">
-                      <Settings className="w-1.5 h-1.5 text-white" />
-                    </div>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="font-bold text-white text-[9px] uppercase tracking-tight truncate">{m.teamName === "TBD" ? m.username : m.teamName}</div>
+                <div className="flex items-start gap-2">
+                  <div className="relative flex-shrink-0">
+                    {m.avatarUrl ? (
+                      <img src={m.avatarUrl} alt="" className="w-8 h-8 rounded-lg object-cover border border-white/10 group-hover:border-primary/30 transition-colors" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-primary/30 transition-colors">
+                        <UserCircle className="w-4 h-4 text-muted-foreground/40" />
+                      </div>
+                    )}
+                    {m.role === "admin" && (
+                      <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary rounded-full border border-background shadow-md flex items-center justify-center">
+                        <Settings className="w-1.5 h-1.5 text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-white text-[10px] uppercase tracking-tight truncate group-hover:text-primary transition-colors">{m.teamName === "TBD" ? m.username : m.teamName}</div>
+                    <div className="text-[8px] text-muted-foreground/50 font-medium truncate">@{m.username}</div>
+                  </div>
                 </div>
               </div>
             ))}
