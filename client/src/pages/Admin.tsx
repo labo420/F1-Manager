@@ -465,7 +465,7 @@ export default function AdminPanel() {
         >
           <div className="px-5 py-4 flex items-center gap-3 border-b border-white/5">
             <Flag className="w-3.5 h-3.5 text-primary shrink-0" />
-            <h2 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Grand Prix</h2>
+            <h2 className="text-[11px] md:text-[14px] font-black text-white uppercase tracking-[0.2em]">Grand Prix</h2>
           </div>
           <div className="divide-y divide-white/[0.03]">
             {races?.map(r => (
@@ -473,18 +473,18 @@ export default function AdminPanel() {
                 key={r.id}
                 onClick={() => setSelectedRaceId(r.id)}
                 data-testid={`race-option-${r.id}`}
-                className={`w-full flex items-center gap-3 px-5 py-2.5 text-left transition-all duration-150 ${
+                className={`w-full flex items-center gap-3 px-5 py-2.5 md:px-6 md:py-3 text-left transition-all duration-150 ${
                   selectedRaceId === r.id
                     ? "bg-primary/15 border-l-2 border-primary"
                     : "hover:bg-white/[0.03] border-l-2 border-transparent"
                 }`}
               >
                 <RaceFlag name={r.name} className="w-6 h-4 rounded-[3px] shrink-0" />
-                <span className="text-[9px] font-black text-primary/70 uppercase tracking-widest w-6 shrink-0">R{r.round}</span>
-                <span className={`text-[11px] font-bold flex-1 min-w-0 truncate ${selectedRaceId === r.id ? "text-white" : "text-white/70"}`}>
+                <span className="text-[9px] md:text-[12px] font-black text-primary/70 uppercase tracking-widest w-6 shrink-0">R{r.round}</span>
+                <span className={`text-[11px] md:text-[14px] font-bold flex-1 min-w-0 truncate ${selectedRaceId === r.id ? "text-white" : "text-white/70"}`}>
                   {r.name.replace(" Grand Prix", " GP")}
                 </span>
-                <span className="text-[9px] text-muted-foreground/50 shrink-0">
+                <span className="text-[9px] md:text-[12px] text-muted-foreground/50 shrink-0">
                   {new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
                 {r.isCompleted && (
@@ -503,10 +503,10 @@ export default function AdminPanel() {
           className="border-2 border-white/5 rounded-2xl p-3 bg-gradient-to-br from-white/[0.03] to-transparent shadow-xl"
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-white flex items-center gap-2">
+            <h2 className="text-xs md:text-sm font-black uppercase tracking-[0.2em] text-white flex items-center gap-2">
               <Users className="text-primary w-3.5 h-3.5" /> Scuderie
             </h2>
-            <span className="px-2 py-0.5 bg-primary/10 rounded-full text-[7px] font-black text-primary tracking-widest border border-primary/20">
+            <span className="px-2 py-0.5 bg-primary/10 rounded-full text-[7px] md:text-[10px] font-black text-primary tracking-widest border border-primary/20">
               {members?.length || 0}/10
             </span>
           </div>
