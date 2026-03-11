@@ -184,9 +184,9 @@ export default function Leaderboard() {
             <table className="w-full text-left border-collapse" data-testid="table-leaderboard">
               <thead>
                 <tr className="border-b border-white/5 bg-white/5">
-                  <th className="px-2 sm:px-4 py-2 sm:py-3 font-display font-bold text-muted-foreground uppercase text-[9px] tracking-widest w-14 sm:w-16">Pos</th>
-                  <th className="px-2 sm:px-4 py-2 sm:py-3 font-display font-bold text-muted-foreground uppercase text-[9px] tracking-widest">Team / Manager</th>
-                  <th className="px-2 sm:px-4 py-2 sm:py-3 font-display font-bold text-primary uppercase text-[9px] tracking-widest text-right">
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 font-display font-bold text-muted-foreground uppercase text-[9px] md:text-xs tracking-widest w-14 sm:w-16">Pos</th>
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 font-display font-bold text-muted-foreground uppercase text-[9px] md:text-xs tracking-widest">Team / Manager</th>
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 font-display font-bold text-primary uppercase text-[9px] md:text-xs tracking-widest text-right">
                     {tab === "drivers" ? "Championship Pts" : "Constructor Pts"}
                   </th>
                 </tr>

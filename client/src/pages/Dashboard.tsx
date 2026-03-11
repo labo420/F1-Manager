@@ -250,7 +250,7 @@ function LobbySelectionView({ user, setActiveLobbyId }: { user: any; setActiveLo
   const playerLobbies = user.memberships?.filter((m: any) => m.role === "player") || [];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 sm:py-16 pb-24">
+    <div className="max-w-4xl md:max-w-5xl mx-auto px-4 py-8 sm:py-16 pb-24">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
