@@ -1452,17 +1452,23 @@ export default function AdminPanel() {
                     <p className="text-xs font-black text-white uppercase tracking-tight">
                       {races?.find(r => r.id === selectedRaceId)?.name ?? `Race #${selectedRaceId}`}
                     </p>
-                    <p className="text-[10px] text-muted-foreground opacity-40 mt-0.5">All picks will be permanently cleared.</p>
+                    <p className="text-[10px] text-muted-foreground opacity-40 mt-0.5">
+                      {getPicksStatus(races?.find(r => r.id === selectedRaceId)?.date ?? "") === "open"
+                        ? "All picks will be permanently cleared."
+                        : "Selections can only be reset while picks are open."}
+                    </p>
                   </div>
-                  <button
-                    onClick={() => resetRaceMutation.mutate(Number(selectedRaceId))}
-                    disabled={resetRaceMutation.isPending}
-                    data-testid="button-reset-race"
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40 shrink-0"
-                  >
-                    <XCircle className="w-4 h-4" />
-                    {resetRaceMutation.isPending ? "Resetting…" : "Reset"}
-                  </button>
+                  {getPicksStatus(races?.find(r => r.id === selectedRaceId)?.date ?? "") === "open" && (
+                    <button
+                      onClick={() => resetRaceMutation.mutate(Number(selectedRaceId))}
+                      disabled={resetRaceMutation.isPending}
+                      data-testid="button-reset-race"
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-black uppercase tracking-wider hover:bg-red-500/20 transition-all disabled:opacity-40 shrink-0"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      {resetRaceMutation.isPending ? "Resetting…" : "Reset"}
+                    </button>
+                  )}
                 </div>
               )}
             </div>
