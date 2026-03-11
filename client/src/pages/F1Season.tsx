@@ -6,20 +6,6 @@ import { format, subDays } from "date-fns";
 import { DriverAvatar } from "@/components/DriverAvatar";
 import { TeamAvatar } from "@/components/TeamAvatar";
 
-const CONSTRUCTOR_LOGOS: Record<string, string> = {
-  "Alpine": "/logos/alpine.png",
-  "Aston Martin": "/logos/astonmartin.png",
-  "Audi": "/logos/audi.png",
-  "Cadillac": "/logos/cadillac.png",
-  "Ferrari": "/logos/ferrari.png",
-  "Haas": "/logos/haas.png",
-  "McLaren": "/logos/mclaren.png",
-  "Mercedes": "/logos/mercedes.png",
-  "RB": "/logos/rb.png",
-  "Red Bull Racing": "/logos/redbull.png",
-  "Williams": "/logos/williams.png",
-};
-
 type DriverStanding = {
   driverId: number;
   name: string;
@@ -662,11 +648,7 @@ export default function F1Season() {
                           </td>
                           <td className="px-2.5 py-2.5">
                             <div className="flex items-center gap-1.5">
-                              {CONSTRUCTOR_LOGOS[c.name] ? (
-                                <img src={CONSTRUCTOR_LOGOS[c.name]} alt={c.name} className="h-7 w-auto object-contain shrink-0" />
-                              ) : (
-                                <div className="w-1.5 h-7 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] shrink-0" style={{ backgroundColor: c.color || "#666", boxShadow: `0 0 15px ${c.color}40` }}></div>
-                              )}
+                              <div className="w-1.5 h-7 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] shrink-0" style={{ backgroundColor: c.color || "#666", boxShadow: `0 0 15px ${c.color}40` }}></div>
                               <TeamAvatar name={c.name} size="lg" />
                               <span className="font-display font-black text-xs md:text-sm text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none truncate">{c.name}</span>
                             </div>
