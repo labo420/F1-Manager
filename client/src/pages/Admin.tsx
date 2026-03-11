@@ -526,12 +526,8 @@ export default function AdminPanel() {
                 <span className={`text-[11px] md:text-[16px] font-bold flex-1 min-w-0 truncate ${selectedRaceId === r.id ? "text-white" : "text-white/70"}`}>
                   {r.name.replace(" Grand Prix", " GP")}
                 </span>
-                <span className="text-[9px] md:text-[14px] text-muted-foreground/50 shrink-0">
-                  {new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </span>
-                
                 {/* Status badges sulla destra */}
-                <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                <div className="flex items-center gap-2 md:gap-3 shrink-0 ml-auto">
                   {/* Race Status */}
                   {(() => {
                     const status = getRaceStatus(r.date);
