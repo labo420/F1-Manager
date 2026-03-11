@@ -86,6 +86,48 @@ function RaceFlag({ name, className = "w-5 h-3.5" }: { name: string; className?:
   );
 }
 
+function getRaceStatus(raceDate: string): "coming-soon" | "live" | "end" {
+  const now = new Date();
+  const race = new Date(raceDate);
+  
+  // Venerdì della gara (FP1)
+  const raceDay = race.getDay();
+  const dayOffset = raceDay === 0 ? -2 : raceDay === 1 ? 6 : 5 - raceDay;
+  const fp1Date = new Date(race);
+  fp1Date.setDate(fp1Date.getDate() + dayOffset);
+  fp1Date.setHours(0, 0, 0, 0);
+  
+  // Fine domenica
+  const raceEnd = new Date(race);
+  raceEnd.setHours(23, 59, 59, 999);
+  
+  if (now < fp1Date) return "coming-soon";
+  if (now <= raceEnd) return "live";
+  return "end";
+}
+
+function getPicksStatus(raceDate: string): "open" | "close" {
+  const now = new Date();
+  const race = new Date(raceDate);
+  
+  // Lunedì della settimana della gara (00:00 ITA)
+  const raceDay = race.getDay();
+  const daysUntilMonday = raceDay === 0 ? 1 : raceDay === 1 ? 0 : 8 - raceDay;
+  const mondayWeekBefore = new Date(race);
+  mondayWeekBefore.setDate(mondayWeekBefore.getDate() - 7 + daysUntilMonday);
+  mondayWeekBefore.setHours(0, 0, 0, 0);
+  
+  // Venerdì della gara (FP1 inizio - 00:00)
+  const raceDay2 = race.getDay();
+  const dayOffset = raceDay2 === 0 ? -2 : raceDay2 === 1 ? 6 : 5 - raceDay2;
+  const fp1Date = new Date(race);
+  fp1Date.setDate(fp1Date.getDate() + dayOffset);
+  fp1Date.setHours(0, 0, 0, 0);
+  
+  if (now >= mondayWeekBefore && now < fp1Date) return "open";
+  return "close";
+}
+
 type RealResultsTab = "qualifying" | "race" | "sprint";
 
 export default function AdminPanel() {
@@ -487,9 +529,52 @@ export default function AdminPanel() {
                 <span className="text-[9px] md:text-[14px] text-muted-foreground/50 shrink-0">
                   {new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
-                {r.isCompleted && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" title="Completed" />
-                )}
+                
+                {/* Status badges sulla destra */}
+                <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                  {/* Race Status */}
+                  {(() => {
+                    const status = getRaceStatus(r.date);
+                    return (
+                      <div className="flex items-center">
+                        {status === "coming-soon" && (
+                          <span className="px-2 md:px-3 py-1 md:py-1.5 bg-blue-500/20 text-blue-400 text-[7px] md:text-[10px] font-black rounded-full border border-blue-500/30">
+                            COMING
+                          </span>
+                        )}
+                        {status === "live" && (
+                          <span className="px-2 md:px-3 py-1 md:py-1.5 bg-red-500/30 text-red-400 text-[7px] md:text-[10px] font-black rounded-full border border-red-500/50 animate-pulse">
+                            LIVE
+                          </span>
+                        )}
+                        {status === "end" && (
+                          <span className="px-2 md:px-3 py-1 md:py-1.5 bg-gray-500/20 text-gray-400 text-[7px] md:text-[10px] font-black rounded-full border border-gray-500/30">
+                            END
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
+                  
+                  {/* Picks Status */}
+                  {(() => {
+                    const status = getPicksStatus(r.date);
+                    return (
+                      <div className="flex items-center">
+                        {status === "open" && (
+                          <span className="px-2 md:px-3 py-1 md:py-1.5 bg-green-500/20 text-green-400 text-[7px] md:text-[10px] font-black rounded-full border border-green-500/30">
+                            OPEN
+                          </span>
+                        )}
+                        {status === "close" && (
+                          <span className="px-2 md:px-3 py-1 md:py-1.5 bg-red-500/20 text-red-400 text-[7px] md:text-[10px] font-black rounded-full border border-red-500/30">
+                            CLOSE
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
               </button>
             ))}
           </div>
