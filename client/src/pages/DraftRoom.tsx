@@ -93,7 +93,7 @@ export default function DraftRoom({ lobbyId, raceId }: { lobbyId: number; raceId
   };
 
   const StarRating = ({ count, total }: { count: number; total: number }) => (
-    <div className="flex gap-0.5">
+    <div className="flex justify-center gap-0.5">
       {[...Array(total)].map((_, i) => (
         <Star key={i} className={cn("w-3.5 h-3.5", i < count ? "text-yellow-400 fill-yellow-400" : "text-white/10")} />
       ))}
