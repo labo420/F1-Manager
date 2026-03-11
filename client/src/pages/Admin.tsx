@@ -436,48 +436,45 @@ export default function AdminPanel() {
           )}
         </motion.div>
 
-        {/* 2. Players List - OPTION 1: Vertical List */}
+        {/* 2. Players List - Minimalista compatto */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.02 }}
-          className="border-2 border-white/5 rounded-2xl p-5 bg-gradient-to-br from-white/[0.03] to-transparent shadow-xl"
+          className="border-2 border-white/5 rounded-2xl p-3 bg-gradient-to-br from-white/[0.03] to-transparent shadow-xl"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-black uppercase tracking-[0.2em] text-white flex items-center gap-2">
               <Users className="text-primary w-3.5 h-3.5" /> Scuderie
             </h2>
-            <span className="px-2.5 py-1 bg-primary/10 rounded-full text-[8px] font-black text-primary tracking-widest border border-primary/20">
-              {members?.length || 0} / 10
+            <span className="px-2 py-0.5 bg-primary/10 rounded-full text-[7px] font-black text-primary tracking-widest border border-primary/20">
+              {members?.length || 0}/10
             </span>
           </div>
-          <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
             {members?.map((m: any) => (
               <div 
                 key={m.id}
                 data-testid={`member-${m.userId}`}
-                className="group flex items-center justify-between p-3 rounded-xl bg-zinc-900/30 border border-white/5 hover:border-primary/30 hover:bg-zinc-900/50 transition-all duration-200"
+                className="group relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-zinc-900/40 border border-white/5 hover:border-primary/40 hover:bg-zinc-900/60 transition-all duration-200"
               >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="relative flex-shrink-0">
-                    {m.avatarUrl ? (
-                      <img src={m.avatarUrl} alt="" className="w-9 h-9 rounded-lg object-cover border border-white/10 group-hover:border-primary/30 transition-colors" />
-                    ) : (
-                      <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-primary/30 transition-colors">
-                        <UserCircle className="w-5 h-5 text-muted-foreground/40" />
-                      </div>
-                    )}
-                    {m.role === "admin" && (
-                      <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary rounded-full border border-background shadow-md flex items-center justify-center">
-                        <Settings className="w-1.5 h-1.5 text-white" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-bold text-white text-sm uppercase tracking-tight truncate group-hover:text-primary transition-colors">{m.teamName === "TBD" ? m.username : m.teamName}</div>
-                    <div className="text-[9px] text-muted-foreground/50 font-medium truncate">@{m.username}</div>
-                  </div>
+                <div className="relative flex-shrink-0">
+                  {m.avatarUrl ? (
+                    <img src={m.avatarUrl} alt="" className="w-6 h-6 rounded-full object-cover border border-white/10 group-hover:border-primary/40 transition-colors" />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-primary/40 transition-colors">
+                      <UserCircle className="w-3.5 h-3.5 text-muted-foreground/40" />
+                    </div>
+                  )}
+                  {m.role === "admin" && (
+                    <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full border border-background shadow-md flex items-center justify-center">
+                      <Settings className="w-1 h-1 text-white" />
+                    </div>
+                  )}
                 </div>
+                <span className="text-[10px] font-bold text-white/80 group-hover:text-primary transition-colors truncate max-w-[100px]">
+                  {m.teamName === "TBD" ? m.username : m.teamName}
+                </span>
               </div>
             ))}
           </div>
