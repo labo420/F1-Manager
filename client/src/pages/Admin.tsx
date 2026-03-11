@@ -44,28 +44,40 @@ function getInitials(text: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-const RACE_FLAGS: Record<string, string> = {
-  "Australian Grand Prix": "🇦🇺",
-  "Chinese Grand Prix": "🇨🇳",
-  "Japanese Grand Prix": "🇯🇵",
-  "Bahrain Grand Prix": "🇧🇭",
-  "Saudi Arabian Grand Prix": "🇸🇦",
-  "Miami Grand Prix": "🇺🇸",
-  "Canadian Grand Prix": "🇨🇦",
-  "Monaco Grand Prix": "🇲🇨",
-  "Spanish Grand Prix": "🇪🇸",
-  "Austrian Grand Prix": "🇦🇹",
-  "British Grand Prix": "🇬🇧",
-  "Belgian Grand Prix": "🇧🇪",
-  "Hungarian Grand Prix": "🇭🇺",
-  "Dutch Grand Prix": "🇳🇱",
-  "Italian Grand Prix": "🇮🇹",
-  "Singapore Grand Prix": "🇸🇬",
-  "Mexican Grand Prix": "🇲🇽",
-  "Brazilian Grand Prix": "🇧🇷",
-  "Abu Dhabi Grand Prix": "🇦🇪",
-  "Las Vegas Grand Prix": "🇺🇸",
+const RACE_COUNTRY_CODES: Record<string, string> = {
+  "Australian Grand Prix": "au",
+  "Chinese Grand Prix": "cn",
+  "Japanese Grand Prix": "jp",
+  "Bahrain Grand Prix": "bh",
+  "Saudi Arabian Grand Prix": "sa",
+  "Miami Grand Prix": "us",
+  "Canadian Grand Prix": "ca",
+  "Monaco Grand Prix": "mc",
+  "Spanish Grand Prix": "es",
+  "Austrian Grand Prix": "at",
+  "British Grand Prix": "gb",
+  "Belgian Grand Prix": "be",
+  "Hungarian Grand Prix": "hu",
+  "Dutch Grand Prix": "nl",
+  "Italian Grand Prix": "it",
+  "Singapore Grand Prix": "sg",
+  "Mexican Grand Prix": "mx",
+  "Brazilian Grand Prix": "br",
+  "Abu Dhabi Grand Prix": "ae",
+  "Las Vegas Grand Prix": "us",
 };
+
+function RaceFlag({ name, className = "w-5 h-3.5" }: { name: string; className?: string }) {
+  const cc = RACE_COUNTRY_CODES[name];
+  if (!cc) return <span className="text-sm">🏁</span>;
+  return (
+    <img
+      src={`https://flagcdn.com/w40/${cc}.png`}
+      alt={cc}
+      className={`${className} object-cover rounded-sm shadow-sm`}
+    />
+  );
+}
 
 type RealResultsTab = "qualifying" | "race" | "sprint";
 
@@ -432,42 +444,35 @@ export default function AdminPanel() {
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="glass-panel rounded-3xl p-8 border-2 border-white/5 shadow-2xl relative overflow-hidden"
+          className="glass-panel rounded-3xl overflow-hidden border-2 border-white/5 shadow-2xl"
         >
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 blur-2xl" />
-          <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-            <Flag className="w-4 h-4 text-primary" /> Grand Prix Selection
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="px-5 py-4 flex items-center gap-3 border-b border-white/5">
+            <Flag className="w-3.5 h-3.5 text-primary shrink-0" />
+            <h2 className="text-[11px] font-black text-white uppercase tracking-[0.2em]">Grand Prix</h2>
+          </div>
+          <div className="divide-y divide-white/[0.03]">
             {races?.map(r => (
               <button
                 key={r.id}
                 onClick={() => setSelectedRaceId(r.id)}
                 data-testid={`race-option-${r.id}`}
-                className={`relative group overflow-hidden rounded-2xl p-4 transition-all duration-200 border-2 text-left ${
+                className={`w-full flex items-center gap-3 px-5 py-2.5 text-left transition-all duration-150 ${
                   selectedRaceId === r.id
-                    ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
-                    : "bg-zinc-900/30 border-white/10 hover:bg-zinc-900/50 hover:border-white/20"
+                    ? "bg-primary/15 border-l-2 border-primary"
+                    : "hover:bg-white/[0.03] border-l-2 border-transparent"
                 }`}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <div className="relative flex items-center gap-3">
-                  <span className="text-2xl">{RACE_FLAGS[r.name] || "🏁"}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-black text-primary/80 uppercase tracking-widest">
-                        R{r.round || "—"}
-                      </span>
-                      {r.isCompleted && (
-                        <span className="px-1.5 py-0.5 bg-green-500/20 text-green-400 text-[8px] font-black rounded-full border border-green-500/30">
-                          Completed
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-xs font-black text-white truncate">{r.name}</div>
-                    <div className="text-[9px] text-muted-foreground/70 mt-1">{new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
-                  </div>
-                </div>
+                <RaceFlag name={r.name} className="w-6 h-4 rounded-[3px] shrink-0" />
+                <span className="text-[9px] font-black text-primary/70 uppercase tracking-widest w-6 shrink-0">R{r.round}</span>
+                <span className={`text-[11px] font-bold flex-1 min-w-0 truncate ${selectedRaceId === r.id ? "text-white" : "text-white/70"}`}>
+                  {r.name.replace(" Grand Prix", " GP")}
+                </span>
+                <span className="text-[9px] text-muted-foreground/50 shrink-0">
+                  {new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+                {r.isCompleted && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" title="Completed" />
+                )}
               </button>
             ))}
           </div>
