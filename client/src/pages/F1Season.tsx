@@ -577,28 +577,28 @@ export default function F1Season() {
                                 />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="font-display font-black text-xs md:text-sm text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none mb-0.5 truncate">{d.name}</div>
+                                <div className="font-display font-black text-xs md:text-sm lg:text-base text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none mb-0.5 truncate">{d.name}</div>
                                 <div className="flex items-center gap-0.5 md:hidden min-w-0">
                                   <TeamAvatar name={d.team} size="sm" />
-                                  <span className="text-[6px] text-muted-foreground font-black uppercase tracking-widest truncate">{d.team}</span>
+                                  <span className="text-[6px] lg:text-[8px] text-muted-foreground font-black uppercase tracking-widest truncate">{d.team}</span>
                                 </div>
                                 {d.number && <span className="text-[6px] font-black text-primary bg-primary/10 px-0.5 py-0.5 rounded tracking-tighter lg:hidden">#</span>}
                               </div>
-                              {d.number && <span className="text-[7px] md:text-[9px] font-black text-primary bg-primary/10 px-1 py-0.5 rounded tracking-tighter hidden lg:inline-block shrink-0">#{d.number}</span>}
+                              {d.number && <span className="text-[7px] md:text-[9px] lg:text-[10px] font-black text-primary bg-primary/10 px-1 py-0.5 rounded tracking-tighter hidden lg:inline-block shrink-0">#{d.number}</span>}
                             </div>
                           </td>
                           <td className="px-2.5 py-2.5 hidden md:table-cell">
                             <div className="flex items-center gap-1">
                               <TeamAvatar name={d.team} size="sm" />
-                              <span className="text-muted-foreground font-black uppercase text-[7px] md:text-[9px] tracking-widest">{d.team}</span>
+                              <span className="text-muted-foreground font-black uppercase text-[7px] md:text-[9px] lg:text-[10px] tracking-widest">{d.team}</span>
                             </div>
                           </td>
-                          <td className="px-2.5 py-2.5 text-center text-white font-display font-black text-xs hidden sm:table-cell tabular-nums">{d.wins}</td>
-                          <td className="px-2.5 py-2.5 text-center text-muted-foreground font-display font-bold text-xs hidden sm:table-cell tabular-nums">{d.podiums}</td>
+                          <td className="px-2.5 py-2.5 text-center text-white font-display font-black text-xs lg:text-sm hidden sm:table-cell tabular-nums">{d.wins}</td>
+                          <td className="px-2.5 py-2.5 text-center text-muted-foreground font-display font-bold text-xs lg:text-sm hidden sm:table-cell tabular-nums">{d.podiums}</td>
                           <td className="px-2.5 py-2.5 text-right">
                             <div className="flex flex-col items-end">
-                              <span className="font-display font-black text-base text-white tracking-tighter tabular-nums leading-none">{d.totalPoints}</span>
-                              <span className="text-[5px] md:text-[8px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
+                              <span className="font-display font-black text-base lg:text-lg text-white tracking-tighter tabular-nums leading-none">{d.totalPoints}</span>
+                              <span className="text-[5px] md:text-[8px] lg:text-[9px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
                             </div>
                           </td>
                         </motion.tr>
@@ -650,13 +650,13 @@ export default function F1Season() {
                             <div className="flex items-center gap-1.5">
                               <div className="w-1.5 h-7 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)] shrink-0" style={{ backgroundColor: c.color || "#666", boxShadow: `0 0 15px ${c.color}40` }}></div>
                               <TeamAvatar name={c.name} size="lg" />
-                              <span className="font-display font-black text-xs md:text-sm text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none truncate">{c.name}</span>
+                              <span className="font-display font-black text-xs md:text-sm lg:text-base text-white uppercase tracking-tight group-hover:text-primary transition-colors leading-none truncate">{c.name}</span>
                             </div>
                           </td>
                           <td className="px-2.5 py-2.5 text-right">
                             <div className="flex flex-col items-end">
-                              <span className="font-display font-black text-base text-white tracking-tighter tabular-nums leading-none">{c.totalPoints}</span>
-                              <span className="text-[5px] md:text-[8px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
+                              <span className="font-display font-black text-base lg:text-lg text-white tracking-tighter tabular-nums leading-none">{c.totalPoints}</span>
+                              <span className="text-[5px] md:text-[8px] lg:text-[9px] font-black text-muted-foreground uppercase tracking-tighter">Points</span>
                             </div>
                           </td>
                         </motion.tr>
@@ -812,11 +812,11 @@ export default function F1Season() {
                                                       <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" style={{ backgroundColor: TEAM_COLORS[result.teamName] || "#444" }} />
                                                     </div>
                                                     <div>
-                                                      <div className="text-white font-display font-black text-base uppercase tracking-tight flex items-center gap-2">
+                                                      <div className="text-white font-display font-black text-base lg:text-lg uppercase tracking-tight flex items-center gap-2">
                                                         {result.driverName}
                                                         {result.fastestLap && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black tracking-widest border border-purple-500/30">FL</span>}
                                                       </div>
-                                                      <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{result.teamName}</div>
+                                                      <div className="text-[9px] lg:text-[10px] text-muted-foreground font-black uppercase tracking-widest">{result.teamName}</div>
                                                     </div>
                                                   </div>
                                                   <div className="flex items-center gap-6">
@@ -867,11 +867,11 @@ export default function F1Season() {
                                                       <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" style={{ backgroundColor: TEAM_COLORS[dr.driverTeam] || "#444" }} />
                                                     </div>
                                                     <div>
-                                                      <div className="text-white font-display font-black text-base uppercase tracking-tight flex items-center gap-2">
+                                                      <div className="text-white font-display font-black text-base lg:text-lg uppercase tracking-tight flex items-center gap-2">
                                                         {dr.driverName}
                                                         {dr.fastestLap && <span className="text-[8px] bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full font-black tracking-widest border border-purple-500/30">FL</span>}
                                                       </div>
-                                                      <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{dr.driverTeam}</div>
+                                                      <div className="text-[9px] lg:text-[10px] text-muted-foreground font-black uppercase tracking-widest">{dr.driverTeam}</div>
                                                     </div>
                                                   </div>
                                                   <div className="flex items-center gap-6">
@@ -940,8 +940,8 @@ export default function F1Season() {
                                                           <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-background" style={{ backgroundColor: TEAM_COLORS[q.teamName] || "#444" }} />
                                                         </div>
                                                         <div>
-                                                          <div className="text-white font-display font-black text-sm uppercase tracking-tight">{q.driverName}</div>
-                                                          <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest">{q.teamName}</div>
+                                                          <div className="text-white font-display font-black text-sm lg:text-base uppercase tracking-tight">{q.driverName}</div>
+                                                          <div className="text-[9px] lg:text-[10px] text-muted-foreground font-black uppercase tracking-widest">{q.teamName}</div>
                                                         </div>
                                                       </div>
                                                     </td>
