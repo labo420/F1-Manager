@@ -461,7 +461,10 @@ export default function AdminPanel() {
             {races?.map(r => (
               <button
                 key={r.id}
-                onClick={() => setSelectedRaceId(r.id)}
+                onClick={(e) => {
+                  setSelectedRaceId(r.id);
+                  (e.target as HTMLElement).blur();
+                }}
                 data-testid={`race-option-${r.id}`}
                 className={`w-full flex items-center gap-3 px-5 py-2.5 text-left transition-all duration-150 ${
                   selectedRaceId === r.id
