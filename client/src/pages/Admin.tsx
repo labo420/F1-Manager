@@ -120,6 +120,34 @@ export default function AdminPanel() {
     }
   });
 
+  const finalizeResultsMutation = useMutation({
+    mutationFn: async (raceId: number) => {
+      const res = await fetch(`/api/admin/race/${raceId}/finalize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lobbyId: Number(selectedLobbyId) }),
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to finalize results");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/races"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/leaderboard", selectedLobbyId, "drivers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/leaderboard", selectedLobbyId, "constructors"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/f1/driver-standings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/f1/constructor-standings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/results/race"] });
+      toast({ title: "Results Finalized", description: "League standings updated." });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
   useEffect(() => {
     if (drivers && drivers.length > 0 && driverEntries.length === 0) {
       setDriverEntries(
@@ -967,16 +995,25 @@ export default function AdminPanel() {
                 {selectedRace.isLocked ? <><Lock className="w-4 h-4" /> Unlock Grid</> : <><Unlock className="w-4 h-4" /> Lock Grid</>}
               </button>
               <button
-                onClick={() => updateStatus({ id: selectedRace.id, updates: { isCompleted: !selectedRace.isCompleted } })}
-                disabled={updatingStatus}
+                onClick={() => {
+                  if (selectedRace.isCompleted) {
+                    updateStatus({ id: selectedRace.id, updates: { isCompleted: false } });
+                  } else {
+                    finalizeResultsMutation.mutate(selectedRace.id);
+                  }
+                }}
+                disabled={updatingStatus || finalizeResultsMutation.isPending}
                 className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] transition-all border-2 ${
                   selectedRace.isCompleted 
                     ? "bg-zinc-800 border-white/10 text-white" 
                     : "bg-primary border-primary text-white red-glow shadow-xl shadow-primary/20"
                 }`}
               >
-                <CheckCircle className="w-4 h-4" />
-                {selectedRace.isCompleted ? "Reopen Session" : "Finalize Results"}
+                {finalizeResultsMutation.isPending ? (
+                  <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Finalizing...</>
+                ) : (
+                  <><CheckCircle className="w-4 h-4" /> {selectedRace.isCompleted ? "Reopen Session" : "Finalize Results"}</>
+                )}
               </button>
               {!isEditingRealResults ? (
                 <button

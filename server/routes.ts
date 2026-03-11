@@ -437,6 +437,25 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  app.post("/api/admin/race/:id/finalize", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
+    try {
+      const memberships = await storage.getUserMemberships(req.session.userId);
+      const isAnyAdmin = memberships.some(m => m.role === "admin");
+      if (!isAnyAdmin) return res.status(403).json({ message: "Admin access required" });
+
+      const raceId = Number(req.params.id);
+      const race = await storage.getRace(raceId);
+      if (!race) return res.status(404).json({ message: "Race not found" });
+
+      await db.update(races).set({ isCompleted: true }).where(eq(races.id, raceId));
+      res.status(200).json({ success: true, message: "Results finalized and standings updated." });
+    } catch (err) {
+      console.error("Finalize error:", err);
+      res.status(500).json({ message: "Failed to finalize results" });
+    }
+  });
+
   app.get("/api/admin/race/:id/openf1-overtakes", async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: "Not authenticated" });
     try {
