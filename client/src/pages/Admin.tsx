@@ -44,6 +44,29 @@ function getInitials(text: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
+const RACE_FLAGS: Record<string, string> = {
+  "Australian Grand Prix": "🇦🇺",
+  "Chinese Grand Prix": "🇨🇳",
+  "Japanese Grand Prix": "🇯🇵",
+  "Bahrain Grand Prix": "🇧🇭",
+  "Saudi Arabian Grand Prix": "🇸🇦",
+  "Miami Grand Prix": "🇺🇸",
+  "Canadian Grand Prix": "🇨🇦",
+  "Monaco Grand Prix": "🇲🇨",
+  "Spanish Grand Prix": "🇪🇸",
+  "Austrian Grand Prix": "🇦🇹",
+  "British Grand Prix": "🇬🇧",
+  "Belgian Grand Prix": "🇧🇪",
+  "Hungarian Grand Prix": "🇭🇺",
+  "Dutch Grand Prix": "🇳🇱",
+  "Italian Grand Prix": "🇮🇹",
+  "Singapore Grand Prix": "🇸🇬",
+  "Mexican Grand Prix": "🇲🇽",
+  "Brazilian Grand Prix": "🇧🇷",
+  "Abu Dhabi Grand Prix": "🇦🇪",
+  "Las Vegas Grand Prix": "🇺🇸",
+};
+
 type RealResultsTab = "qualifying" | "race" | "sprint";
 
 export default function AdminPanel() {
@@ -413,23 +436,41 @@ export default function AdminPanel() {
         >
           <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12 blur-2xl" />
           <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-            <Flag className="w-4 h-4 text-primary" /> Session Select
+            <Flag className="w-4 h-4 text-primary" /> Grand Prix Selection
           </h2>
-          <div className="relative group">
-            <select
-              value={selectedRaceId}
-              onChange={(e) => setSelectedRaceId(Number(e.target.value))}
-              data-testid="select-race"
-              className="w-full bg-zinc-900/50 border-2 border-white/10 rounded-2xl px-5 py-4 text-white font-bold focus:border-primary focus:ring-1 outline-none appearance-none transition-all cursor-pointer relative z-10 group-hover:border-white/20"
-            >
-              <option value="" disabled className="bg-zinc-900">Select Grand Prix...</option>
-              {races?.map(r => (
-                <option key={r.id} value={r.id} className="bg-zinc-900">{r.round ? `R${r.round}: ` : ""}{r.name} {r.isCompleted ? "✓" : ""}</option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none z-20 group-hover:text-white transition-colors" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {races?.map(r => (
+              <button
+                key={r.id}
+                onClick={() => setSelectedRaceId(r.id)}
+                data-testid={`race-option-${r.id}`}
+                className={`relative group overflow-hidden rounded-2xl p-4 transition-all duration-200 border-2 text-left ${
+                  selectedRaceId === r.id
+                    ? "bg-primary/20 border-primary shadow-lg shadow-primary/20"
+                    : "bg-zinc-900/30 border-white/10 hover:bg-zinc-900/50 hover:border-white/20"
+                }`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex items-center gap-3">
+                  <span className="text-2xl">{RACE_FLAGS[r.name] || "🏁"}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-black text-primary/80 uppercase tracking-widest">
+                        R{r.round || "—"}
+                      </span>
+                      {r.isCompleted && (
+                        <span className="px-1.5 py-0.5 bg-green-500/20 text-green-400 text-[8px] font-black rounded-full border border-green-500/30">
+                          Completed
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs font-black text-white truncate">{r.name}</div>
+                    <div className="text-[9px] text-muted-foreground/70 mt-1">{new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                  </div>
+                </div>
+              </button>
+            ))}
           </div>
-
         </motion.div>
 
         {/* 2. Players List - Minimalista compatto */}
