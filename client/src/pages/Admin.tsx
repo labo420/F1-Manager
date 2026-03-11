@@ -400,40 +400,6 @@ export default function AdminPanel() {
             <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none z-20 group-hover:text-white transition-colors" />
           </div>
 
-          {selectedRace && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="space-y-4 mt-8 pt-8 border-t border-white/5"
-            >
-              <h3 className="font-black text-[10px] text-muted-foreground uppercase tracking-widest mb-2">Race Operations</h3>
-              <div className="grid grid-cols-1 gap-3">
-                <button
-                  onClick={() => updateStatus({ id: selectedRace.id, updates: { isLocked: !selectedRace.isLocked } })}
-                  disabled={updatingStatus}
-                  className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] transition-all border-2 ${
-                    selectedRace.isLocked 
-                      ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/5" 
-                      : "bg-green-500/10 border-green-500/20 text-green-500 shadow-lg shadow-green-500/5"
-                  }`}
-                >
-                  {selectedRace.isLocked ? <><Lock className="w-4 h-4" /> Unlock Grid</> : <><Unlock className="w-4 h-4" /> Lock Grid</>}
-                </button>
-                <button
-                  onClick={() => updateStatus({ id: selectedRace.id, updates: { isCompleted: !selectedRace.isCompleted } })}
-                  disabled={updatingStatus}
-                  className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] transition-all border-2 ${
-                    selectedRace.isCompleted 
-                      ? "bg-zinc-800 border-white/10 text-white" 
-                      : "bg-primary border-primary text-white red-glow shadow-xl shadow-primary/20"
-                  }`}
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  {selectedRace.isCompleted ? "Reopen Session" : "Finalize Results"}
-                </button>
-              </div>
-            </motion.div>
-          )}
         </motion.div>
 
         {/* 2. Players List - Minimalista compatto */}
@@ -810,7 +776,44 @@ export default function AdminPanel() {
           </motion.div>
         )}
 
-        {/* 4. Race Results Editor (edit-gated) */}
+        {/* 4. Race Operations */}
+        {selectedRace && (
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.12 }}
+            className="border-2 border-white/5 rounded-2xl p-5 bg-gradient-to-br from-white/[0.03] to-transparent shadow-xl"
+          >
+            <h3 className="font-black text-[10px] text-muted-foreground uppercase tracking-widest mb-3">Race Operations</h3>
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                onClick={() => updateStatus({ id: selectedRace.id, updates: { isLocked: !selectedRace.isLocked } })}
+                disabled={updatingStatus}
+                className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] transition-all border-2 ${
+                  selectedRace.isLocked 
+                    ? "bg-amber-500/10 border-amber-500/20 text-amber-500 shadow-lg shadow-amber-500/5" 
+                    : "bg-green-500/10 border-green-500/20 text-green-500 shadow-lg shadow-green-500/5"
+                }`}
+              >
+                {selectedRace.isLocked ? <><Lock className="w-4 h-4" /> Unlock Grid</> : <><Unlock className="w-4 h-4" /> Lock Grid</>}
+              </button>
+              <button
+                onClick={() => updateStatus({ id: selectedRace.id, updates: { isCompleted: !selectedRace.isCompleted } })}
+                disabled={updatingStatus}
+                className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-3 text-[10px] transition-all border-2 ${
+                  selectedRace.isCompleted 
+                    ? "bg-zinc-800 border-white/10 text-white" 
+                    : "bg-primary border-primary text-white red-glow shadow-xl shadow-primary/20"
+                }`}
+              >
+                <CheckCircle className="w-4 h-4" />
+                {selectedRace.isCompleted ? "Reopen Session" : "Finalize Results"}
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* 5. Race Results Editor (edit-gated) */}
         {selectedRace && driverEntries.length > 0 && (
           <motion.div
             initial={{ opacity: 0, x: -20 }}
